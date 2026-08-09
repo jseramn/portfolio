@@ -8,7 +8,11 @@ export default defineConfig({
   site: "https://jseramn.tech",
   compressHTML: false,
   output: "static",
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
   integrations: [react(), tailwind({ applyBaseStyles: false }), sitemap()],
   vite: {
     build: {
