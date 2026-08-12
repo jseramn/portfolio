@@ -40,3 +40,6 @@ Untitled.*
 
 # local video backups (canonical assets: public/videobg.webm / .mp4)
 public/videobg__*
+.vercel
+.openspec
+/openspec
