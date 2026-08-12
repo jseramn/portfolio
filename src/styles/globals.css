@@ -26,6 +26,9 @@
   --vesper-accent: #00F0FF;
   --vesper-purple: #B026FF;
   --vesper-pink: #FF2A9E;
+  /* Hero-over-video ink: soft bone — readable on blue/fuchsia without neon clash */
+  --hero-ink: #E8E4D9;
+  --hero-ink-hover: #FAF8F3;
 }
 
 body {
@@ -79,8 +82,68 @@ body {
   50% { transform: scaleY(1); }
 }
 
-/* Glow pulse — Vesper cyan */
+/* Glow pulse — soft bone ink over video */
 @keyframes glow-pulse {
-  0%, 100% { text-shadow: 0 0 4px rgba(0, 240, 255, 0.4); }
-  50% { text-shadow: 0 0 16px rgba(0, 240, 255, 0.8), 0 0 32px rgba(0, 240, 255, 0.4); }
+  0%, 100% {
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.9),
+      0 0 8px rgba(0, 0, 0, 0.55);
+  }
+  50% {
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.95),
+      0 0 14px rgba(0, 0, 0, 0.65),
+      0 0 22px rgba(232, 228, 217, 0.18);
+  }
+}
+
+/* Hero edge/zone scrims — darken UI bands over video without a heavy full-frame veil */
+.hero-scrim-top {
+  height: 28vh;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, #000 72%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.hero-scrim-bottom {
+  height: 36vh;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, #000 72%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+/* Dual side bands: mobile icons (right) + desktop icons (left) */
+.hero-scrim-social {
+  width: 100%;
+  background:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, #000 68%, transparent) 0%,
+      transparent 16%
+    ),
+    linear-gradient(
+      to left,
+      color-mix(in srgb, #000 68%, transparent) 0%,
+      transparent 16%
+    );
+}
+
+/* Resting hero ink over video — black halo only, no neon bloom */
+.hero-on-video {
+  color: var(--hero-ink);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 12px rgba(0, 0, 0, 0.7);
+}
+
+.hero-ink {
+  color: var(--hero-ink);
+}
+
+.hero-ink-muted {
+  color: color-mix(in srgb, var(--hero-ink) 50%, transparent);
 }

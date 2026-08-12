@@ -5,7 +5,7 @@ type VideoBackgroundProps = {
 }
 
 export function VideoBackground({ activeZoom }: VideoBackgroundProps) {
-  const { videoSrcWebm, videoSrcMp4 } = site.background
+  const { videoSrcWebm, videoSrcMp4 } = site
   return (
     <video
       autoPlay

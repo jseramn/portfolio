@@ -23,7 +23,7 @@ const PROFESSIONS = site.roles
 const DESC = site.tagline.en
 const CHARS = "!@#$%^&*()_+-=[]{}|;:,./<>?`~abcdefghijklmnopqrstuvwxyz0123456789"
 const GLOW =
-  "transition-all duration-300 hover:drop-shadow-[0_0_20px_rgba(0,240,255,0.6)] hover:text-[#A8E0E0]"
+  "transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(0,0,0,0.75)] hover:text-[var(--hero-ink-hover)]"
 
 const VIDEO_ZOOM = {
   default: 1.08,
@@ -280,50 +280,62 @@ export default function Hero() {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-      <div className="absolute inset-x-0 top-0 pt-6 md:pt-8">
+      <div
+        className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
+        aria-hidden
+      />
+      <div
+        className="hero-scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 z-0"
+        aria-hidden
+      />
+      <div
+        className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
+        aria-hidden
+      />
+      <div className="absolute inset-x-0 top-0 z-10 pt-6 md:pt-8">
         <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
-          <span className="font-mono text-xs md:text-base text-vesper-accent whitespace-nowrap">
+          <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
             Hi, I am {site.name} — {site.locationLine}
           </span>
-          <span className="text-vesper-purple/40 font-mono">·</span>
+          <span className="hero-ink-muted font-mono">·</span>
           {site.marqueeOrgs.flatMap((org) => [
             <a
               key={org.label}
               href={org.href}
               target={org.href.startsWith("http") ? "_blank" : undefined}
               rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className={`font-mono text-xs md:text-base text-vesper-accent ${GLOW} whitespace-nowrap`}
+              className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
             >
               {org.label}
             </a>,
-            <span key={`${org.label}-sep`} className="text-vesper-purple/40 font-mono">·</span>,
+            <span key={`${org.label}-sep`} className="hero-ink-muted font-mono">·</span>,
           ])}
           {ghStats && (
-            <span className="font-mono text-xs md:text-base text-vesper-accent/70 whitespace-nowrap">
+            <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
               {ghStats.today} contributions today · {ghStats.month} this month · {ghStats.year} this year · {ghStats.total} all-time
             </span>
           )}
-          {ghStats && <span className="text-vesper-purple/40 font-mono">·</span>}
+          {ghStats && <span className="hero-ink-muted font-mono">·</span>}
           {ghStats?.lastCommit && (
             <a
               href={ghStats.lastCommit.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`font-mono text-xs md:text-base text-vesper-accent/70 whitespace-nowrap ${GLOW}`}
+              className={`hero-on-video font-mono text-xs md:text-base whitespace-nowrap ${GLOW}`}
             >
               last commit: {ghStats.lastCommit.message} ({ghStats.lastCommit.repo})
             </a>
           )}
-          {ghStats?.lastCommit && <span className="text-vesper-purple/40 font-mono">·</span>}
+          {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
         </InfiniteSlider>
       </div>
-      <div className="absolute inset-x-0 md:inset-x-auto md:right-8 top-14 md:top-24 font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
+      <div className="absolute inset-x-0 z-10 md:inset-x-auto md:right-8 top-14 md:top-24 font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
         {musicPlaying ? (
           <a
             href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#A8E0E0] whitespace-nowrap transition-all duration-300 hover:drop-shadow-[0_0_20px_rgba(0,240,255,0.6)] max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
+            className="hero-on-video whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
             style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
           >
             <span className="sound-bars"><span /><span /><span /><span /></span>
@@ -332,32 +344,32 @@ export default function Hero() {
         ) : (
           <button
             onClick={toggleMusic}
-            className="text-vesper-accent/60 whitespace-nowrap transition-all duration-300 hover:text-[#A8E0E0] hover:drop-shadow-[0_0_20px_rgba(0,240,255,0.6)] cursor-pointer"
+            className={`hero-on-video whitespace-nowrap cursor-pointer ${GLOW}`}
             style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
           >
             click to listen <span className="sound-bars"><span /><span /><span /><span /></span>
           </button>
         )}
         <div className="flex items-center gap-2 md:gap-3">
-          <button onClick={prevTrack} className={`text-vesper-accent ${GLOW} hover:scale-125`} aria-label="Previous track">
+          <button onClick={prevTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Previous track">
             <SkipBack size={16} className="md:w-5 md:h-5" />
           </button>
-          <button onClick={toggleMusic} className={`text-vesper-accent ${GLOW} hover:scale-125`} aria-label={musicPlaying ? "Mute music" : "Play music"}>
+          <button onClick={toggleMusic} className={`hero-ink ${GLOW} hover:scale-125`} aria-label={musicPlaying ? "Mute music" : "Play music"}>
             {musicPlaying ? <Volume2 size={18} className="md:w-[22px] md:h-[22px]" /> : <VolumeX size={18} className="md:w-[22px] md:h-[22px]" />}
           </button>
-          <button onClick={nextTrack} className={`text-vesper-accent ${GLOW} hover:scale-125`} aria-label="Next track">
+          <button onClick={nextTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Next track">
             <SkipForward size={16} className="md:w-5 md:h-5" />
           </button>
-          <button onClick={randomTrack} className={`text-vesper-accent ${GLOW} hover:scale-125`} aria-label="Random track">
+          <button onClick={randomTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Random track">
             <Shuffle size={16} className="md:w-5 md:h-5" />
           </button>
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 flex flex-col md:flex-row md:items-end md:justify-between px-4 md:px-16 pb-8 md:pb-12 gap-4 md:gap-0">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col md:flex-row md:items-end md:justify-between px-4 md:px-16 pb-8 md:pb-12 gap-4 md:gap-0">
         <button
           type="button"
           onClick={() => setContactOpen(true)}
-          className={`group font-sans text-2xl md:text-3xl font-semibold text-vesper-accent tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vesper-accent`}
+          className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
           aria-label={`Open contact form — current role: ${activeRole}`}
         >
           <TextLoop
@@ -367,14 +379,14 @@ export default function Hero() {
             paused={contactOpen}
           >
             {PROFESSIONS.map((p) => (
-              <span key={p} className="underline decoration-vesper-accent/0 underline-offset-4 transition-[text-decoration-color] group-hover:decoration-vesper-accent/50">
+              <span key={p} className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50">
                 {p}
               </span>
             ))}
           </TextLoop>
         </button>
         <p
-          className={`font-sans text-base md:text-xl font-normal leading-relaxed text-vesper-accent/85 md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
+          className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
           onMouseEnter={desc.start}
           onMouseLeave={desc.stop}
         >
@@ -384,7 +396,7 @@ export default function Hero() {
       <div className="absolute w-0 h-0 overflow-hidden">
         <div id="yt-player" ref={playerContainerRef} />
       </div>
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 md:left-8 md:right-auto md:top-24 md:translate-y-0 md:flex-row md:gap-5">
+      <div className="absolute right-4 top-1/2 z-10 -translate-y-1/2 flex flex-col items-center gap-4 md:left-8 md:right-auto md:top-24 md:translate-y-0 md:flex-row md:gap-5">
         {site.socials.map((social) => {
           const Icon = SOCIAL_ICONS[social.icon]
           if (!Icon) return null
@@ -395,7 +407,7 @@ export default function Hero() {
               href={social.href}
               target={external ? "_blank" : undefined}
               rel={external ? "noopener noreferrer" : undefined}
-              className={`text-vesper-accent ${GLOW} hover:scale-125`}
+              className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
               aria-label={social.id}
             >
               <Icon size={24} className="md:w-[26px] md:h-[26px]" />
