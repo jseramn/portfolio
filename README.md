@@ -134,6 +134,10 @@ age -d -o mensaje.json encrypted.age
 # Enter the passphrase from the visitor’s social DM when prompted
 ```
 
+## Credits
+
+This portfolio is a derivative of [rubenmarcus/portfolio](https://github.com/rubenmarcus/portfolio) by [Ruben Marcus](https://github.com/rubenmarcus) ([rubenmarcus.dev](https://rubenmarcus.dev)), used under the MIT License. Substantial portions of structure, patterns, and aesthetic direction originate there; identity, content, contact encryption, and site-specific features are original to jseramn.tech.
+
 ## License
 
-MIT
+[MIT](./LICENSE) — Copyright (c) 2026 Ruben Marcus; Copyright (c) 2026 José Ramón García Del Risco.

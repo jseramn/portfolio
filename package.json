@@ -2,6 +2,7 @@
   "name": "jseramn-portfolio",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "astro dev",
     "build": "node scripts/sync-vercel-security-headers.mjs && astro build",
