@@ -62,6 +62,9 @@ export const site = {
   },
   videoSrcWebm: "/videobg.webm",
   videoSrcMp4: "/videobg.mp4",
+  portraitSrc: "/portrait.jpg",
+  asciiSamplerWebm: "/videobg-480.webm",
+  asciiSamplerMp4: "/videobg-480.mp4",
   contactCrypto: {
     ageRepo: "https://github.com/FiloSottile/age",
     typageRepo: "https://github.com/FiloSottile/typage",
