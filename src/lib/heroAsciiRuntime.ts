@@ -12,7 +12,6 @@ import {
   VideoTexture,
   WebGLRenderer,
 } from "three"
-import { AsciiEffect } from "three/addons/effects/AsciiEffect.js"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
@@ -38,6 +37,12 @@ const SAMPLE_COLS = 96
 const SAMPLE_ROWS = 54
 const EXTRUDE = 2.4
 const CENTER_THRESHOLD = 0.3
+const CHARSET = " .:-=+*#%@"
+const ASCII_FPS = 12
+const MAX_CELLS = 12_000
+const GL_RESOLUTION = 0.15
+const SAMPLE_MS = 1000 / ASCII_FPS
+const CHARSET_LAST = CHARSET.length - 1
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -76,6 +81,21 @@ function cameraDistance(aspect: number): number {
 
 function tryPlay(video: HTMLVideoElement) {
   void video.play().catch(() => {})
+}
+
+function pickGrid(cssW: number, cssH: number) {
+  let cols = Math.max(1, Math.floor(cssW * GL_RESOLUTION))
+  let rows = Math.max(1, Math.floor((cssH * GL_RESOLUTION) / 2))
+  const cells = cols * rows
+  if (cells > MAX_CELLS) {
+    const scale = Math.sqrt(MAX_CELLS / cells)
+    cols = Math.max(1, Math.floor(cols * scale))
+    rows = Math.max(1, Math.floor(rows * scale))
+    if (cols * rows > MAX_CELLS) {
+      rows = Math.max(1, Math.floor(MAX_CELLS / cols))
+    }
+  }
+  return { cols, rows }
 }
 
 export function mountHeroAscii(
@@ -134,6 +154,7 @@ export function mountHeroAscii(
 
   const videoTexture = new VideoTexture(video)
   videoTexture.colorSpace = SRGBColorSpace
+  videoTexture.update = () => {}
 
   const plane = new Mesh(
     new PlaneGeometry(PLANE_W, PLANE_H),
@@ -162,14 +183,25 @@ export function mountHeroAscii(
   sample.height = SAMPLE_ROWS
   const sampleCtx = sample.getContext("2d", { willReadFrequently: true })
 
-  const effect = new AsciiEffect(renderer, undefined, { color: true })
-  host.appendChild(effect.domElement)
+  const asciiSample = document.createElement("canvas")
+  const asciiCtx = asciiSample.getContext("2d", { willReadFrequently: true })
+
+  const displayCanvas = document.createElement("canvas")
+  displayCanvas.className = "hero-ascii-display"
+  displayCanvas.setAttribute("aria-hidden", "true")
+  host.appendChild(displayCanvas)
+  const displayCtx = displayCanvas.getContext("2d")
 
   let mouseX = 0
   let mouseY = 0
   let zoom: number = VIDEO_ZOOM.default
   let raf = 0
   let alive = true
+  let lastSampleAt = 0
+  let lastVideoTime = Number.NaN
+  let pausedForModal = false
+  let cellW = 1
+  let cellH = 1
 
   const applySize = () => {
     const width = host.clientWidth || window.innerWidth
@@ -178,7 +210,21 @@ export function mountHeroAscii(
     camera.aspect = aspect
     camera.position.z = cameraDistance(aspect)
     camera.updateProjectionMatrix()
-    effect.setSize(width, height)
+
+    const { cols, rows } = pickGrid(width, height)
+    renderer.setPixelRatio(1)
+    renderer.setSize(cols, rows)
+    asciiSample.width = cols
+    asciiSample.height = rows
+    displayCanvas.width = width
+    displayCanvas.height = height
+    cellW = width / cols
+    cellH = height / rows
+    if (displayCtx) {
+      displayCtx.font = `${Math.ceil(cellH)}px courier new, monospace`
+      displayCtx.textBaseline = "top"
+      displayCtx.textAlign = "left"
+    }
   }
 
   const applyCamera = () => {
@@ -233,6 +279,29 @@ export function mountHeroAscii(
     colorAttr.needsUpdate = true
   }
 
+  const rasterGlyphs = (image: ImageData) => {
+    if (!displayCtx) return
+    const cols = asciiSample.width
+    const rows = asciiSample.height
+    const cssW = displayCanvas.width
+    const cssH = displayCanvas.height
+    displayCtx.fillStyle = "#000"
+    displayCtx.fillRect(0, 0, cssW, cssH)
+    const data = image.data
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const i = (y * cols + x) * 4
+        const r = data[i]
+        const g = data[i + 1]
+        const b = data[i + 2]
+        const brightness = (0.3 * r + 0.59 * g + 0.11 * b) / 255
+        const idx = Math.round((1 - brightness) * CHARSET_LAST)
+        displayCtx.fillStyle = `rgb(${r},${g},${b})`
+        displayCtx.fillText(CHARSET[idx] ?? " ", x * cellW, y * cellH)
+      }
+    }
+  }
+
   const onMouseMove = (event: MouseEvent) => {
     mouseX = (event.clientX / window.innerWidth - 0.5) * 2
     mouseY = (event.clientY / window.innerHeight - 0.5) * 2
@@ -248,20 +317,57 @@ export function mountHeroAscii(
     zoom = clamp(zoom + event.deltaY * VIDEO_ZOOM.wheelStep, VIDEO_ZOOM.min, VIDEO_ZOOM.max)
   }
 
-  const tick = () => {
+  const tick = (now: number) => {
     if (!alive) return
     raf = requestAnimationFrame(tick)
-    sampleLuminance()
+
+    if (isContactModalOpen()) {
+      if (!pausedForModal) {
+        video.pause()
+        pausedForModal = true
+      }
+      return
+    }
+    if (pausedForModal) {
+      pausedForModal = false
+      tryPlay(video)
+    }
+
+    if (now - lastSampleAt >= SAMPLE_MS) {
+      lastSampleAt = now
+      const t = video.currentTime
+      if (t !== lastVideoTime) {
+        lastVideoTime = t
+        sampleLuminance()
+        videoTexture.needsUpdate = true
+      }
+    }
+
     applyCamera()
-    videoTexture.needsUpdate = true
-    effect.render(scene, camera)
+    renderer.render(scene, camera)
+    if (!asciiCtx) return
+    asciiCtx.drawImage(renderer.domElement, 0, 0)
+    rasterGlyphs(asciiCtx.getImageData(0, 0, asciiSample.width, asciiSample.height))
+  }
+
+  const onVisibility = () => {
+    if (document.hidden) {
+      cancelAnimationFrame(raf)
+      raf = 0
+      video.pause()
+      return
+    }
+    tryPlay(video)
+    if (alive && raf === 0) raf = requestAnimationFrame(tick)
   }
 
   applySize()
   window.addEventListener("mousemove", onMouseMove)
   window.addEventListener("wheel", onWheel, { passive: false })
   window.addEventListener("resize", applySize)
-  raf = requestAnimationFrame(tick)
+  document.addEventListener("visibilitychange", onVisibility)
+  if (!document.hidden) raf = requestAnimationFrame(tick)
+  else video.pause()
 
   return () => {
     alive = false
@@ -269,17 +375,18 @@ export function mountHeroAscii(
     window.removeEventListener("mousemove", onMouseMove)
     window.removeEventListener("wheel", onWheel)
     window.removeEventListener("resize", applySize)
+    document.removeEventListener("visibilitychange", onVisibility)
     video.removeEventListener("error", onVideoError)
     video.pause()
     video.removeAttribute("src")
     video.load()
     video.remove()
+    displayCanvas.remove()
     videoTexture.dispose()
     plane.geometry.dispose()
     plane.material.dispose()
     pointsGeometry.dispose()
     points.material.dispose()
     renderer.dispose()
-    effect.domElement.remove()
   }
 }

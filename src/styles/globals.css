@@ -97,7 +97,7 @@ body {
   }
 }
 
-/* ASCII 3D host: fullscreen glyph table; sampler + WebGL canvas stay hidden */
+/* ASCII 3D host: fullscreen glyph canvas; sampler + offscreen GL stay hidden */
 .hero-ascii-host {
   position: fixed;
   inset: 0;
@@ -107,23 +107,22 @@ body {
   pointer-events: none;
 }
 
-.hero-ascii-host > div,
-.hero-ascii-host table {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-collapse: collapse;
-}
-
 .hero-ascii-host video,
-.hero-ascii-host canvas {
+.hero-ascii-host canvas:not(.hero-ascii-display) {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
   overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-ascii-host canvas.hero-ascii-display {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
   pointer-events: none;
 }
 
