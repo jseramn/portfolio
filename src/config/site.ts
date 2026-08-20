@@ -7,7 +7,7 @@ export const site = {
     es: "Ayudo a las personas con tecnología mientras construyo cosas",
   },
   roles: ["tech lead", "cybersecurity", "web development", "founder"] as const,
-  locationLine: "Caribbean builder between Cartagena and Medellín, COL.",
+  locationLine: "Helping people with technology while I build things",
   githubUser: "jseramn",
   /** GitHub contribution graph days align with this IANA zone on the site. */
   activityTimeZone: "America/Bogota",
@@ -51,7 +51,7 @@ export const site = {
     description:
       "José Ramón García Del Risco (jseramn) — tech lead, cybersecurity, web developer, and founder. Helping people with technology while I build things.",
     keywords:
-      "José Ramón García Del Risco, jseramn, Ayudo a las personas con tecnología mientras construyo cosas, cybersecurity, web developer, tech lead, founder, Colombia, Cartagena, Medellín",
+      "José Ramón García Del Risco, jseramn, Ayudo a las personas con tecnología mientras construyo cosas, cybersecurity, web developer, tech lead, founder",
     ogImage: "https://jseramn.tech/thumbnail.png",
     twitter: "@jseramn_",
     knowsAbout: ["Cybersecurity", "Web Development", "Artificial Intelligence", "Entrepreneurship"],

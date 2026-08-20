@@ -1,13 +1,12 @@
 # José Ramón García Del Risco (jseramn)
 
-> Personal portfolio and contact surface at https://jseramn.tech. Tech lead, cybersecurity, web developer, and founder based in Colombia (Cartagena and Medellín). Tagline: "Helping people with technology while I build things" / "Ayudo a las personas con tecnología mientras construyo cosas".
+> Personal portfolio and contact surface at https://jseramn.tech. Tech lead, cybersecurity, web developer, and founder. Tagline: "Helping people with technology while I build things" / "Ayudo a las personas con tecnología mientras construyo cosas".
 
 ## About
 
 - **Name:** José Ramón García Del Risco
 - **Brand / handle:** jseramn
 - **Roles:** tech lead, cybersecurity, web developer, founder
-- **Location:** Colombian builder between Cartagena and Medellín
 - **Focus areas:** cybersecurity, web development, technology, entrepreneurship
 - **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding [Presencia Pyme](https://jseramn.tech) (marquee on site)
 
