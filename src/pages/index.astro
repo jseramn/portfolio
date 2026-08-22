@@ -5,12 +5,18 @@ import Hero from "../components/Hero"
 import { agentCopy } from "../lib/agent/copy"
 
 const home = agentCopy("home")
+const homeSections = home.sections ?? []
 ---
 
 <Layout>
   <article class="sr-only">
     <h1>{home.h1}</h1>
-    <p>{home.body}</p>
+    {homeSections.map((section) => (
+      <section>
+        <h2>{section.h2}</h2>
+        <p>{section.body}</p>
+      </section>
+    ))}
   </article>
   <Hero client:load />
 </Layout>

@@ -5,6 +5,7 @@ import { notFoundMarkdown, toMarkdown } from "./markdown"
 describe("markdown negotiation bodies", () => {
   it("emits markdown with charset contract via Content-Type helper values", () => {
     expect(toMarkdown("home")).toMatch(/^# /)
+    expect(toMarkdown("home")).toMatch(/^## /m)
     expect(negotiate("text/markdown")).toBe("text/markdown")
   })
 

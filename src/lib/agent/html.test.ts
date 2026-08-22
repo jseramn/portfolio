@@ -51,6 +51,7 @@ describe("built HTML overlay", () => {
 
     const text = readableText(html)
     expect(html).toMatch(/<h1[\s>]/)
+    expect(html.match(/<h2[\s>]/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
     expect(text.length).toBeGreaterThanOrEqual(800)
     const isViteDev = html.includes("/@vite/")
     if (!isViteDev) {
@@ -65,8 +66,9 @@ describe("built HTML overlay", () => {
     expect(html).toMatch(/hero-ascii-host|videobg|component-url="[^"]*Hero/)
     expect(html).toContain("contacto@jseramn.tech")
     expect(html).toContain("contactPoint")
+    expect(html).toContain("PostalAddress")
+    expect(html).toContain("Medellín")
     expect(html.toLowerCase()).not.toMatch(/"telephone"/)
-    expect(html.toLowerCase()).not.toMatch(/postaladdress/)
     expect(text.toLowerCase()).toMatch(/portfolio/)
     expect(text.toLowerCase()).toMatch(/contact/)
     expect(text.toLowerCase()).not.toMatch(/pricing table/)

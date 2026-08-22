@@ -18,8 +18,12 @@ export function pageFromPath(pathname: string): AgentPage | null {
 }
 
 export function toMarkdown(page: AgentPage): string {
-  const { h1, body } = agentCopy(page)
-  return [`# ${h1}`, "", body, ""].join("\n")
+  const copy = agentCopy(page)
+  if (copy.sections?.length) {
+    const blocks = copy.sections.flatMap((section) => [`## ${section.h2}`, "", section.body, ""])
+    return [`# ${copy.h1}`, "", ...blocks].join("\n")
+  }
+  return [`# ${copy.h1}`, "", copy.body, ""].join("\n")
 }
 
 export function notFoundMarkdown(): string {

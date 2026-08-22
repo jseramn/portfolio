@@ -2,28 +2,58 @@ import { site } from "../../config/site"
 
 export type AgentPage = "home" | "about" | "contact" | "notFound"
 
+export type AgentSection = {
+  h2: string
+  body: string
+}
+
 export type AgentCopy = {
   h1: string
   body: string
+  sections?: readonly AgentSection[]
 }
 
 const ORGS = site.marqueeOrgs.map((org) => `${org.label} (${org.href})`).join("; ")
 
 const HOME_H1 = `${site.name} (${site.brand})`
 
-const HOME_BODY = [
-  `${site.name}, known as ${site.brand}, runs this site as a personal portfolio and contact surface.`,
-  `It is for people and teams who want to reach him about ${site.roles.join(", ")} work.`,
-  `jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog.`,
-  `Tagline: ${site.tagline.en} / ${site.tagline.es}.`,
-  `Affiliations shown on the site: ${ORGS}.`,
-  `How to get in touch: email ${site.email}, open /contact, or use the on-site encrypted contact form.`,
-  `The form encrypts messages in the browser with age before delivery. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels.`,
-  `Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step.`,
-  `Source and human docs live in the public GitHub repository linked from llms.txt.`,
-  `If you are deciding whether this domain is relevant: it is the public identity of ${site.name} and the place to start a conversation about technology leadership, security, or building on the web.`,
-  `There is no app download, no waitlist, and no self-serve billing. Write when you have a concrete collaboration or hiring context.`,
-].join(" ")
+const HOME_SECTIONS: readonly AgentSection[] = [
+  {
+    h2: "Who this is",
+    body: [
+      `${site.name}, known as ${site.brand}, runs this site as a personal portfolio and contact surface.`,
+      `Tagline: ${site.tagline.en} / ${site.tagline.es}.`,
+      `Affiliations shown on the site: ${ORGS}.`,
+      `If you are deciding whether this domain is relevant: it is the public identity of ${site.name} and the place to start a conversation about technology leadership, security, or building on the web.`,
+    ].join(" "),
+  },
+  {
+    h2: "Who it is for",
+    body: [
+      `It is for people and teams who want to reach him about ${site.roles.join(", ")} work.`,
+      `Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step.`,
+      `Source and human docs live in the public GitHub repository linked from llms.txt.`,
+    ].join(" "),
+  },
+  {
+    h2: "How to get in touch",
+    body: [
+      `How to get in touch: email ${site.email}, open /contact, or use the on-site encrypted contact form.`,
+      `The form encrypts messages in the browser with age before delivery. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels.`,
+      `Write when you have a concrete collaboration or hiring context.`,
+    ].join(" "),
+  },
+  {
+    h2: "What this site is not",
+    body: [
+      `jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog.`,
+      `There is no /projects, /docs, or /services catalog on this domain.`,
+      `There is no app download, no waitlist, and no self-serve billing.`,
+    ].join(" "),
+  },
+]
+
+const HOME_BODY = HOME_SECTIONS.map((section) => `${section.h2}. ${section.body}`).join(" ")
 
 const ABOUT_H1 = `About ${site.brand}`
 
@@ -59,7 +89,7 @@ const NOT_FOUND_BODY = [
 ].join(" ")
 
 const PAGES: Record<AgentPage, AgentCopy> = {
-  home: { h1: HOME_H1, body: HOME_BODY },
+  home: { h1: HOME_H1, body: HOME_BODY, sections: HOME_SECTIONS },
   about: { h1: ABOUT_H1, body: ABOUT_BODY },
   contact: { h1: CONTACT_H1, body: CONTACT_BODY },
   notFound: { h1: NOT_FOUND_H1, body: NOT_FOUND_BODY },
