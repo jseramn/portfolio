@@ -62,7 +62,7 @@ describe("built HTML overlay", () => {
     expect(html).toContain('property="og:type"')
     expect(html).toContain('rel="canonical"')
     expect(html).toContain("https://jseramn.tech")
-    expect(html).toContain("videobg")
+    expect(html).toMatch(/hero-ascii-host|videobg|component-url="[^"]*Hero/)
     expect(html).toContain("contacto@jseramn.tech")
     expect(html).toContain("contactPoint")
     expect(html.toLowerCase()).not.toMatch(/"telephone"/)
