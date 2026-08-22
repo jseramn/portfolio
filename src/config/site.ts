@@ -13,6 +13,10 @@ export const site = {
   activityTimeZone: "America/Bogota",
   email: "contacto@jseramn.tech",
   contactType: "customer support",
+  address: {
+    addressLocality: "Medellín",
+    addressCountry: "CO",
+  },
   contactEmail: {
     from: "jseramn <contacto@jseramn.tech>",
     to: "contacto@jseramn.tech",

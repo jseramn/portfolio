@@ -1,6 +1,7 @@
 ---
 import "../styles/globals.css"
 import Analytics from "@vercel/analytics/astro"
+import { buildGraphJsonLd } from "../lib/agent/jsonld"
 import { site } from "../config/site"
 
 interface Props {
@@ -58,36 +59,7 @@ const sameAs = site.socials
 
     <Analytics />
 
-    <script
-      type="application/ld+json"
-      set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Person",
-            name: site.name,
-            url: site.url,
-            alternateName: site.brand,
-            jobTitle: site.roles.join(", "),
-            description: site.tagline.en,
-            email: site.email,
-            sameAs,
-            knowsAbout: site.seo.knowsAbout,
-            worksFor: site.seo.worksFor,
-          },
-          {
-            "@type": "Organization",
-            name: site.brand,
-            url: site.url,
-            contactPoint: {
-              "@type": "ContactPoint",
-              email: site.email,
-              contactType: site.contactType,
-            },
-          },
-        ],
-      })}
-    />
+    <script type="application/ld+json" set:html={JSON.stringify(buildGraphJsonLd(sameAs))} />
   </head>
   <body class="font-sans bg-black text-vesper-accent antialiased">
     <slot />
