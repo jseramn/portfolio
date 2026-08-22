@@ -50,6 +50,10 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "https://jseramn.tech"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept, Accept-Encoding"
         }
       ]
     },

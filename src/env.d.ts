@@ -13,6 +13,12 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+declare namespace App {
+  interface Locals {
+    preferredType?: "text/html" | "text/markdown" | null
+  }
+}
+
 interface Window {
   turnstile?: {
     render: (

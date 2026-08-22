@@ -6,6 +6,11 @@ const CHROME_ACCEPT =
   "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
 
 describe("negotiate", () => {
+  it("selects HTML when Accept is missing", () => {
+    expect(negotiate(null)).toBe("text/html")
+    expect(negotiate("")).toBe("text/html")
+  })
+
   it("selects HTML for a Chrome Accept header (not substring markdown)", () => {
     expect(negotiate(CHROME_ACCEPT)).toBe("text/html")
   })

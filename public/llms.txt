@@ -2,13 +2,15 @@
 
 > Personal portfolio and contact surface at https://jseramn.tech. Tech lead, cybersecurity, web developer, and founder. Tagline: "Helping people with technology while I build things" / "Ayudo a las personas con tecnología mientras construyo cosas".
 
+When to use this: reach José Ramón (jseramn) for tech lead, cybersecurity, web development, or founding/product work. Call the site by reading `/`, `/about`, `/contact`, or emailing mailto:contacto@jseramn.tech. This is a personal portfolio and contact surface — not a product catalog and not a place to look up pricing.
+
 ## About
 
 - **Name:** José Ramón García Del Risco
 - **Brand / handle:** jseramn
 - **Roles:** tech lead, cybersecurity, web developer, founder
 - **Focus areas:** cybersecurity, web development, technology, entrepreneurship
-- **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding [Presencia Pyme](https://jseramn.tech) (marquee on site)
+- **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding [Presencia Pyme](https://presenciapyme.com) (marquee on site)
 
 ## Contact
 

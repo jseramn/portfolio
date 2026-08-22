@@ -13,6 +13,9 @@ const {
   description = site.seo.description,
 } = Astro.props
 
+const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/"
+const canonical = pathname === "/" ? site.url : `${site.url}${pathname}`
+
 const sameAs = site.socials
   .filter((s) => !s.href.startsWith("mailto:"))
   .map((s) => s.href)
@@ -30,6 +33,8 @@ const sameAs = site.socials
     <meta name="author" content={site.name} />
     <meta name="creator" content={site.name} />
     <meta name="robots" content="index, follow" />
+
+    <link rel="canonical" href={canonical} />
 
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -57,16 +62,30 @@ const sameAs = site.socials
       type="application/ld+json"
       set:html={JSON.stringify({
         "@context": "https://schema.org",
-        "@type": "Person",
-        name: site.name,
-        url: site.url,
-        alternateName: site.brand,
-        jobTitle: site.roles.join(", "),
-        description: site.tagline.en,
-        email: site.email,
-        sameAs,
-        knowsAbout: site.seo.knowsAbout,
-        worksFor: site.seo.worksFor,
+        "@graph": [
+          {
+            "@type": "Person",
+            name: site.name,
+            url: site.url,
+            alternateName: site.brand,
+            jobTitle: site.roles.join(", "),
+            description: site.tagline.en,
+            email: site.email,
+            sameAs,
+            knowsAbout: site.seo.knowsAbout,
+            worksFor: site.seo.worksFor,
+          },
+          {
+            "@type": "Organization",
+            name: site.brand,
+            url: site.url,
+            contactPoint: {
+              "@type": "ContactPoint",
+              email: site.email,
+              contactType: site.contactType,
+            },
+          },
+        ],
       })}
     />
   </head>
