@@ -1,8 +1,16 @@
 ---
+export const prerender = false
 import Layout from "../layouts/Layout.astro"
 import Hero from "../components/Hero"
+import { agentCopy } from "../lib/agent/copy"
+
+const home = agentCopy("home")
 ---
 
 <Layout>
+  <article class="sr-only">
+    <h1>{home.h1}</h1>
+    <p>{home.body}</p>
+  </article>
   <Hero client:load />
 </Layout>

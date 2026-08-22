@@ -12,6 +12,8 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
+    // Installed @astrojs/vercel@8 uses edgeMiddleware (not middlewareMode).
+    edgeMiddleware: true,
   }),
   integrations: [react(), tailwind({ applyBaseStyles: false }), sitemap()],
   vite: {

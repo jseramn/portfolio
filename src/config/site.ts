@@ -12,6 +12,7 @@ export const site = {
   /** GitHub contribution graph days align with this IANA zone on the site. */
   activityTimeZone: "America/Bogota",
   email: "contacto@jseramn.tech",
+  contactType: "customer support",
   contactEmail: {
     from: "jseramn <contacto@jseramn.tech>",
     to: "contacto@jseramn.tech",
