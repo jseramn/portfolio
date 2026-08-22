@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
 import {
   Github,
   Linkedin,
@@ -18,23 +18,14 @@ import { InfiniteSlider } from "./InfiniteSlider"
 import { site } from "../config/site"
 import type { GitHubStats } from "../lib/githubStats"
 
+const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
+
 const YT_TRACKS = site.tracks
 const PROFESSIONS = site.roles
 const DESC = site.tagline.en
 const CHARS = "!@#$%^&*()_+-=[]{}|;:,./<>?`~abcdefghijklmnopqrstuvwxyz0123456789"
 const GLOW =
   "transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(0,0,0,0.75)] hover:text-[var(--hero-ink-hover)]"
-
-const VIDEO_ZOOM = {
-  default: 1.08,
-  min: 1.0,
-  max: 1.22,
-  centerBonus: 0.06,
-  wheelStep: 0.0008,
-  /** Extra canvas so parallax translate never exposes the page background */
-  parallaxPx: 18,
-  bleedPercent: 118,
-} as const
 
 const SOCIAL_ICONS: Record<string, LucideIcon> = {
   Github,
@@ -113,10 +104,6 @@ function useGitHubStats() {
 export default function Hero() {
   const desc = useScramble(DESC, { autoStart: true })
   const ghStats = useGitHubStats()
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
-  const [zoom, setZoom] = useState<number>(VIDEO_ZOOM.default)
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
   const [contactOpen, setContactOpen] = useState(false)
@@ -124,22 +111,6 @@ export default function Hero() {
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<any>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.playbackRate = 1.05
-    const tryPlay = () => {
-      void video.play().catch(() => {})
-    }
-    tryPlay()
-    video.addEventListener("loadeddata", tryPlay)
-    video.addEventListener("canplay", tryPlay)
-    return () => {
-      video.removeEventListener("loadeddata", tryPlay)
-      video.removeEventListener("canplay", tryPlay)
-    }
-  }, [])
 
   // YouTube IFrame Player API — start muted, unmute on first interaction
   useEffect(() => {
@@ -218,67 +189,14 @@ export default function Hero() {
     }
   }, [musicPlaying])
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2
-      const y = (e.clientY / window.innerHeight - 0.5) * 2
-      setMouse({ x, y })
-    }
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      setZoom((prev) =>
-        Math.min(
-          Math.max(prev + e.deltaY * VIDEO_ZOOM.wheelStep, VIDEO_ZOOM.min),
-          VIDEO_ZOOM.max,
-        ),
-      )
-    }
-    window.addEventListener("mousemove", handleMouseMove)
-    window.addEventListener("wheel", handleWheel, { passive: false })
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("wheel", handleWheel)
-    }
-  }, [])
-
-  const isInCenter = isHovering && Math.abs(mouse.x) < 0.3 && Math.abs(mouse.y) < 0.3
-  const activeZoom = isInCenter ? Math.min(zoom + VIDEO_ZOOM.centerBonus, VIDEO_ZOOM.max) : zoom
-
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black" aria-hidden>
-        <div
-          className="absolute left-1/2 top-1/2"
-          style={{
-            width: `${VIDEO_ZOOM.bleedPercent}%`,
-            height: `${VIDEO_ZOOM.bleedPercent}%`,
-            transform: `translate(-50%, -50%) translate(${mouse.x * VIDEO_ZOOM.parallaxPx}px, ${mouse.y * VIDEO_ZOOM.parallaxPx}px)`,
-            transition: "transform 0.8s ease-out",
-          }}
-        >
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="h-full w-full object-cover bg-black"
-            style={{
-              transform: `scale(${activeZoom})`,
-              transformOrigin: "center center",
-              transition: "transform 0.8s ease-out",
-            }}
-          >
-            <source src={site.videoSrcWebm} type="video/webm" />
-            <source src={site.videoSrcMp4} type="video/mp4" />
-          </video>
-        </div>
-      </div>
+      <Suspense fallback={<div className="fixed inset-0 z-0 bg-black" aria-hidden />}>
+        <HeroAsciiBackground />
+      </Suspense>
       <div
         className="relative z-10 h-screen overflow-hidden"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        data-hero-root
       >
       <div
         className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
