@@ -5,6 +5,9 @@ import { buildSecurityHeaderEntries } from "../src/lib/security/siteSecurityHead
 
 const ACCEPT_VARY = "Accept, Accept-Encoding"
 
+export const PREVIEW_ASSET_SOURCE =
+  "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png)"
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const vercelPath = join(root, "vercel.json")
 
@@ -18,6 +21,17 @@ export function buildVercelHeaderRules() {
     {
       source: "/(.*)",
       headers: securityHeaders,
+    },
+    {
+      source: PREVIEW_ASSET_SOURCE,
+      headers: [
+        { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        { key: "Access-Control-Allow-Origin", value: "*" },
+        {
+          key: "Cache-Control",
+          value: "public, max-age=86400, stale-while-revalidate=604800",
+        },
+      ],
     },
     {
       source: "/(policy|terms|data-deletion)",
