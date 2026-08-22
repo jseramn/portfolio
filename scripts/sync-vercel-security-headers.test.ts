@@ -11,4 +11,19 @@ describe("sync-vercel-security-headers", () => {
     expect(keys.at(-1)).toBe("Vary")
     expect(global?.headers.at(-1)?.value).toBe(ACCEPT_VARY)
   })
+
+  it("overrides CORP for social preview assets after the global rule", () => {
+    const rules = buildVercelHeaderRules()
+    const preview = rules.find((rule) => rule.source.includes("thumbnail.png"))
+    expect(preview).toBeDefined()
+    expect(rules.findIndex((rule) => rule.source === "/(.*)")).toBeLessThan(
+      rules.findIndex((rule) => rule.source.includes("thumbnail.png")),
+    )
+    expect(preview?.headers).toEqual(
+      expect.arrayContaining([
+        { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        { key: "Access-Control-Allow-Origin", value: "*" },
+      ]),
+    )
+  })
 })

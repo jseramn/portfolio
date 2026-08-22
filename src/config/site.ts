@@ -58,6 +58,9 @@ export const site = {
     keywords:
       "José Ramón García Del Risco, jseramn, Ayudo a las personas con tecnología mientras construyo cosas, cybersecurity, web developer, tech lead, founder",
     ogImage: "https://jseramn.tech/thumbnail.png",
+    ogImageAlt:
+      "Homepage of jseramn.tech: ASCII portrait of José Ramón García Del Risco on a black terminal layout",
+    appleTouchIcon: "https://jseramn.tech/apple-touch-icon.png",
     twitter: "@jseramn_",
     knowsAbout: ["Cybersecurity", "Web Development", "Artificial Intelligence", "Entrepreneurship"],
     worksFor: [

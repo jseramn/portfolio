@@ -15,4 +15,18 @@ describe("buildGraphJsonLd", () => {
     expect(org.contactPoint.telephone).toBeUndefined()
     expect(JSON.stringify(graph).toLowerCase()).not.toMatch(/"telephone"/)
   })
+
+  it("attaches the live snapshot as Person image and Organization logo", () => {
+    const graph = buildGraphJsonLd(["https://github.com/jseramn"])
+    const person = graph["@graph"].find((node) => node["@type"] === "Person") as {
+      image: string
+    }
+    const org = graph["@graph"].find((node) => node["@type"] === "Organization") as {
+      logo: string
+      image: string
+    }
+    expect(person.image).toBe("https://jseramn.tech/thumbnail.png")
+    expect(org.image).toBe("https://jseramn.tech/thumbnail.png")
+    expect(org.logo).toBe("https://jseramn.tech/apple-touch-icon.png")
+  })
 })

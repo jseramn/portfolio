@@ -12,6 +12,7 @@ export function buildGraphJsonLd(sameAs: string[]) {
         jobTitle: site.roles.join(", "),
         description: site.tagline.en,
         email: site.email,
+        image: site.seo.ogImage,
         sameAs,
         knowsAbout: site.seo.knowsAbout,
         worksFor: site.seo.worksFor,
@@ -20,6 +21,8 @@ export function buildGraphJsonLd(sameAs: string[]) {
         "@type": "Organization",
         name: site.brand,
         url: site.url,
+        logo: site.seo.appleTouchIcon,
+        image: site.seo.ogImage,
         contactPoint: {
           "@type": "ContactPoint",
           email: site.email,
