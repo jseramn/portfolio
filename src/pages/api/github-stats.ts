@@ -1,12 +1,16 @@
 import type { APIRoute } from "astro"
 import { site } from "../../config/site"
+import { API_NO_STORE } from "../../lib/agent/apiCacheHeaders"
 import { fetchGitHubStats, type GitHubStats } from "../../lib/githubStats"
 
 export const prerender = false
 
 const CACHE_MS = 5 * 60 * 1000
-const RESPONSE_CACHE =
-  "public, s-maxage=300, stale-while-revalidate=600, max-age=60"
+
+const noStoreHeaders = {
+  "Cache-Control": API_NO_STORE,
+  "Vercel-CDN-Cache-Control": API_NO_STORE,
+}
 
 let memoryCache: { data: GitHubStats; at: number } | null = null
 
@@ -14,7 +18,7 @@ export const GET: APIRoute = async () => {
   const now = Date.now()
   if (memoryCache && now - memoryCache.at < CACHE_MS) {
     return Response.json(memoryCache.data, {
-      headers: { "Cache-Control": RESPONSE_CACHE },
+      headers: noStoreHeaders,
     })
   }
 
@@ -24,14 +28,17 @@ export const GET: APIRoute = async () => {
     const data = await fetchGitHubStats(site.githubUser, token)
     memoryCache = { data, at: now }
     return Response.json(data, {
-      headers: { "Cache-Control": RESPONSE_CACHE },
+      headers: noStoreHeaders,
     })
   } catch {
     if (memoryCache) {
       return Response.json(memoryCache.data, {
-        headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" },
+        headers: noStoreHeaders,
       })
     }
-    return Response.json({ error: "unavailable" }, { status: 503 })
+    return Response.json({ error: "unavailable" }, {
+      status: 503,
+      headers: noStoreHeaders,
+    })
   }
 }
