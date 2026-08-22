@@ -1,0 +1,20 @@
+---
+export const prerender = false
+import LegalDocument from "../components/LegalDocument.astro"
+import { agentCopy } from "../lib/agent/copy"
+import { site } from "../config/site"
+
+const copy = agentCopy("contact")
+---
+
+<LegalDocument
+  title={`Contact | ${site.brand}`}
+  description={`How to contact ${site.name} at ${site.email}.`}
+  heading={copy.h1}
+  updated="August 21, 2026"
+>
+  <p>{copy.body}</p>
+  <p>
+    Email: <a href={`mailto:${site.email}`}>{site.email}</a>
+  </p>
+</LegalDocument>

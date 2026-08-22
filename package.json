@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "node scripts/sync-vercel-security-headers.mjs && astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/react": "^4",
@@ -35,6 +36,7 @@
     "@types/three": "^0.185.1",
     "autoprefixer": "^10.4.20",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }

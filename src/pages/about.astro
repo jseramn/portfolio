@@ -1,0 +1,17 @@
+---
+export const prerender = false
+import LegalDocument from "../components/LegalDocument.astro"
+import { agentCopy } from "../lib/agent/copy"
+import { site } from "../config/site"
+
+const copy = agentCopy("about")
+---
+
+<LegalDocument
+  title={`About | ${site.brand}`}
+  description={`Who operates ${site.brand}: personal portfolio and contact surface for ${site.name}.`}
+  heading={copy.h1}
+  updated="August 21, 2026"
+>
+  <p>{copy.body}</p>
+</LegalDocument>
