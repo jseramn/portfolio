@@ -115,6 +115,20 @@ body {
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
+  clip-path: inset(50%);
+  border: 0;
+}
+
+#yt-player,
+#yt-player iframe {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  clip-path: inset(50%);
+  border: 0 !important;
 }
 
 .hero-ascii-host canvas.hero-ascii-display {

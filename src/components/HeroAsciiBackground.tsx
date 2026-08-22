@@ -2,17 +2,22 @@ import { useEffect, useRef, useState } from "react"
 import { site } from "../config/site"
 import { canUseWebGL, prefersReducedMotion } from "../lib/webgl"
 
+type Phase = "boot" | "ascii" | "photo"
+
 export default function HeroAsciiBackground() {
   const hostRef = useRef<HTMLDivElement>(null)
-  const [useAscii, setUseAscii] = useState(false)
+  const [phase, setPhase] = useState<Phase>("boot")
 
   useEffect(() => {
-    if (!canUseWebGL() || prefersReducedMotion()) return
-    setUseAscii(true)
+    if (!canUseWebGL() || prefersReducedMotion()) {
+      setPhase("photo")
+      return
+    }
+    setPhase("ascii")
   }, [])
 
   useEffect(() => {
-    if (!useAscii) return
+    if (phase !== "ascii") return
     const host = hostRef.current
     if (!host) return
 
@@ -38,9 +43,9 @@ export default function HeroAsciiBackground() {
       cancelled = true
       unmount?.()
     }
-  }, [useAscii])
+  }, [phase])
 
-  if (!useAscii) {
+  if (phase === "photo") {
     return (
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black" aria-hidden>
         <img src={site.portraitSrc} alt="" className="h-full w-full object-cover" />

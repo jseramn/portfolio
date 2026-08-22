@@ -122,7 +122,20 @@ export default function Hero() {
       const track = YT_TRACKS[trackIndex]
       playerRef.current = new (window as any).YT.Player("yt-player", {
         videoId: track.id,
-        playerVars: { autoplay: 1, start: track.start, loop: 1, playlist: track.id },
+        width: 1,
+        height: 1,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          rel: 0,
+          start: track.start,
+          loop: 1,
+          playlist: track.id,
+        },
         events: {
           onReady: (e: any) => {
             e.target.mute()
