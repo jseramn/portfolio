@@ -32,9 +32,6 @@ importers:
       '@upstash/redis':
         specifier: ^1.38.0
         version: 1.38.0
-      '@vercel/analytics':
-        specifier: ^1.6.1
-        version: 1.6.1(next@16.2.11(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
       age-encryption:
         specifier: ^0.3.0
         version: 0.3.0
@@ -47,6 +44,9 @@ importers:
       motion:
         specifier: ^12.33.0
         version: 12.33.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      posthog-node:
+        specifier: ^5.50.0
+        version: 5.50.0
       postprocessing:
         specifier: ^6.39.3
         version: 6.39.3(three@0.185.1)
@@ -669,6 +669,12 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@posthog/core@1.48.8':
+    resolution: {integrity: sha512-LAOBOjMQrQmgcbZxnubl74l2GQd5OWqxCJJ8mzcWdZRWbfO6Y/A6E3fqWjDtm68hY4LxC/bbopG60cxZW8cfWw==}
+
+  '@posthog/types@1.405.1':
+    resolution: {integrity: sha512-JvaR4ChUKUk7qSTG58vKN2Br6es9riFF5mvlu7YGcwbB476vfyTO0o/TBh+zE88QhsfxnE5Tr/jKxI+e1v3Q5A==}
 
   '@react-three/fiber@9.6.1':
     resolution: {integrity: sha512-zF0rsKcVYpcJwbFEnv2HkHX9cvOEgsfQo/X8lwmR2dn13S4qEQJXir9fxf5js2LQFoXqxOY7MDkOkYx2uZ4gSg==}
@@ -2190,6 +2196,15 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
+  posthog-node@5.50.0:
+    resolution: {integrity: sha512-7trcTN4EcPBiYAI1nnD1rk+VB+OcjgN0Mdnp7kOK09PTCSW0LCAUVAYj3FD7u8Ne5zYCnW/ESv6k3VU7sOsL5w==}
+    engines: {node: ^20.20.0 || >=22.22.0}
+    peerDependencies:
+      rxjs: ^7.0.0
+    peerDependenciesMeta:
+      rxjs:
+        optional: true
+
   postprocessing@6.39.3:
     resolution: {integrity: sha512-h5H1iuN96aRkU06CzJ8d/FqFe3Qs2bI7LiGHTzOI5T5mQqjzovi2t1EkRHb8qkHgoD9cTJDb4uA30AkSxsFB7A==}
     peerDependencies:
@@ -3391,6 +3406,12 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@posthog/core@1.48.8':
+    dependencies:
+      '@posthog/types': 1.405.1
+
+  '@posthog/types@1.405.1': {}
 
   '@react-three/fiber@9.6.1(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.185.1)':
     dependencies:
@@ -5109,6 +5130,10 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  posthog-node@5.50.0:
+    dependencies:
+      '@posthog/core': 1.48.8
 
   postprocessing@6.39.3(three@0.185.1):
     dependencies:

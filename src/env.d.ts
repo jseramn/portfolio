@@ -4,6 +4,8 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY?: string
   readonly TURNSTILE_SECRET_KEY?: string
   readonly PUBLIC_TURNSTILE_SITE_KEY?: string
+  readonly PUBLIC_POSTHOG_KEY?: string
+  readonly PUBLIC_POSTHOG_HOST?: string
   readonly UPSTASH_REDIS_REST_URL?: string
   readonly UPSTASH_REDIS_REST_TOKEN?: string
   readonly GITHUB_TOKEN?: string
@@ -20,6 +22,12 @@ declare namespace App {
 }
 
 interface Window {
+  posthog?: {
+    capture?: (event: string, properties?: Record<string, unknown>) => void
+    identify?: (...args: unknown[]) => void
+    alias?: (...args: unknown[]) => void
+    group?: (...args: unknown[]) => void
+  }
   turnstile?: {
     render: (
       container: HTMLElement,

@@ -9,9 +9,6 @@ export default defineConfig({
   compressHTML: false,
   output: "static",
   adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
     // Installed @astrojs/vercel@8 uses edgeMiddleware (not middlewareMode).
     edgeMiddleware: true,
   }),
