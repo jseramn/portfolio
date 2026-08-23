@@ -208,7 +208,7 @@ export default function Hero() {
         <HeroAsciiBackground />
       </Suspense>
       <div
-        className="relative z-10 h-screen overflow-hidden"
+        className="relative z-10 h-dvh max-h-dvh overflow-hidden"
         data-hero-root
       >
       <div
