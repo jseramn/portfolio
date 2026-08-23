@@ -23,6 +23,7 @@
     "astro": "^5",
     "lucide-react": "^0.454.0",
     "motion": "^12.33.0",
+    "posthog-node": "^5.50.0",
     "postprocessing": "^6.39.3",
     "react": "^19",
     "react-dom": "^19",
