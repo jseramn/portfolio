@@ -15,6 +15,7 @@ describe("legal copy names PostHog", () => {
   it("discloses cookieless PostHog on the privacy policy", () => {
     expect(policy).toMatch(/PostHog/)
     expect(policy).toMatch(/cookieless/)
+    expect(policy).toMatch(/session replay/)
     expect(policy).toMatch(/August 23, 2026/)
     expect(policy).not.toMatch(/Vercel Analytics/)
   })

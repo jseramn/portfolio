@@ -21,10 +21,13 @@ const updated = "August 23, 2026"
   <h2>Information I collect</h2>
   <ul>
     <li>
-      <strong>Website visitors:</strong> pages viewed, approximate location derived from IP,
-      browser and device type, and referral source. PostHog records these as cookieless,
-      anonymous events. I do not identify visitors, set analytics cookies, or send contact-form
-      contents, names, emails, or decryption passphrases to PostHog.
+      <strong>Website visitors:</strong> pages viewed, clicks and other autocaptured interactions,
+      approximate location derived from IP, browser and device type, referral source, Core Web
+      Vitals, JavaScript exceptions, console logs, session replay of page interactions (form
+      inputs masked), and heatmap click data. PostHog records these as cookieless, anonymous
+      events. I do not identify visitors, set analytics cookies, or send contact-form contents,
+      names, emails, or decryption passphrases to PostHog. Draft surveys may exist in PostHog
+      but are not shown until I launch them.
     </li>
     <li>
       <strong>Contact form:</strong> the message you submit is encrypted in your browser before
@@ -51,7 +54,7 @@ const updated = "August 23, 2026"
   <h2>Third-party services</h2>
   <ul>
     <li><strong>Vercel</strong> — hosting and CDN</li>
-    <li><strong>PostHog</strong> — cookieless product analytics and error capture (Cloud US)</li>
+    <li><strong>PostHog</strong> — cookieless product analytics, session replay, heatmaps, web vitals, error capture, and feature flags (Cloud US)</li>
     <li><strong>Meta / WhatsApp</strong> — messaging delivery and Business Platform APIs</li>
     <li><strong>Resend</strong> — encrypted contact email delivery</li>
     <li><strong>Cloudflare</strong> — Turnstile bot protection (when enabled)</li>
