@@ -1,5 +1,6 @@
 /** Shared security header values — imported by Astro middleware and synced into vercel.json at build. */
 const SITE_ORIGIN = "https://jseramn.tech"
+const POSTHOG_HOST = "https://*.posthog.com"
 
 export function buildContentSecurityPolicy(isDev) {
   const scriptSrc = [
@@ -8,6 +9,7 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     "https://va.vercel-scripts.com",
+    POSTHOG_HOST,
   ]
 
   const connectSrc = [
@@ -17,6 +19,7 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     "https://vitals.vercel-insights.com",
+    POSTHOG_HOST,
   ]
 
   if (isDev) {
@@ -46,6 +49,26 @@ export function buildContentSecurityPolicy(isDev) {
   ]
 
   return directives.join("; ")
+}
+
+/** Tighter CSP for legal routes. Shared by Edge middleware and vercel.json so they cannot drift. */
+export function buildLegalContentSecurityPolicy() {
+  const scriptSrc = ["'self'", "'unsafe-inline'", "https://va.vercel-scripts.com", POSTHOG_HOST]
+  const connectSrc = ["'self'", "https://vitals.vercel-insights.com", POSTHOG_HOST]
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    `connect-src ${connectSrc.join(" ")}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors *",
+    "upgrade-insecure-requests",
+  ].join("; ")
 }
 
 /** Header entries for Vercel `vercel.json` and Astro middleware. */

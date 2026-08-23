@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { basename, dirname, join } from "node:path"
-import { buildSecurityHeaderEntries } from "../src/lib/security/siteSecurityHeaders.mjs"
+import {
+  buildLegalContentSecurityPolicy,
+  buildSecurityHeaderEntries,
+} from "../src/lib/security/siteSecurityHeaders.mjs"
 
 const ACCEPT_VARY = "Accept, Accept-Encoding"
 
@@ -40,8 +43,7 @@ export function buildVercelHeaderRules() {
         { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
         {
           key: "Content-Security-Policy",
-          value:
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://vitals.vercel-insights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors *; upgrade-insecure-requests",
+          value: buildLegalContentSecurityPolicy(),
         },
       ],
     },

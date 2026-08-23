@@ -4,6 +4,7 @@ import { applyApiNoStoreHeaders } from "./lib/agent/apiCacheHeaders"
 import { notFoundMarkdown, pageFromPath, toMarkdown } from "./lib/agent/markdown"
 import { skipNegotiate } from "./lib/agent/skip"
 import { applySecurityHeaders } from "./lib/security/headers"
+import { buildLegalContentSecurityPolicy } from "./lib/security/siteSecurityHeaders.mjs"
 
 const LEGAL_PATH = /^\/(policy|terms|data-deletion|privacy)\/?$/
 
@@ -12,10 +13,7 @@ function applyLegalOverrides(pathname: string, response: Response): void {
   response.headers.set("Access-Control-Allow-Origin", "*")
   response.headers.set("Cross-Origin-Resource-Policy", "cross-origin")
   response.headers.delete("X-Frame-Options")
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://vitals.vercel-insights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors *; upgrade-insecure-requests",
-  )
+  response.headers.set("Content-Security-Policy", buildLegalContentSecurityPolicy())
 }
 
 function finish(pathname: string, response: Response, vary: boolean): Response {
