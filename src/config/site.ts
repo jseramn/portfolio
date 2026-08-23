@@ -30,7 +30,7 @@ export const site = {
   ] as const,
   marqueeOrgs: [
     { label: "co-founder @ Mallanet.org", href: "https://mallanet.org" },
-    { label: "co-founder @ Presencia Pyme", href: "https://presenciapyme.com" },
+    { label: "co-founder @ Presencia Pyme" },
   ] as const,
   tracks: [
     { id: "7iDtrh0K4Vg", start: 0, title: "Qual é seu desejo? — Tz da Coronel" },
@@ -65,7 +65,7 @@ export const site = {
     knowsAbout: ["Cybersecurity", "Web Development", "Artificial Intelligence", "Entrepreneurship"],
     worksFor: [
       { "@type": "Organization" as const, name: "Mallanet.org", url: "https://mallanet.org" },
-      { "@type": "Organization" as const, name: "Presencia Pyme", url: "https://presenciapyme.com" },
+      { "@type": "Organization" as const, name: "Presencia Pyme" },
     ],
   },
   videoSrcWebm: "/videobg.webm",

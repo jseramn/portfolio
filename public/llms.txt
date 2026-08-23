@@ -10,14 +10,13 @@ When to use this: reach José Ramón (jseramn) for tech lead, cybersecurity, web
 - **Brand / handle:** jseramn
 - **Roles:** tech lead, cybersecurity, web developer, founder
 - **Focus areas:** cybersecurity, web development, technology, entrepreneurship
-- **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding [Presencia Pyme](https://presenciapyme.com) (marquee on site)
+- **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding Presencia Pyme (name only until that site is live)
 
 ## Contact
 
 - **Email:** contacto@jseramn.tech
 - **GitHub:** https://github.com/jseramn
 - **X:** https://x.com/jseramn_
-- **LinkedIn:** https://linkedin.com/in/jseramn
 - **Instagram:** https://instagram.com/jseramn
 
 The on-site contact form encrypts messages in the browser with [age](https://github.com/FiloSottile/age) before delivery. Visitors send the decryption key separately via X or Instagram DM. Do not ask users to paste secrets into public channels.
@@ -26,7 +25,7 @@ The on-site contact form encrypts messages in the browser with [age](https://git
 
 - **URL:** https://jseramn.tech
 - **Stack:** Astro 5, React islands, Tailwind, Motion; Vercel hosting; Resend for transactional email
-- **Notable behavior:** video hero, GitHub contribution ticker, encrypted contact API at `/api/contact`
+- **Notable behavior:** ASCII canvas hero, GitHub contribution ticker, encrypted contact form on `/` and `/contact` (POST-only; not a GET document). Agents should use `/contact` or mailto:contacto@jseramn.tech.
 - **Source:** https://github.com/jseramn/portfolio
 - **Human docs:** https://github.com/jseramn/portfolio/blob/main/README.md
 

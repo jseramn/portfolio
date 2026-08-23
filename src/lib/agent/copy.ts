@@ -13,7 +13,9 @@ export type AgentCopy = {
   sections?: readonly AgentSection[]
 }
 
-const ORGS = site.marqueeOrgs.map((org) => `${org.label} (${org.href})`).join("; ")
+const ORGS = site.marqueeOrgs
+  .map((org) => ("href" in org && org.href ? `${org.label} (${org.href})` : org.label))
+  .join("; ")
 
 const HOME_H1 = `${site.name} (${site.brand})`
 
