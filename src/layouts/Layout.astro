@@ -7,12 +7,16 @@ import { site } from "../config/site"
 interface Props {
   title?: string
   description?: string
+  lockScroll?: boolean
 }
 
 const {
   title = site.seo.title,
   description = site.seo.description,
+  lockScroll = false,
 } = Astro.props
+
+const lockClass = lockScroll ? "h-dvh overflow-hidden overscroll-none" : ""
 
 const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/"
 const canonical = pathname === "/" ? site.url : `${site.url}${pathname}`
@@ -24,10 +28,10 @@ const sameAs = site.socials
 ---
 
 <!doctype html>
-<html lang="en" class="bg-black">
+<html lang="en" class:list={["bg-black", lockClass]}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="keywords" content={site.seo.keywords} />
@@ -69,7 +73,7 @@ const sameAs = site.socials
 
     <script type="application/ld+json" set:html={JSON.stringify(buildGraphJsonLd(sameAs))} />
   </head>
-  <body class="font-sans bg-black text-vesper-accent antialiased">
+  <body class:list={["font-sans bg-black text-vesper-accent antialiased", lockClass]}>
     <slot />
   </body>
 </html>

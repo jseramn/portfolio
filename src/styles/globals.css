@@ -31,9 +31,19 @@
   --hero-ink-hover: #FAF8F3;
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   background-color: #000;
   color: var(--vesper-accent);
+}
+
+[data-hero-root] {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
 }
 
 ::-webkit-scrollbar {
