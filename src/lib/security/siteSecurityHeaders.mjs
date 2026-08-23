@@ -8,7 +8,6 @@ export function buildContentSecurityPolicy(isDev) {
     "'unsafe-inline'",
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
-    "https://va.vercel-scripts.com",
     POSTHOG_HOST,
   ]
 
@@ -18,7 +17,6 @@ export function buildContentSecurityPolicy(isDev) {
     "https://github-contributions-api.jogruber.de",
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
-    "https://vitals.vercel-insights.com",
     POSTHOG_HOST,
   ]
 
@@ -53,8 +51,8 @@ export function buildContentSecurityPolicy(isDev) {
 
 /** Tighter CSP for legal routes. Shared by Edge middleware and vercel.json so they cannot drift. */
 export function buildLegalContentSecurityPolicy() {
-  const scriptSrc = ["'self'", "'unsafe-inline'", "https://va.vercel-scripts.com", POSTHOG_HOST]
-  const connectSrc = ["'self'", "https://vitals.vercel-insights.com", POSTHOG_HOST]
+  const scriptSrc = ["'self'", "'unsafe-inline'", POSTHOG_HOST]
+  const connectSrc = ["'self'", POSTHOG_HOST]
 
   return [
     "default-src 'self'",

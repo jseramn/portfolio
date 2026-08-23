@@ -2,7 +2,7 @@
 import LegalDocument from "../components/LegalDocument.astro"
 import { site } from "../config/site"
 
-const updated = "August 9, 2026"
+const updated = "August 23, 2026"
 ---
 
 <LegalDocument
@@ -37,11 +37,15 @@ const updated = "August 9, 2026"
     <li>Encrypted contact form submissions and related email records I control</li>
     <li>Message logs and conversation data stored in my systems</li>
     <li>Any other personal data I hold that is not required for legal or security purposes</li>
+    <li>
+      PostHog person profiles if any were created in error; anonymous cookieless events have no
+      email or name attached
+    </li>
   </ul>
 
   <h2>What I cannot delete</h2>
   <p>
-    Data held solely by Meta/WhatsApp, Vercel, Resend, or other third-party providers must be
+    Data held solely by Meta/WhatsApp, Vercel, PostHog, Resend, or other third-party providers must be
     requested through those services where applicable. Aggregated analytics without personal
     identifiers may be retained.
   </p>

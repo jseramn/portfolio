@@ -28,9 +28,10 @@ describe("posthog.astro snippet", () => {
     expect(snippet).toContain("https://us.i.posthog.com")
   })
 
-  it("is mounted in Layout beside Vercel Analytics; posthog-node stays off Edge middleware", () => {
+  it("is mounted in Layout without Vercel Analytics; posthog-node stays off Edge middleware", () => {
     expect(layout).toMatch(/posthog\.astro/)
-    expect(layout).toContain("<Analytics />")
+    expect(layout).not.toContain("<Analytics />")
+    expect(layout).not.toMatch(/@vercel\/analytics/)
     expect(middleware).not.toMatch(/posthog-node|captureNode|lib\/analytics/)
     expect(captureNodeSource).toContain('from "posthog-node"')
   })

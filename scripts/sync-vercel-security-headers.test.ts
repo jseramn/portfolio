@@ -50,7 +50,7 @@ describe("sync-vercel-security-headers", () => {
     )
   })
 
-  it("allows PostHog on both the main and legal CSPs without dropping Vercel hosts", () => {
+  it("allows PostHog on both the main and legal CSPs without Vercel Analytics hosts", () => {
     const mainCsp = cspFor("/(.*)")
     const legalCsp = cspFor("/(policy|terms|data-deletion)")
 
@@ -62,10 +62,10 @@ describe("sync-vercel-security-headers", () => {
     expect(directive(legalCsp, "script-src")).toContain(POSTHOG_HOST)
     expect(directive(legalCsp, "connect-src")).toContain(POSTHOG_HOST)
 
-    expect(directive(mainCsp, "script-src")).toContain("https://va.vercel-scripts.com")
-    expect(directive(mainCsp, "connect-src")).toContain("https://vitals.vercel-insights.com")
-    expect(directive(legalCsp, "script-src")).toContain("https://va.vercel-scripts.com")
-    expect(directive(legalCsp, "connect-src")).toContain("https://vitals.vercel-insights.com")
+    expect(directive(mainCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
+    expect(directive(mainCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
+    expect(directive(legalCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
+    expect(directive(legalCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
 
     expect(legalCsp).toContain("frame-ancestors *")
     expect(legalCsp).not.toContain("youtube")

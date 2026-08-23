@@ -157,7 +157,7 @@ describe("POST /api/contact analytics wiring", () => {
 })
 
 describe("product capture source wiring", () => {
-  it("mounts the snippet beside Vercel Analytics and wires Hero, modal, and contact API", async () => {
+  it("mounts the snippet without Vercel Analytics and wires Hero, modal, and contact API", async () => {
     const { readFileSync } = await import("node:fs")
     const { dirname, join } = await import("node:path")
     const { fileURLToPath } = await import("node:url")
@@ -169,7 +169,8 @@ describe("product capture source wiring", () => {
     const middleware = readFileSync(join(here, "../../middleware.ts"), "utf8")
 
     expect(layout).toMatch(/posthog\.astro/)
-    expect(layout).toContain("<Analytics />")
+    expect(layout).not.toContain("<Analytics />")
+    expect(layout).not.toMatch(/@vercel\/analytics/)
     expect(hero).toContain("onHireCtaClicked")
     expect(hero).toContain("onOutboundSocial")
     expect(hero).toContain("onOutboundOrg")

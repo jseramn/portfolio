@@ -1,6 +1,5 @@
 ---
 import "../styles/globals.css"
-import Analytics from "@vercel/analytics/astro"
 import PostHog from "../components/posthog.astro"
 import { buildGraphJsonLd } from "../lib/agent/jsonld"
 import { site } from "../config/site"
@@ -70,7 +69,6 @@ const sameAs = site.socials
     <meta name="twitter:image" content={site.seo.ogImage} />
     <meta name="twitter:image:alt" content={site.seo.ogImageAlt} />
 
-    <Analytics />
     <PostHog />
 
     <script type="application/ld+json" set:html={JSON.stringify(buildGraphJsonLd(sameAs))} />

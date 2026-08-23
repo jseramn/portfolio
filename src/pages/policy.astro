@@ -2,7 +2,7 @@
 import LegalDocument from "../components/LegalDocument.astro"
 import { site } from "../config/site"
 
-const updated = "August 9, 2026"
+const updated = "August 23, 2026"
 ---
 
 <LegalDocument
@@ -22,8 +22,9 @@ const updated = "August 9, 2026"
   <ul>
     <li>
       <strong>Website visitors:</strong> pages viewed, approximate location derived from IP,
-      browser and device type, and referral source. Vercel Analytics may collect aggregated
-      usage metrics.
+      browser and device type, and referral source. PostHog records these as cookieless,
+      anonymous events. I do not identify visitors, set analytics cookies, or send contact-form
+      contents, names, emails, or decryption passphrases to PostHog.
     </li>
     <li>
       <strong>Contact form:</strong> the message you submit is encrypted in your browser before
@@ -49,7 +50,8 @@ const updated = "August 9, 2026"
 
   <h2>Third-party services</h2>
   <ul>
-    <li><strong>Vercel</strong> — hosting, CDN, and analytics</li>
+    <li><strong>Vercel</strong> — hosting and CDN</li>
+    <li><strong>PostHog</strong> — cookieless product analytics and error capture (Cloud US)</li>
     <li><strong>Meta / WhatsApp</strong> — messaging delivery and Business Platform APIs</li>
     <li><strong>Resend</strong> — encrypted contact email delivery</li>
     <li><strong>Cloudflare</strong> — Turnstile bot protection (when enabled)</li>
