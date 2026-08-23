@@ -12,11 +12,13 @@ const initConfig = {
   cookieless_mode: "always",
   capture_pageview: true,
   capture_pageleave: true,
-  autocapture: false,
-  disable_session_recording: true,
-  disable_surveys: true,
-  advanced_disable_feature_flags: true,
+  autocapture: true,
   capture_exceptions: true,
+  capture_performance: true,
+  enable_recording_console_log: true,
+  session_recording: {
+    maskAllInputs: true,
+  },
 }
 
 const snippet = `${POSTHOG_LOADER}\nposthog.init(${JSON.stringify(posthogKey)}, ${JSON.stringify(initConfig)})`

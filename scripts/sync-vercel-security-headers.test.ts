@@ -59,8 +59,12 @@ describe("sync-vercel-security-headers", () => {
 
     expect(directive(mainCsp, "script-src")).toContain(POSTHOG_HOST)
     expect(directive(mainCsp, "connect-src")).toContain(POSTHOG_HOST)
+    expect(directive(mainCsp, "frame-src")).toContain(POSTHOG_HOST)
+    expect(directive(mainCsp, "worker-src")).toContain("blob:")
     expect(directive(legalCsp, "script-src")).toContain(POSTHOG_HOST)
     expect(directive(legalCsp, "connect-src")).toContain(POSTHOG_HOST)
+    expect(directive(legalCsp, "frame-src")).toContain(POSTHOG_HOST)
+    expect(directive(legalCsp, "worker-src")).toContain("blob:")
 
     expect(directive(mainCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
     expect(directive(mainCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
