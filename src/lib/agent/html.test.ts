@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { agentCopy, readableLength } from "./copy"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..")
 const dist = join(root, "dist/client")
@@ -35,7 +36,28 @@ async function fetchIfUp(path: string, init?: RequestInit): Promise<Response | n
   }
 }
 
-import { agentCopy, readableLength } from "./copy"
+function declaredHttpUrls(text: string): string[] {
+  const urls = new Set<string>()
+  for (const match of text.matchAll(/https?:\/\/[^\s)>\]]+/gi)) {
+    urls.add(match[0].replace(/[.,;]+$/, ""))
+  }
+  for (const match of text.matchAll(/\((https?:\/\/[^)\s]+)\)/gi)) {
+    urls.add(match[1])
+  }
+  return [...urls]
+}
+
+function firstPartyPathExists(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/"
+  if (path === "/") return existsSync(join(root, "src/pages/index.astro"))
+  if (path === "/llms.txt") return existsSync(join(root, "public/llms.txt"))
+  if (path === "/sitemap-index.xml" || path === "/sitemap-0.xml") return true
+  const asPublic = join(root, "public", path.slice(1))
+  if (existsSync(asPublic)) return true
+  const asPage = join(root, "src/pages", `${path.slice(1)}.astro`)
+  const asIndex = join(root, "src/pages", path.slice(1), "index.astro")
+  return existsSync(asPage) || existsSync(asIndex)
+}
 
 describe("built HTML overlay", () => {
   it("home copy is long enough to keep ≥5% on a ~25kB prerendered shell", () => {
@@ -117,10 +139,7 @@ describe("built HTML overlay", () => {
   })
 
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
-    const llmsPath = existsSync(join(dist, "llms.txt"))
-      ? join(dist, "llms.txt")
-      : join(root, "public/llms.txt")
-    const llms = readFileSync(llmsPath, "utf8")
+    const llms = readFileSync(join(root, "public/llms.txt"), "utf8")
     expect(llms.toLowerCase()).toMatch(/tech lead/)
     expect(llms.toLowerCase()).toMatch(/cybersecurity/)
     expect(llms.toLowerCase()).toMatch(/web development/)
@@ -129,7 +148,9 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("/about")
     expect(llms).toContain("/contact")
     expect(llms).toContain("mailto:contacto@jseramn.tech")
-    expect(llms).toContain("https://presenciapyme.com")
+    expect(llms).not.toContain("presenciapyme.com")
+    expect(llms).not.toContain("/api/contact")
+    expect(llms).not.toContain("linkedin.com")
 
     const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8")) as {
       redirects: { source: string; destination: string; permanent: boolean }[]
@@ -139,5 +160,18 @@ describe("built HTML overlay", () => {
       destination: "/policy",
       permanent: true,
     })
+  })
+
+  it("every http(s) URL in llms.txt is first-party real content or an allowed external host", () => {
+    const llms = readFileSync(join(root, "public/llms.txt"), "utf8")
+    const urls = declaredHttpUrls(llms)
+    expect(urls.length).toBeGreaterThan(0)
+    for (const url of urls) {
+      const parsed = new URL(url)
+      if (parsed.protocol === "mailto:") continue
+      if (parsed.hostname === "jseramn.tech" || parsed.hostname === "www.jseramn.tech") {
+        expect(firstPartyPathExists(parsed.pathname || "/"), url).toBe(true)
+      }
+    }
   })
 })

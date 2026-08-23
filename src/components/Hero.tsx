@@ -230,15 +230,24 @@ export default function Hero() {
           </span>
           <span className="hero-ink-muted font-mono">·</span>
           {site.marqueeOrgs.flatMap((org) => [
-            <a
-              key={org.label}
-              href={org.href}
-              target={org.href.startsWith("http") ? "_blank" : undefined}
-              rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
-            >
-              {org.label}
-            </a>,
+            "href" in org && org.href ? (
+              <a
+                key={org.label}
+                href={org.href}
+                target={org.href.startsWith("http") ? "_blank" : undefined}
+                rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
+              >
+                {org.label}
+              </a>
+            ) : (
+              <span
+                key={org.label}
+                className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap"
+              >
+                {org.label}
+              </span>
+            ),
             <span key={`${org.label}-sep`} className="hero-ink-muted font-mono">·</span>,
           ])}
           {ghStats && (

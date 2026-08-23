@@ -19,6 +19,7 @@ describe("agentCopy", () => {
     expect(text).toMatch(/\/projects/)
     expect(text).not.toMatch(/pricing table/)
     expect(text).not.toMatch(/telephone/)
+    expect(text).not.toContain("presenciapyme.com")
   })
 
   it("about and contact copy are ≥500 chars, email only, no invented PII", () => {
