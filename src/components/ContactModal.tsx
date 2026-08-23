@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FormEvent } from "react"
+import { useCallback, useEffect, useId, useState, type FormEvent } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { X, Copy, Check, ExternalLink } from "lucide-react"
 import { site } from "../config/site"
@@ -9,6 +9,13 @@ import {
   encryptContactPayload,
 } from "../lib/contactEncrypt"
 import { TurnstileField, turnstileEnabled } from "./TurnstileField"
+import {
+  contactFailedOutcomeFromClientError,
+  onContactDismissed,
+  onContactFailed,
+  onContactOpened,
+  onContactSubmittedClient,
+} from "../lib/analytics/productCapture"
 
 type ContactModalProps = {
   open: boolean
@@ -110,17 +117,27 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
 
   useEffect(() => {
     if (!open) return
+    onContactOpened()
+  }, [open])
+
+  const handleDismiss = useCallback(() => {
+    onContactDismissed(success !== null)
+    onClose()
+  }, [success, onClose])
+
+  useEffect(() => {
+    if (!open) return
     const prev = document.body.style.overflow
     document.body.style.overflow = "hidden"
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape") handleDismiss()
     }
     window.addEventListener("keydown", onKey)
     return () => {
       document.body.style.overflow = prev
       window.removeEventListener("keydown", onKey)
     }
-  }, [open, onClose])
+  }, [open, handleDismiss])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -139,6 +156,7 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
     const subjectLine = `[${contextRole}] ${subject || "Contact"}`
 
     if (turnstileEnabled() && !turnstileToken) {
+      onContactFailed("turnstile")
       setError("Completa la verificación anti-bot antes de enviar.")
       setBusy(false)
       return
@@ -170,9 +188,15 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
         turnstileToken: turnstileToken ?? undefined,
       })
 
+      onContactSubmittedClient("sent")
       setSuccess({ envelopeId, passphrase })
     } catch (err) {
       const code = err instanceof Error ? err.message : "send_failed"
+      if (!armored) {
+        onContactFailed("encrypt_failed")
+      } else {
+        onContactFailed(contactFailedOutcomeFromClientError(code))
+      }
       if (armored) {
         const { href, truncated } = buildEncryptedMailto({
           to: site.email,
@@ -214,7 +238,7 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
             type="button"
             className="absolute inset-0 bg-black/75 backdrop-blur-[2px]"
             aria-label="Close contact form"
-            onClick={onClose}
+            onClick={handleDismiss}
           />
           <motion.div
             role="dialog"
@@ -229,7 +253,7 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
           >
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleDismiss}
               className="absolute right-4 top-4 text-vesper-accent/70 transition-colors hover:text-vesper-accent"
               aria-label="Close"
             >
@@ -272,7 +296,7 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleDismiss}
                   className="w-full border border-vesper-accent/40 py-2 font-mono text-xs text-vesper-accent/70 hover:text-vesper-accent"
                 >
                   Done

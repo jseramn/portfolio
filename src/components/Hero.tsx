@@ -16,6 +16,11 @@ import { TextLoop } from "./TextLoop"
 import { ContactModal } from "./ContactModal"
 import { InfiniteSlider } from "./InfiniteSlider"
 import { site } from "../config/site"
+import {
+  onHireCtaClicked,
+  onOutboundOrg,
+  onOutboundSocial,
+} from "../lib/analytics/productCapture"
 import type { GitHubStats } from "../lib/githubStats"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
@@ -237,6 +242,7 @@ export default function Hero() {
                 target={org.href.startsWith("http") ? "_blank" : undefined}
                 rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
+                onClick={() => onOutboundOrg(org.label)}
               >
                 {org.label}
               </a>
@@ -308,7 +314,10 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col md:flex-row md:items-end md:justify-between px-4 md:px-16 pb-8 md:pb-12 gap-4 md:gap-0">
         <button
           type="button"
-          onClick={() => setContactOpen(true)}
+          onClick={() => {
+            onHireCtaClicked()
+            setContactOpen(true)
+          }}
           className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
           aria-label={`Open contact form — current role: ${activeRole}`}
         >
@@ -349,6 +358,7 @@ export default function Hero() {
               rel={external ? "noopener noreferrer" : undefined}
               className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
               aria-label={social.id}
+              onClick={() => onOutboundSocial(social.id)}
             >
               <Icon size={24} className="md:w-[26px] md:h-[26px]" />
             </a>

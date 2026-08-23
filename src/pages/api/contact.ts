@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro"
 import { Resend } from "resend"
 import { site } from "../../config/site"
+import { captureNode } from "../../lib/analytics/captureNode"
+import type { ContactSubmittedOutcome } from "../../lib/analytics/events"
 import {
   buildEncryptedEmailContent,
   validateContactSubmission,
@@ -18,6 +20,14 @@ export const prerender = false
 
 const genericError = () => Response.json({ error: "request_rejected" }, { status: 400 })
 
+async function recordOutcome(outcome: ContactSubmittedOutcome): Promise<void> {
+  try {
+    await captureNode(outcome)
+  } catch {
+    // Analytics must not fail the request
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   if (request.method !== "POST") {
     return Response.json({ error: "method_not_allowed" }, { status: 405 })
@@ -25,32 +35,45 @@ export const POST: APIRoute = async ({ request }) => {
 
   const apiKey = import.meta.env.RESEND_API_KEY
   if (!apiKey) {
+    await recordOutcome("not_configured")
     return Response.json({ error: "server_not_configured" }, { status: 503 })
   }
 
   if (!isAllowedContactOrigin(request)) {
+    await recordOutcome("rejected")
     return genericError()
   }
 
   const rateLimited = await enforceContactRateLimit(request)
-  if (rateLimited) return rateLimited
+  if (rateLimited) {
+    await recordOutcome("rate_limited")
+    return rateLimited
+  }
 
   const bodyOrResponse = await readContactJsonBody(request)
-  if (bodyOrResponse instanceof Response) return bodyOrResponse
+  if (bodyOrResponse instanceof Response) {
+    await recordOutcome("rejected")
+    return bodyOrResponse
+  }
 
   const parsed = validateContactSubmission(bodyOrResponse)
   if (!parsed.ok) {
+    await recordOutcome("rejected")
     return genericError()
   }
 
   if (parsed.value.honeypot) {
+    await recordOutcome("honeypot")
     return Response.json({ ok: true })
   }
 
   const ip = getClientIp(request)
   if (turnstileRequired()) {
     const ok = await verifyTurnstileToken(parsed.value.turnstileToken ?? "", ip)
-    if (!ok) return genericError()
+    if (!ok) {
+      await recordOutcome("rejected")
+      return genericError()
+    }
   }
 
   const { envelopeId, armored, visitorEmail, subjectLine } = parsed.value
@@ -73,8 +96,10 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (error) {
     console.error("[contact]", error)
+    await recordOutcome("send_failed")
     return Response.json({ error: "send_failed" }, { status: 502 })
   }
 
+  await recordOutcome("sent")
   return Response.json({ ok: true })
 }
