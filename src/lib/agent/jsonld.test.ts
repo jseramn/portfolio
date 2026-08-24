@@ -29,4 +29,29 @@ describe("buildGraphJsonLd", () => {
     expect(org.image).toBe("https://jseramn.tech/thumbnail.png")
     expect(org.logo).toBe("https://jseramn.tech/apple-touch-icon.png")
   })
+
+  it("emits @ids, WebSite, ProfilePage, and no telephone or street", () => {
+    const graph = buildGraphJsonLd(["https://github.com/jseramn"])
+    const nodes = graph["@graph"] as { "@type": string; "@id": string }[]
+    const byType = Object.fromEntries(nodes.map((node) => [node["@type"], node]))
+
+    expect(byType.Person["@id"]).toBe("https://jseramn.tech/#person")
+    expect(byType.Organization["@id"]).toBe("https://jseramn.tech/#organization")
+    expect(byType.WebSite["@id"]).toBe("https://jseramn.tech/#website")
+    expect(byType.ProfilePage["@id"]).toBe("https://jseramn.tech/#profile")
+    expect(nodes.map((node) => node["@type"])).toEqual(
+      expect.arrayContaining(["Person", "Organization", "WebSite", "ProfilePage"]),
+    )
+
+    const profile = graph["@graph"].find((node) => node["@type"] === "ProfilePage") as {
+      mainEntity: { "@id": string }
+      isPartOf: { "@id": string }
+    }
+    expect(profile.mainEntity["@id"]).toBe("https://jseramn.tech/#person")
+    expect(profile.isPartOf["@id"]).toBe("https://jseramn.tech/#website")
+
+    const serialized = JSON.stringify(graph)
+    expect(serialized.toLowerCase()).not.toMatch(/"telephone"/)
+    expect(serialized).not.toMatch(/streetAddress/)
+  })
 })

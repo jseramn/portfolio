@@ -9,7 +9,7 @@ import {
 const ACCEPT_VARY = "Accept, Accept-Encoding"
 
 export const PREVIEW_ASSET_SOURCE =
-  "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png)"
+  "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png|oembed.json)"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const vercelPath = join(root, "vercel.json")

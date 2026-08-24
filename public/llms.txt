@@ -16,6 +16,7 @@ When to use this: reach José Ramón (jseramn) for tech lead, cybersecurity, web
 
 - **Email:** contacto@jseramn.tech
 - **GitHub:** https://github.com/jseramn
+- **LinkedIn:** https://linkedin.com/in/jseramn
 - **X:** https://x.com/jseramn_
 - **Instagram:** https://instagram.com/jseramn
 
@@ -32,5 +33,6 @@ The on-site contact form encrypts messages in the browser with [age](https://git
 ## Optional
 
 - [Open Graph image](https://jseramn.tech/thumbnail.png): social preview
+- [oEmbed](https://jseramn.tech/oembed.json): embed discovery for public pages
 - [Sitemap](https://jseramn.tech/sitemap-index.xml): crawlers
 - [age format](https://age-encryption.org): encryption used for contact payloads

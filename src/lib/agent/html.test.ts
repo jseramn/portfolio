@@ -55,8 +55,9 @@ function firstPartyPathExists(pathname: string): boolean {
   const asPublic = join(root, "public", path.slice(1))
   if (existsSync(asPublic)) return true
   const asPage = join(root, "src/pages", `${path.slice(1)}.astro`)
+  const asTs = join(root, "src/pages", `${path.slice(1)}.ts`)
   const asIndex = join(root, "src/pages", path.slice(1), "index.astro")
-  return existsSync(asPage) || existsSync(asIndex)
+  return existsSync(asPage) || existsSync(asTs) || existsSync(asIndex)
 }
 
 describe("built HTML overlay", () => {
@@ -150,7 +151,8 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")
-    expect(llms).not.toContain("linkedin.com")
+    expect(llms).toContain("linkedin.com")
+    expect(llms).toContain("https://jseramn.tech/oembed.json")
 
     const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8")) as {
       redirects: { source: string; destination: string; permanent: boolean }[]
@@ -171,7 +173,17 @@ describe("built HTML overlay", () => {
       if (parsed.protocol === "mailto:") continue
       if (parsed.hostname === "jseramn.tech" || parsed.hostname === "www.jseramn.tech") {
         expect(firstPartyPathExists(parsed.pathname || "/"), url).toBe(true)
+        continue
       }
+      const allowedExternal = new Set([
+        "github.com",
+        "x.com",
+        "instagram.com",
+        "mallanet.org",
+        "age-encryption.org",
+        "linkedin.com",
+      ])
+      expect(allowedExternal.has(parsed.hostname), url).toBe(true)
     }
   })
 })
