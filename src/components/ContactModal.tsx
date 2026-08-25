@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState, type FormEvent } from "react"
+import { useCallback, useEffect, useId, useState, type FormEvent, type RefObject } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { X, Copy, Check, ExternalLink } from "lucide-react"
 import { site } from "../config/site"
@@ -9,6 +9,7 @@ import {
   encryptContactPayload,
 } from "../lib/contactEncrypt"
 import { TurnstileField, turnstileEnabled } from "./TurnstileField"
+import { GlassSurface } from "./GlassSurface"
 import {
   contactFailedOutcomeFromClientError,
   onContactDismissed,
@@ -21,6 +22,7 @@ type ContactModalProps = {
   open: boolean
   onClose: () => void
   contextRole: string
+  mouseContainer: RefObject<HTMLDivElement | null>
 }
 
 type SuccessState = {
@@ -96,7 +98,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function ContactModal({ open, onClose, contextRole }: ContactModalProps) {
+export function ContactModal({ open, onClose, contextRole, mouseContainer }: ContactModalProps) {
   const titleId = useId()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -240,11 +242,12 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
             aria-label="Close contact form"
             onClick={handleDismiss}
           />
+          <GlassSurface preset="modal" mouseContainer={mouseContainer} className="relative z-10 w-full max-w-md">
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 max-h-[min(90vh,720px)] w-full max-w-md overflow-y-auto border border-vesper-accent/70 bg-black/55 px-6 py-8 shadow-[0_0_40px_rgba(0,240,255,0.15),inset_0_0_60px_rgba(0,240,255,0.03)] backdrop-blur-md"
+            className="relative z-10 max-h-[min(90vh,720px)] w-full max-w-md overflow-y-auto rounded-[15px] border border-vesper-accent/70 bg-black/25 px-6 py-8 shadow-[0_0_40px_rgba(0,240,255,0.15),inset_0_0_60px_rgba(0,240,255,0.03)]"
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -418,6 +421,7 @@ export function ContactModal({ open, onClose, contextRole }: ContactModalProps) 
               </>
             )}
           </motion.div>
+          </GlassSurface>
         </motion.div>
       )}
     </AnimatePresence>

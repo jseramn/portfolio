@@ -117,6 +117,7 @@ function pickGrid(cssW: number, cssH: number) {
 export function mountHeroAscii(
   host: HTMLElement,
   opts: HeroAsciiMountOpts,
+  paintCanvas?: HTMLCanvasElement | null,
 ): () => void {
   const video = document.createElement("video")
   video.muted = true
@@ -211,15 +212,39 @@ export function mountHeroAscii(
   const asciiSample = document.createElement("canvas")
   const asciiCtx = asciiSample.getContext("2d", { willReadFrequently: true })
 
-  const displayCanvas = document.createElement("canvas")
-  displayCanvas.className = "hero-ascii-display"
-  displayCanvas.setAttribute("aria-hidden", "true")
-  host.appendChild(displayCanvas)
+  const ownsPaintCanvas = !paintCanvas
+  const displayCanvas = paintCanvas ?? document.createElement("canvas")
+  if (ownsPaintCanvas) {
+    displayCanvas.className = "hero-ascii-display"
+    displayCanvas.setAttribute("aria-hidden", "true")
+    host.appendChild(displayCanvas)
+  }
   const displayCtx = displayCanvas.getContext("2d")
   if (displayCtx) {
-    displayCtx.fillStyle = "#000"
-    displayCtx.fillRect(0, 0, displayCanvas.width, displayCanvas.height)
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
   }
+  // #region agent log
+  fetch("http://127.0.0.1:7586/ingest/00af1405-f462-421b-a094-07596f9f5fa4", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "2d62cf",
+    },
+    body: JSON.stringify({
+      sessionId: "2d62cf",
+      runId: "post-fix",
+      hypothesisId: "F",
+      location: "heroAsciiRuntime.ts:mount",
+      message: "ascii paint canvas parent",
+      data: {
+        ownsPaintCanvas,
+        parentIsHeroRoot: displayCanvas.parentElement?.hasAttribute("data-hero-root") ?? false,
+        parentClass: displayCanvas.parentElement?.className ?? "",
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {})
+  // #endregion
 
   let mouseX = 0
   let mouseY = 0
@@ -233,8 +258,12 @@ export function mountHeroAscii(
   let cellH = 1
 
   const applySize = () => {
-    const width = host.clientWidth || window.innerWidth
-    const height = host.clientHeight || window.innerHeight
+    const sizeHost =
+      displayCanvas.parentElement instanceof HTMLElement
+        ? displayCanvas.parentElement
+        : host
+    const width = sizeHost.clientWidth || host.clientWidth || window.innerWidth
+    const height = sizeHost.clientHeight || host.clientHeight || window.innerHeight
     const aspect = width / Math.max(height, 1)
     camera.aspect = aspect
     camera.position.z = cameraDistance(aspect)
@@ -250,8 +279,7 @@ export function mountHeroAscii(
     cellW = width / cols
     cellH = height / rows
     if (displayCtx) {
-      displayCtx.fillStyle = "#000"
-      displayCtx.fillRect(0, 0, width, height)
+      displayCtx.clearRect(0, 0, width, height)
       displayCtx.font = `${Math.ceil(cellH)}px courier new, monospace`
       displayCtx.textBaseline = "top"
       displayCtx.textAlign = "left"
@@ -316,8 +344,7 @@ export function mountHeroAscii(
     const rows = asciiSample.height
     const cssW = displayCanvas.width
     const cssH = displayCanvas.height
-    displayCtx.fillStyle = "#000"
-    displayCtx.fillRect(0, 0, cssW, cssH)
+    displayCtx.clearRect(0, 0, cssW, cssH)
     const data = image.data
     const cellCount = Math.min(cols * rows, MAX_CELLS)
 
@@ -374,6 +401,11 @@ export function mountHeroAscii(
       return cellLuma[ni]
     }
 
+    let minGX = cols
+    let minGY = rows
+    let maxGX = 0
+    let maxGY = 0
+
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const i = y * cols + x
@@ -404,9 +436,18 @@ export function mountHeroAscii(
         const glyph = CHARSET[idx]
         if (glyph !== undefined && glyph !== " ") {
           displayCtx.fillText(glyph, x * cellW, y * cellH)
+          if (x < minGX) minGX = x
+          if (y < minGY) minGY = y
+          if (x > maxGX) maxGX = x
+          if (y > maxGY) maxGY = y
         }
       }
     }
+
+    if (maxGX >= minGX && maxGY >= minGY) {
+      displayCanvas.dataset.glassBox = `${minGX * cellW},${minGY * cellH},${(maxGX - minGX + 1) * cellW},${(maxGY - minGY + 1) * cellH}`
+    }
+    displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
   }
 
   const onMouseMove = (event: MouseEvent) => {
@@ -488,7 +529,8 @@ export function mountHeroAscii(
     video.removeAttribute("src")
     video.load()
     video.remove()
-    displayCanvas.remove()
+    if (ownsPaintCanvas) displayCanvas.remove()
+    else if (displayCtx) displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
     videoTexture.dispose()
     plane.geometry.dispose()
     plane.material.dispose()

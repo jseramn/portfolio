@@ -15,6 +15,7 @@ import {
 import { TextLoop } from "./TextLoop"
 import { ContactModal } from "./ContactModal"
 import { InfiniteSlider } from "./InfiniteSlider"
+import { GlassSurface } from "./GlassSurface"
 import { site } from "../config/site"
 import {
   onHireCtaClicked,
@@ -116,6 +117,8 @@ export default function Hero() {
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<any>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
+  const heroRootRef = useRef<HTMLDivElement>(null)
+  const asciiPaintRef = useRef<HTMLCanvasElement>(null)
 
   // YouTube IFrame Player API — start muted, unmute on first interaction
   useEffect(() => {
@@ -210,12 +213,18 @@ export default function Hero() {
   return (
     <>
       <Suspense fallback={<div className="fixed inset-0 z-0 bg-black" aria-hidden />}>
-        <HeroAsciiBackground />
+        <HeroAsciiBackground paintCanvasRef={asciiPaintRef} />
       </Suspense>
       <div
+        ref={heroRootRef}
         className="relative z-10 h-dvh max-h-dvh overflow-hidden"
         data-hero-root
       >
+      <canvas
+        ref={asciiPaintRef}
+        className="hero-ascii-display pointer-events-none absolute inset-0 z-[1] h-full w-full"
+        aria-hidden
+      />
       <div
         className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
         aria-hidden
@@ -229,6 +238,7 @@ export default function Hero() {
         aria-hidden
       />
       <div className="absolute inset-x-0 top-0 z-10 pt-6 md:pt-8">
+        <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
         <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
           <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
             Hi, I am {site.name} — {site.locationLine}
@@ -274,8 +284,11 @@ export default function Hero() {
           )}
           {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
         </InfiniteSlider>
+        </GlassSurface>
       </div>
-      <div className="absolute inset-x-0 z-10 md:inset-x-auto md:right-8 top-14 md:top-24 font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
+      <div className="absolute inset-x-0 z-10 md:inset-x-auto md:right-8 top-14 md:top-24">
+        <GlassSurface preset="pill" mouseContainer={heroRootRef} className="w-full md:w-fit md:ml-auto">
+        <div className="font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
         {musicPlaying ? (
           <a
             href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
@@ -310,8 +323,11 @@ export default function Hero() {
             <Shuffle size={16} className="md:w-5 md:h-5" />
           </button>
         </div>
+        </div>
+        </GlassSurface>
       </div>
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col md:flex-row md:items-end md:justify-between px-4 md:px-16 pb-8 md:pb-12 gap-4 md:gap-0">
+        <GlassSurface preset="button" mouseContainer={heroRootRef}>
         <button
           type="button"
           onClick={() => {
@@ -334,6 +350,8 @@ export default function Hero() {
             ))}
           </TextLoop>
         </button>
+        </GlassSurface>
+        <GlassSurface preset="card" mouseContainer={heroRootRef}>
         <p
           className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
           onMouseEnter={desc.start}
@@ -341,11 +359,14 @@ export default function Hero() {
         >
           {desc.display}
         </p>
+        </GlassSurface>
       </div>
       <div className="absolute w-0 h-0 overflow-hidden">
         <div id="yt-player" ref={playerContainerRef} />
       </div>
-      <div className="absolute right-4 top-1/2 z-10 -translate-y-1/2 flex flex-col items-center gap-4 md:left-8 md:right-auto md:top-24 md:translate-y-0 md:flex-row md:gap-5">
+      <div className="absolute right-4 top-1/2 z-10 -translate-y-1/2 md:left-8 md:right-auto md:top-24 md:translate-y-0">
+        <GlassSurface preset="dock" mouseContainer={heroRootRef}>
+        <div className="flex flex-col items-center gap-4 md:flex-row md:gap-5">
         {site.socials.map((social) => {
           const Icon = SOCIAL_ICONS[social.icon]
           if (!Icon) return null
@@ -364,13 +385,16 @@ export default function Hero() {
             </a>
           )
         })}
-      </div>
+        </div>
+        </GlassSurface>
       </div>
       <ContactModal
         open={contactOpen}
         onClose={() => setContactOpen(false)}
         contextRole={activeRole}
+        mouseContainer={heroRootRef}
       />
+      </div>
     </>
   )
 }
