@@ -66,10 +66,21 @@ describe("site performance chrome load", () => {
     expect(layout).toContain('type="font/woff2"')
     expect(layout).toContain('fetchpriority="high"')
     expect(layout).toContain('globals.css?inline')
+    expect(layout).toContain("site.asciiPosterSrc")
+    expect(layout).toContain('as="image"')
+    expect(layout).toContain('type="image/webp"')
+    expect(layout).toContain('pathname === "/"')
     expect(css).toContain("GeistMono-Variable.woff2")
     expect(css).toContain("font-display: optional")
     expect(css).toContain("--hero-ink")
     expect(css).toContain(".hero-scrim-top")
+    expect(css).toContain('url("/ascii-poster.webp")')
+    expect(css).toContain("img.hero-ascii-poster")
+    expect(css).toContain("data-ascii-paint")
+    const home = readSrc("pages/index.astro")
+    expect(home).toContain("hero-ascii-poster")
+    expect(home).toContain("site.asciiPosterSrc")
+    expect(home).toContain('fetchpriority="high"')
   })
 
   it("defers YouTube, ContactModal, and ASCII off the chrome load graph", () => {
@@ -85,8 +96,11 @@ describe("site performance chrome load", () => {
     expect(lastApi).toBeGreaterThan(ensureAt)
     expect(hero).not.toMatch(/useEffect\(\(\) => \{[\s\S]{0,80}iframe_api/)
     expect(hero).toContain("setAsciiReady(true)")
-    expect(hero).toContain("timeout: 2000")
+    expect(hero).toContain("timeout: 0")
+    expect(hero).not.toContain("timeout: 2000")
     expect(hero).toContain("requestIdleCallback")
+    expect(hero).toContain("document.fonts")
+    expect(hero).toContain("afterFirstPaint")
   })
 
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
@@ -101,5 +115,7 @@ describe("site performance chrome load", () => {
     }
     expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
     expect(ascii).toContain("VIDEO_PRELOAD")
+    expect(ascii).toContain("blitHeroPoster")
+    expect(ascii).toContain('video.preload = "metadata"')
   })
 })

@@ -2,6 +2,7 @@ import {
   MAX_CELLS,
   VIDEO_PRELOAD,
   cellBudget,
+  coverDestRect,
   isPointerCoarse,
   pickGrid,
   planAsciiFrame,
@@ -25,6 +26,7 @@ export type HeroAsciiMountOpts = {
   samplerMp4: string
   fallbackWebm: string
   fallbackMp4: string
+  poster?: string
 }
 
 const VIDEO_ZOOM = {
@@ -102,11 +104,51 @@ function tryPlay(video: HTMLVideoElement) {
   void video.play().catch(() => {})
 }
 
+export function blitHeroPoster(
+  canvas: HTMLCanvasElement,
+  src: string,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.decoding = "async"
+    img.onload = () => {
+      const host =
+        canvas.parentElement instanceof HTMLElement ? canvas.parentElement : null
+      const width = host?.clientWidth || canvas.clientWidth || window.innerWidth
+      const height = host?.clientHeight || canvas.clientHeight || window.innerHeight
+      if (canvas.width !== width) canvas.width = width
+      if (canvas.height !== height) canvas.height = height
+      const ctx = canvas.getContext("2d")
+      if (!ctx || img.naturalWidth < 1 || img.naturalHeight < 1) {
+        resolve(false)
+        return
+      }
+      const dest = coverDestRect(img.naturalWidth, img.naturalHeight, width, height)
+      ctx.fillStyle = "#000"
+      ctx.fillRect(0, 0, width, height)
+      ctx.drawImage(img, dest.dx, dest.dy, dest.dw, dest.dh)
+      resolve(true)
+    }
+    img.onerror = () => resolve(false)
+    img.src = src
+  })
+}
+
 export async function mountHeroAscii(
   host: HTMLElement,
   opts: HeroAsciiMountOpts,
   paintCanvas?: HTMLCanvasElement | null,
 ): Promise<() => void> {
+  const ownsPaintCanvas = !paintCanvas
+  const displayCanvas = paintCanvas ?? document.createElement("canvas")
+  if (ownsPaintCanvas) {
+    displayCanvas.className = "hero-ascii-display"
+    displayCanvas.setAttribute("aria-hidden", "true")
+    host.appendChild(displayCanvas)
+  }
+  if (opts.poster) {
+    await blitHeroPoster(displayCanvas, opts.poster)
+  }
   await yieldToMain()
   const {
     BufferAttribute,
@@ -143,6 +185,7 @@ export async function mountHeroAscii(
   video.style.cssText =
     "position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;clip-path:inset(50%)"
   fillSources(video, opts.samplerWebm, opts.samplerMp4)
+  if (opts.poster) video.preload = "metadata"
   host.appendChild(video)
 
   let usedFallback = false
@@ -216,20 +259,10 @@ export async function mountHeroAscii(
   const asciiSample = document.createElement("canvas")
   const asciiCtx = asciiSample.getContext("2d", { willReadFrequently: true })
 
-  const ownsPaintCanvas = !paintCanvas
-  const displayCanvas = paintCanvas ?? document.createElement("canvas")
-  if (ownsPaintCanvas) {
-    displayCanvas.className = "hero-ascii-display"
-    displayCanvas.setAttribute("aria-hidden", "true")
-    host.appendChild(displayCanvas)
-  }
   const displayCtx =
     displayCanvas.getContext("2d", { alpha: true, desynchronized: true }) ??
     displayCanvas.getContext("2d", { alpha: true }) ??
     displayCanvas.getContext("2d")
-  if (displayCtx) {
-    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
-  }
 
   let mouseX = 0
   let mouseY = 0
@@ -286,7 +319,9 @@ export async function mountHeroAscii(
     cellW = width / cols
     cellH = height / rows
     if (displayCtx) {
-      displayCtx.clearRect(0, 0, width, height)
+      if (rastersCompleted > 0) {
+        displayCtx.clearRect(0, 0, width, height)
+      }
       displayCtx.font = `${Math.ceil(cellH)}px courier new, monospace`
       displayCtx.textBaseline = "top"
       displayCtx.textAlign = "left"
@@ -516,6 +551,7 @@ export async function mountHeroAscii(
       displayCanvas.dataset.glassBox = `${stampMinGX * cellW},${stampMinGY * cellH},${(stampMaxGX - stampMinGX + 1) * cellW},${(stampMaxGY - stampMinGY + 1) * cellH}`
     }
     displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
+    displayCanvas.dataset.asciiPaint = "1"
     stampCursor = -1
     rastersCompleted += 1
     rasterBusy = false

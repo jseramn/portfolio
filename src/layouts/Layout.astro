@@ -51,6 +51,15 @@ const sameAs = site.socials
       crossorigin
       fetchpriority="high"
     />
+    {pathname === "/" ? (
+      <link
+        rel="preload"
+        href={site.asciiPosterSrc}
+        as="image"
+        type="image/webp"
+        fetchpriority="high"
+      />
+    ) : null}
     <style is:inline set:html={globalCss} />
     <link
       rel="alternate"

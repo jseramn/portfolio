@@ -116,6 +116,18 @@ export function stampSliceEnd(
   return Math.min(rows, startRow + 1)
 }
 
+export function coverDestRect(
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number,
+): { dx: number; dy: number; dw: number; dh: number } {
+  const scale = Math.max(dstW / Math.max(srcW, 1), dstH / Math.max(srcH, 1))
+  const dw = srcW * scale
+  const dh = srcH * scale
+  return { dx: (dstW - dw) / 2, dy: (dstH - dh) / 2, dw, dh }
+}
+
 export function yieldToMain(): Promise<void> {
   const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } })
     .scheduler

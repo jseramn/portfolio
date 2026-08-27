@@ -182,6 +182,10 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain('--glass-frost"')
     expect(glass).toContain('filterEl?.closest("svg")')
     expect(glass).not.toContain('host.querySelector("svg")')
+    expect(glass).toContain("asciiReadyForGlass")
+    expect(glass).toContain("bindGlassAsciiWait")
+    expect(glass).toContain("data-glass-gen")
+    expect(glass).toContain("isPointerCoarse")
   })
 
   it("samples ascii behind each pane instead of a shared portrait box", () => {
@@ -261,6 +265,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("requestIdleCallback")
     expect(glass).toContain("timeout: 2000")
     expect(glass).toContain("setUseLiveGlass")
+    expect(glass).toContain("isPointerCoarse()")
     expect(glass).toContain("function behindRect")
     expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
     expect(read("components/ContactModal.tsx").match(/<GlassSurface /g)?.length).toBe(1)

@@ -30,6 +30,10 @@ describe("preview assets", () => {
       height: 512,
     })
     expect(readFileSync(join(publicDir, "thumbnail.png")).byteLength).toBeLessThan(1_000_000)
+    const poster = readFileSync(join(publicDir, "ascii-poster.webp"))
+    expect(poster.subarray(0, 4).toString("ascii")).toBe("RIFF")
+    expect(poster.byteLength).toBeGreaterThan(1024)
+    expect(poster.byteLength).toBeLessThan(40_000)
   })
 
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {
@@ -104,6 +108,7 @@ describe("preview asset crawler headers", () => {
       "public, max-age=86400, stale-while-revalidate=604800",
     )
     expect(PREVIEW_ASSET_SOURCE).toContain("oembed.json")
+    expect(PREVIEW_ASSET_SOURCE).toContain("ascii-poster.webp")
   })
 })
 

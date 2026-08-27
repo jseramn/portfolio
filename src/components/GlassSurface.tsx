@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react"
 import { chromiumRuntimeHint, shouldUseLiquidGlass } from "../lib/shouldUseLiquidGlass"
+import { isPointerCoarse } from "../lib/heroAsciiBudget"
 import { prefersReducedMotion } from "../lib/webgl"
 
 export type GlassPreset = "bar" | "pill" | "dock" | "button" | "card" | "modal"
@@ -148,6 +149,7 @@ let glassPumpAt = 0
 let pumpAscii: HTMLCanvasElement | null = null
 let pumpAsciiRect: DOMRect | null = null
 let glassResumeBound = false
+let glassAsciiWaitBound = false
 
 const LiquidGlass = lazy(() => import("liquid-glass-react"))
 
@@ -157,6 +159,35 @@ function glassShouldPause() {
   if (document.querySelector("[data-contact-modal-open]")) return true
   if (document.querySelector('[role="dialog"][aria-modal="true"]')) return true
   return false
+}
+
+function asciiReadyForGlass(): HTMLCanvasElement | null {
+  if (typeof document === "undefined") return null
+  const ascii = document.querySelector(
+    "[data-hero-root] > .hero-ascii-display",
+  ) as HTMLCanvasElement | null
+  if (!ascii) return null
+  if (!ascii.dataset.glassGen) return null
+  if (ascii.width < 2 || ascii.height < 2) return null
+  return ascii
+}
+
+function bindGlassAsciiWait() {
+  if (glassAsciiWaitBound || typeof document === "undefined") return
+  glassAsciiWaitBound = true
+  const observer = new MutationObserver(() => {
+    if (!asciiReadyForGlass()) return
+    glassAsciiWaitBound = false
+    observer.disconnect()
+    ensureGlassPump()
+  })
+  const root = document.querySelector("[data-hero-root]") ?? document.documentElement
+  observer.observe(root, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-glass-gen"],
+  })
 }
 
 function bindGlassResume() {
@@ -180,6 +211,10 @@ function ensureGlassPump() {
   if (glassPump) return
   if (glassShouldPause()) {
     bindGlassResume()
+    return
+  }
+  if (!asciiReadyForGlass()) {
+    bindGlassAsciiWait()
     return
   }
   const step = (now: number) => {
@@ -251,7 +286,12 @@ export function GlassSurface({
             ).userAgentData?.brands?.map((item) => item.brand) ?? []
           : []
       const chromiumRuntime = chromiumRuntimeHint(userAgent, chromeObject, brands)
-      const live = shouldUseLiquidGlass(userAgent, reducedMotion, chromiumRuntime)
+      const live = shouldUseLiquidGlass(
+        userAgent,
+        reducedMotion,
+        chromiumRuntime,
+        isPointerCoarse(),
+      )
       setUseLiveGlass(live)
     }
     if (typeof requestIdleCallback === "function") {

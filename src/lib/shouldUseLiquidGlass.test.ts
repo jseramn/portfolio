@@ -53,6 +53,10 @@ describe("shouldUseLiquidGlass", () => {
     expect(shouldUseLiquidGlass(IPHONE_SAFARI, false, true)).toBe(true)
   })
 
+  it("disables live glass on coarse pointers even for Chrome", () => {
+    expect(shouldUseLiquidGlass(CHROME, false, true, true)).toBe(false)
+  })
+
   it("never enables live glass on CriOS even if a chrome object exists", () => {
     expect(chromiumRuntimeHint(CRIOS, true, ["Chromium"])).toBe(false)
     expect(shouldUseLiquidGlass(CRIOS, false, true)).toBe(false)

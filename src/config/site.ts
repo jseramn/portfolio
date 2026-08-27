@@ -70,7 +70,8 @@ export const site = {
   },
   videoSrcWebm: "/videobg.webm",
   videoSrcMp4: "/videobg.mp4",
-  portraitSrc: "/portrait.jpg",
+  asciiPosterSrc: "/ascii-poster.webp",
+  portraitSrc: "/ascii-poster.webp",
   asciiSamplerWebm: "/videobg-480.webm",
   asciiSamplerMp4: "/videobg-480.mp4",
   contactCrypto: {

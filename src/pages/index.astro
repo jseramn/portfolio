@@ -3,6 +3,7 @@ export const prerender = false
 import Layout from "../layouts/Layout.astro"
 import Hero from "../components/Hero"
 import { agentCopy } from "../lib/agent/copy"
+import { site } from "../config/site"
 
 const home = agentCopy("home")
 const homeSections = home.sections ?? []
@@ -19,6 +20,16 @@ const homeSections = home.sections ?? []
         </section>
       ))}
     </article>
+    <img
+      src={site.asciiPosterSrc}
+      alt=""
+      width="480"
+      height="270"
+      decoding="async"
+      fetchpriority="high"
+      class="hero-ascii-poster"
+      aria-hidden="true"
+    />
     <Hero client:load />
   </main>
 </Layout>

@@ -127,20 +127,34 @@ export default function Hero() {
 
   useEffect(() => {
     let cancelled = false
+    let idleId = 0
+    let timer = 0
     const arm = () => {
       if (!cancelled) setAsciiReady(true)
     }
-    if (typeof requestIdleCallback === "function") {
-      const id = requestIdleCallback(arm, { timeout: 2000 })
-      return () => {
-        cancelled = true
-        cancelIdleCallback(id)
+    const idleArm = () => {
+      if (cancelled) return
+      if (typeof requestIdleCallback === "function") {
+        idleId = requestIdleCallback(arm, { timeout: 0 })
+        return
       }
+      timer = window.setTimeout(arm, 0)
     }
-    const timer = window.setTimeout(arm, 2000)
+    const afterFirstPaint = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(idleArm)
+      })
+    }
+    const fonts = document.fonts?.ready
+    if (fonts) {
+      void fonts.then(afterFirstPaint)
+    } else {
+      afterFirstPaint()
+    }
     return () => {
       cancelled = true
-      window.clearTimeout(timer)
+      if (idleId) cancelIdleCallback(idleId)
+      if (timer) window.clearTimeout(timer)
     }
   }, [])
 

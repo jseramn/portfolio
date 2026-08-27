@@ -113,7 +113,17 @@ body {
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: #000;
+  background: #000 url("/ascii-poster.webp") center / cover no-repeat;
+  pointer-events: none;
+}
+
+img.hero-ascii-poster {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -149,6 +159,10 @@ body {
   opacity: 1;
   pointer-events: none;
   z-index: 1;
+}
+
+[data-hero-root] canvas.hero-ascii-display:not([data-ascii-paint]) {
+  opacity: 0;
 }
 
 .hero-ascii-host canvas.hero-ascii-display,

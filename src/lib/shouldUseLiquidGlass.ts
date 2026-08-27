@@ -12,9 +12,11 @@ export function shouldUseLiquidGlass(
   userAgent: string,
   reducedMotion: boolean,
   chromiumRuntime = false,
+  pointerCoarse = false,
 ): boolean {
   if (!userAgent) return false
   if (reducedMotion) return false
+  if (pointerCoarse) return false
   if (/Firefox|FxiOS/.test(userAgent)) return false
   if (/CriOS/.test(userAgent)) return false
 
