@@ -15,7 +15,9 @@ export default function HeroAsciiBackground({
   const [phase, setPhase] = useState<Phase>("boot")
 
   useEffect(() => {
-    if (!canUseWebGL() || prefersReducedMotion()) {
+    const webgl = canUseWebGL()
+    const reduced = prefersReducedMotion()
+    if (!webgl || reduced) {
       setPhase("photo")
       return
     }

@@ -12,7 +12,7 @@ const publicDir = join(root, "public")
 
 function pngSize(path: string): { width: number; height: number } {
   const buf = readFileSync(path)
-  expect(buf.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))).toBe(true)
+  expect(Array.from(buf.subarray(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
   return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
 }
 

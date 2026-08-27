@@ -16,13 +16,14 @@ describe("legal copy names PostHog", () => {
     expect(policy).toMatch(/PostHog/)
     expect(policy).toMatch(/cookieless/)
     expect(policy).toMatch(/session replay/)
-    expect(policy).toMatch(/August 23, 2026/)
-    expect(policy).not.toMatch(/Vercel Analytics/)
+    expect(policy).toMatch(/August 27, 2026/)
+    expect(policy).toMatch(/Vercel Analytics/)
+    expect(policy).toMatch(/do not share visitor IDs/)
   })
 
   it("names PostHog on the data-deletion page", () => {
     expect(deletion).toMatch(/PostHog/)
-    expect(deletion).toMatch(/August 23, 2026/)
+    expect(deletion).toMatch(/August 27, 2026/)
   })
 })
 

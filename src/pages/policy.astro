@@ -2,7 +2,7 @@
 import LegalDocument from "../components/LegalDocument.astro"
 import { site } from "../config/site"
 
-const updated = "August 23, 2026"
+const updated = "August 27, 2026"
 ---
 
 <LegalDocument
@@ -25,8 +25,10 @@ const updated = "August 23, 2026"
       approximate location derived from IP, browser and device type, referral source, Core Web
       Vitals, JavaScript exceptions, console logs, session replay of page interactions (form
       inputs masked), and heatmap click data. PostHog records these as cookieless, anonymous
-      events. I do not identify visitors, set analytics cookies, or send contact-form contents,
-      names, emails, or decryption passphrases to PostHog. Draft surveys may exist in PostHog
+      events. Separately, Vercel Analytics records anonymized page views and referrers for the
+      hosting dashboard. The two tools do not share visitor IDs or product events. I do not
+      identify visitors, set analytics cookies, or send contact-form contents, names, emails, or
+      decryption passphrases to PostHog or Vercel Analytics. Draft surveys may exist in PostHog
       but are not shown until I launch them.
     </li>
     <li>
@@ -53,7 +55,7 @@ const updated = "August 23, 2026"
 
   <h2>Third-party services</h2>
   <ul>
-    <li><strong>Vercel</strong> — hosting and CDN</li>
+    <li><strong>Vercel</strong> — hosting, CDN, and cookieless Web Analytics (page views and referrers only)</li>
     <li><strong>PostHog</strong> — cookieless product analytics, session replay, heatmaps, web vitals, error capture, and feature flags (Cloud US)</li>
     <li><strong>Meta / WhatsApp</strong> — messaging delivery and Business Platform APIs</li>
     <li><strong>Resend</strong> — encrypted contact email delivery</li>

@@ -50,7 +50,7 @@ describe("sync-vercel-security-headers", () => {
     )
   })
 
-  it("allows PostHog on both the main and legal CSPs without Vercel Analytics hosts", () => {
+  it("allows PostHog on both CSPs and Vercel Analytics hosts only on the main CSP", () => {
     const mainCsp = cspFor("/(.*)")
     const legalCsp = cspFor("/(policy|terms|data-deletion)")
 
@@ -66,8 +66,8 @@ describe("sync-vercel-security-headers", () => {
     expect(directive(legalCsp, "frame-src")).toContain(POSTHOG_HOST)
     expect(directive(legalCsp, "worker-src")).toContain("blob:")
 
-    expect(directive(mainCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
-    expect(directive(mainCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
+    expect(directive(mainCsp, "script-src")).toContain("https://va.vercel-scripts.com")
+    expect(directive(mainCsp, "connect-src")).toContain("https://vitals.vercel-insights.com")
     expect(directive(legalCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
     expect(directive(legalCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
 

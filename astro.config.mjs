@@ -6,7 +6,7 @@ import vercel from "@astrojs/vercel"
 
 export default defineConfig({
   site: "https://jseramn.tech",
-  compressHTML: false,
+  compressHTML: true,
   output: "static",
   adapter: vercel({
     // Installed @astrojs/vercel@8 uses edgeMiddleware (not middlewareMode).

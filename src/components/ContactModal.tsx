@@ -230,6 +230,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
       {open && (
         <motion.div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          data-contact-modal-open=""
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

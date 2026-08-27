@@ -223,32 +223,13 @@ export function mountHeroAscii(
   if (displayCtx) {
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
   }
-  // #region agent log
-  fetch("http://127.0.0.1:7586/ingest/00af1405-f462-421b-a094-07596f9f5fa4", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "2d62cf",
-    },
-    body: JSON.stringify({
-      sessionId: "2d62cf",
-      runId: "post-fix",
-      hypothesisId: "F",
-      location: "heroAsciiRuntime.ts:mount",
-      message: "ascii paint canvas parent",
-      data: {
-        ownsPaintCanvas,
-        parentIsHeroRoot: displayCanvas.parentElement?.hasAttribute("data-hero-root") ?? false,
-        parentClass: displayCanvas.parentElement?.className ?? "",
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {})
-  // #endregion
 
   let mouseX = 0
   let mouseY = 0
   let zoom: number = VIDEO_ZOOM.default
+  let lastPointerAt = 0
+  let dragZoom = false
+  let lastDragY = 0
   let raf = 0
   let alive = true
   let lastSampleAt = 0
@@ -289,6 +270,7 @@ export function mountHeroAscii(
   const applyCamera = () => {
     const hovering = (() => {
       const root = document.querySelector("[data-hero-root]")
+      if (performance.now() - lastPointerAt < 800) return true
       return root ? root.matches(":hover") : true
     })()
     const inCenter =
@@ -453,6 +435,34 @@ export function mountHeroAscii(
   const onMouseMove = (event: MouseEvent) => {
     mouseX = (event.clientX / window.innerWidth - 0.5) * 2
     mouseY = (event.clientY / window.innerHeight - 0.5) * 2
+    lastPointerAt = performance.now()
+  }
+
+  const onPointerMove = (event: PointerEvent) => {
+    mouseX = (event.clientX / window.innerWidth - 0.5) * 2
+    mouseY = (event.clientY / window.innerHeight - 0.5) * 2
+    lastPointerAt = performance.now()
+    if (dragZoom) {
+      zoom = clamp(
+        zoom + (event.clientY - lastDragY) * VIDEO_ZOOM.wheelStep * 3,
+        VIDEO_ZOOM.min,
+        VIDEO_ZOOM.max,
+      )
+      lastDragY = event.clientY
+    }
+  }
+
+  const onPointerDown = (event: PointerEvent) => {
+    const target = event.target
+    const onControl =
+      target instanceof Element && Boolean(target.closest("a,button,input,textarea,[role='dialog']"))
+    dragZoom = event.pointerType !== "mouse" && !onControl
+    lastDragY = event.clientY
+    lastPointerAt = performance.now()
+  }
+
+  const onPointerUp = () => {
+    dragZoom = false
   }
 
   const onWheel = (event: WheelEvent) => {
@@ -511,6 +521,10 @@ export function mountHeroAscii(
 
   applySize()
   window.addEventListener("mousemove", onMouseMove)
+  window.addEventListener("pointermove", onPointerMove, { passive: true })
+  window.addEventListener("pointerdown", onPointerDown, { passive: true })
+  window.addEventListener("pointerup", onPointerUp, { passive: true })
+  window.addEventListener("pointercancel", onPointerUp, { passive: true })
   window.addEventListener("wheel", onWheel, { passive: false })
   window.addEventListener("resize", applySize)
   document.addEventListener("visibilitychange", onVisibility)
@@ -521,6 +535,10 @@ export function mountHeroAscii(
     alive = false
     cancelAnimationFrame(raf)
     window.removeEventListener("mousemove", onMouseMove)
+    window.removeEventListener("pointermove", onPointerMove)
+    window.removeEventListener("pointerdown", onPointerDown)
+    window.removeEventListener("pointerup", onPointerUp)
+    window.removeEventListener("pointercancel", onPointerUp)
     window.removeEventListener("wheel", onWheel)
     window.removeEventListener("resize", applySize)
     document.removeEventListener("visibilitychange", onVisibility)

@@ -13,7 +13,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { TextLoop } from "./TextLoop"
-import { ContactModal } from "./ContactModal"
 import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
 import { site } from "../config/site"
@@ -25,6 +24,9 @@ import {
 import type { GitHubStats } from "../lib/githubStats"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
+const ContactModal = lazy(() =>
+  import("./ContactModal").then((mod) => ({ default: mod.ContactModal })),
+)
 
 const YT_TRACKS = site.tracks
 const PROFESSIONS = site.roles
@@ -108,27 +110,53 @@ function useGitHubStats() {
 }
 
 export default function Hero() {
-  const desc = useScramble(DESC, { autoStart: true })
+  const desc = useScramble(DESC)
   const ghStats = useGitHubStats()
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
   const [contactOpen, setContactOpen] = useState(false)
+  const [asciiReady, setAsciiReady] = useState(false)
   const [roleIndex, setRoleIndex] = useState(0)
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<any>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const heroRootRef = useRef<HTMLDivElement>(null)
   const asciiPaintRef = useRef<HTMLCanvasElement>(null)
+  const trackIndexRef = useRef(trackIndex)
+  trackIndexRef.current = trackIndex
 
-  // YouTube IFrame Player API — start muted, unmute on first interaction
   useEffect(() => {
-    const tag = document.createElement("script")
-    tag.src = "https://www.youtube.com/iframe_api"
-    document.head.appendChild(tag)
+    let cancelled = false
+    const arm = () => {
+      if (!cancelled) setAsciiReady(true)
+    }
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(arm, { timeout: 2000 })
+      return () => {
+        cancelled = true
+        cancelIdleCallback(id)
+      }
+    }
+    const timer = window.setTimeout(arm, 2000)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [])
 
-    ;(window as any).onYouTubeIframeAPIReady = () => {
-      const track = YT_TRACKS[trackIndex]
-      playerRef.current = new (window as any).YT.Player("yt-player", {
+  useEffect(() => {
+    return () => {
+      if (playerRef.current?.destroy) playerRef.current.destroy()
+    }
+  }, [])
+
+  const ensureYtPlayer = useCallback((index: number) => {
+    const startPlayer = () => {
+      if (playerRef.current) return
+      const YT = (window as Window & { YT?: { Player: new (id: string, opts: unknown) => any } }).YT
+      if (!YT?.Player) return
+      const track = YT_TRACKS[index]
+      playerRef.current = new YT.Player("yt-player", {
         videoId: track.id,
         width: 1,
         height: 1,
@@ -145,45 +173,45 @@ export default function Hero() {
           playlist: track.id,
         },
         events: {
-          onReady: (e: any) => {
-            e.target.mute()
+          onReady: (e: { target: { unMute: () => void; setVolume: (n: number) => void; playVideo: () => void } }) => {
+            e.target.unMute()
+            e.target.setVolume(100)
             e.target.playVideo()
+            setMusicPlaying(true)
           },
         },
       })
     }
 
-    return () => {
-      if (playerRef.current?.destroy) playerRef.current.destroy()
+    if ((window as Window & { YT?: { Player?: unknown } }).YT?.Player) {
+      startPlayer()
+      return
     }
-  }, [])
-
-  // Unmute on first user interaction (click/tap/keypress)
-  useEffect(() => {
-    const events = ["click", "touchstart", "keydown", "pointerdown"] as const
-    const unmute = () => {
-      if (playerRef.current?.unMute) {
-        playerRef.current.unMute()
-        playerRef.current.setVolume(100)
-        setMusicPlaying(true)
-      }
-      events.forEach(e => window.removeEventListener(e, unmute))
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const tag = document.createElement("script")
+      tag.src = "https://www.youtube.com/iframe_api"
+      document.head.appendChild(tag)
     }
-    events.forEach(e => window.addEventListener(e, unmute, { once: true }))
-    return () => {
-      events.forEach(e => window.removeEventListener(e, unmute))
+    const previous = (window as Window & { onYouTubeIframeAPIReady?: () => void }).onYouTubeIframeAPIReady
+    ;(window as Window & { onYouTubeIframeAPIReady?: () => void }).onYouTubeIframeAPIReady = () => {
+      previous?.()
+      startPlayer()
     }
   }, [])
 
   const loadTrack = useCallback((index: number) => {
     setTrackIndex(index)
-    if (!playerRef.current?.loadVideoById) return
+    trackIndexRef.current = index
+    if (!playerRef.current?.loadVideoById) {
+      ensureYtPlayer(index)
+      return
+    }
     const track = YT_TRACKS[index]
     playerRef.current.loadVideoById({ videoId: track.id, startSeconds: track.start })
     playerRef.current.unMute()
     playerRef.current.setVolume(100)
     setMusicPlaying(true)
-  }, [])
+  }, [ensureYtPlayer])
 
   const nextTrack = useCallback(() => {
     loadTrack((trackIndex + 1) % YT_TRACKS.length)
@@ -200,7 +228,10 @@ export default function Hero() {
   }, [trackIndex, loadTrack])
 
   const toggleMusic = useCallback(() => {
-    if (!playerRef.current) return
+    if (!playerRef.current) {
+      ensureYtPlayer(trackIndexRef.current)
+      return
+    }
     if (musicPlaying) {
       playerRef.current.mute()
       setMusicPlaying(false)
@@ -208,16 +239,181 @@ export default function Hero() {
       playerRef.current.unMute()
       setMusicPlaying(true)
     }
-  }, [musicPlaying])
+  }, [ensureYtPlayer, musicPlaying])
+
+  useEffect(() => {
+    const root = heroRootRef.current
+    if (!root) return
+    let smoothRaf = 0
+    let settleRaf = 0
+    let pressed = false
+    let curX = 0
+    let curY = 0
+    let tgtX = 0
+    let tgtY = 0
+    let seeded = false
+    const emit = (x: number, y: number) => {
+      root.dispatchEvent(
+        new MouseEvent("mousemove", {
+          clientX: x,
+          clientY: y,
+          bubbles: true,
+        }),
+      )
+    }
+    const hosts = () =>
+      [...root.querySelectorAll("[data-glass-host]")] as HTMLElement[]
+    const stopSettle = () => {
+      if (settleRaf) {
+        cancelAnimationFrame(settleRaf)
+        settleRaf = 0
+      }
+      delete root.dataset.glassSettling
+      for (const host of hosts()) host.classList.remove("is-settling")
+    }
+    const tick = () => {
+      smoothRaf = 0
+      curX += (tgtX - curX) * 0.15
+      curY += (tgtY - curY) * 0.15
+      emit(curX, curY)
+      if (Math.hypot(tgtX - curX, tgtY - curY) > 0.5) {
+        smoothRaf = requestAnimationFrame(tick)
+        return
+      }
+      curX = tgtX
+      curY = tgtY
+      emit(curX, curY)
+    }
+    const aim = (x: number, y: number) => {
+      tgtX = x
+      tgtY = y
+      if (!seeded) {
+        curX = x
+        curY = y
+        seeded = true
+      }
+      if (!smoothRaf) smoothRaf = requestAnimationFrame(tick)
+    }
+    const rest = () => {
+      if (smoothRaf) {
+        cancelAnimationFrame(smoothRaf)
+        smoothRaf = 0
+      }
+      stopSettle()
+      const origins = hosts().map((el) => {
+        const cs = getComputedStyle(el)
+        return {
+          el,
+          x: Number.parseFloat(cs.left) || 0,
+          y: Number.parseFloat(cs.top) || 0,
+          sx: Number.parseFloat(cs.getPropertyValue("--glass-sx")) || 1,
+          sy: Number.parseFloat(cs.getPropertyValue("--glass-sy")) || 1,
+        }
+      })
+      if (origins.every((o) => Math.abs(o.x) < 0.5 && Math.abs(o.y) < 0.5)) {
+        const box = root.getBoundingClientRect()
+        tgtX = box.left + box.width / 2
+        tgtY = box.top - 2000
+        curX = tgtX
+        curY = tgtY
+        seeded = false
+        emit(tgtX, tgtY)
+        return
+      }
+      root.dataset.glassSettling = "1"
+      for (const host of hosts()) host.classList.add("is-settling")
+      const started = performance.now()
+      const tickSettle = (now: number) => {
+        const t = Math.min(1, (now - started) / 220)
+        const ease = 1 - (1 - t) ** 3
+        for (const origin of origins) {
+          const x = origin.x * (1 - ease)
+          const y = origin.y * (1 - ease)
+          const sx = 1 + (origin.sx - 1) * (1 - ease)
+          const sy = 1 + (origin.sy - 1) * (1 - ease)
+          origin.el.style.left = `${x.toFixed(2)}px`
+          origin.el.style.top = `${y.toFixed(2)}px`
+          origin.el.style.setProperty("--glass-ex", `${x.toFixed(2)}px`)
+          origin.el.style.setProperty("--glass-ey", `${y.toFixed(2)}px`)
+          origin.el.style.setProperty("--glass-sx", sx.toFixed(4))
+          origin.el.style.setProperty("--glass-sy", sy.toFixed(4))
+        }
+        if (t < 1) {
+          settleRaf = requestAnimationFrame(tickSettle)
+          return
+        }
+        settleRaf = 0
+        stopSettle()
+        const box = root.getBoundingClientRect()
+        tgtX = box.left + box.width / 2
+        tgtY = box.top - 2000
+        curX = tgtX
+        curY = tgtY
+        seeded = false
+        emit(tgtX, tgtY)
+      }
+      settleRaf = requestAnimationFrame(tickSettle)
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") return
+      pressed = true
+      stopSettle()
+      const onControl =
+        event.target instanceof Element &&
+        Boolean(event.target.closest("a,button,input,textarea,label,[role='dialog']"))
+      if (!onControl) {
+        try {
+          root.setPointerCapture(event.pointerId)
+        } catch {
+          /* Safari may reject capture on a non-element target */
+        }
+      }
+      seeded = true
+      curX = tgtX = event.clientX
+      curY = tgtY = event.clientY
+      emit(curX, curY)
+    }
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") return
+      if (!pressed) return
+      aim(event.clientX, event.clientY)
+    }
+    const onPointerUp = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") return
+      if (!pressed) return
+      pressed = false
+      try {
+        root.releasePointerCapture(event.pointerId)
+      } catch {
+        /* capture may already be released */
+      }
+      rest()
+    }
+    root.addEventListener("pointerdown", onPointerDown, { passive: true })
+    root.addEventListener("pointermove", onPointerMove, { passive: true })
+    root.addEventListener("pointerup", onPointerUp, { passive: true })
+    root.addEventListener("pointercancel", onPointerUp, { passive: true })
+    return () => {
+      cancelAnimationFrame(smoothRaf)
+      cancelAnimationFrame(settleRaf)
+      delete root.dataset.glassSettling
+      root.removeEventListener("pointerdown", onPointerDown)
+      root.removeEventListener("pointermove", onPointerMove)
+      root.removeEventListener("pointerup", onPointerUp)
+      root.removeEventListener("pointercancel", onPointerUp)
+    }
+  }, [])
 
   return (
     <>
-      <Suspense fallback={<div className="fixed inset-0 z-0 bg-black" aria-hidden />}>
-        <HeroAsciiBackground paintCanvasRef={asciiPaintRef} />
-      </Suspense>
+      {asciiReady ? (
+        <Suspense fallback={null}>
+          <HeroAsciiBackground paintCanvasRef={asciiPaintRef} />
+        </Suspense>
+      ) : null}
       <div
         ref={heroRootRef}
-        className="relative z-10 h-dvh max-h-dvh overflow-hidden"
+        className="relative z-10 flex h-dvh max-h-dvh flex-col overflow-hidden md:block"
         data-hero-root
       >
       <canvas
@@ -237,7 +433,7 @@ export default function Hero() {
         className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
         aria-hidden
       />
-      <div className="absolute inset-x-0 top-0 z-10 pt-6 md:pt-8">
+      <div className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:block md:px-0 md:pt-8">
         <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
         <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
           <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
@@ -285,8 +481,7 @@ export default function Hero() {
           {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
         </InfiniteSlider>
         </GlassSurface>
-      </div>
-      <div className="absolute inset-x-0 z-10 md:inset-x-auto md:right-8 top-14 md:top-24">
+      <div className="md:absolute md:inset-x-auto md:right-8 md:top-24">
         <GlassSurface preset="pill" mouseContainer={heroRootRef} className="w-full md:w-fit md:ml-auto">
         <div className="font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
         {musicPlaying ? (
@@ -326,8 +521,35 @@ export default function Hero() {
         </div>
         </GlassSurface>
       </div>
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col md:flex-row md:items-end md:justify-between px-4 md:px-16 pb-8 md:pb-12 gap-4 md:gap-0">
-        <GlassSurface preset="button" mouseContainer={heroRootRef}>
+      </div>
+      <div className="relative z-[1] min-h-0 flex-1 pointer-events-none md:hidden" aria-hidden />
+      <div className="relative z-10 mt-auto flex flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:contents">
+      <div className="flex justify-center z-10 md:absolute md:left-8 md:top-24 md:bottom-auto md:right-auto md:translate-x-0 md:justify-start">
+        <GlassSurface preset="dock" mouseContainer={heroRootRef}>
+        <div className="flex flex-row items-center gap-4 md:gap-5">
+        {site.socials.map((social) => {
+          const Icon = SOCIAL_ICONS[social.icon]
+          if (!Icon) return null
+          const external = social.href.startsWith("http")
+          return (
+            <a
+              key={social.id}
+              href={social.href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
+              aria-label={social.id}
+              onClick={() => onOutboundSocial(social.id)}
+            >
+              <Icon size={24} className="md:w-[26px] md:h-[26px]" />
+            </a>
+          )
+        })}
+        </div>
+        </GlassSurface>
+      </div>
+      <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
+        <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
         <button
           type="button"
           onClick={() => {
@@ -351,7 +573,7 @@ export default function Hero() {
           </TextLoop>
         </button>
         </GlassSurface>
-        <GlassSurface preset="card" mouseContainer={heroRootRef}>
+        <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
         <p
           className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
           onMouseEnter={desc.start}
@@ -361,39 +583,20 @@ export default function Hero() {
         </p>
         </GlassSurface>
       </div>
+      </div>
       <div className="absolute w-0 h-0 overflow-hidden">
         <div id="yt-player" ref={playerContainerRef} />
       </div>
-      <div className="absolute right-4 top-1/2 z-10 -translate-y-1/2 md:left-8 md:right-auto md:top-24 md:translate-y-0">
-        <GlassSurface preset="dock" mouseContainer={heroRootRef}>
-        <div className="flex flex-col items-center gap-4 md:flex-row md:gap-5">
-        {site.socials.map((social) => {
-          const Icon = SOCIAL_ICONS[social.icon]
-          if (!Icon) return null
-          const external = social.href.startsWith("http")
-          return (
-            <a
-              key={social.id}
-              href={social.href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener noreferrer" : undefined}
-              className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
-              aria-label={social.id}
-              onClick={() => onOutboundSocial(social.id)}
-            >
-              <Icon size={24} className="md:w-[26px] md:h-[26px]" />
-            </a>
-          )
-        })}
-        </div>
-        </GlassSurface>
-      </div>
-      <ContactModal
-        open={contactOpen}
-        onClose={() => setContactOpen(false)}
-        contextRole={activeRole}
-        mouseContainer={heroRootRef}
-      />
+      {contactOpen ? (
+        <Suspense fallback={null}>
+          <ContactModal
+            open={contactOpen}
+            onClose={() => setContactOpen(false)}
+            contextRole={activeRole}
+            mouseContainer={heroRootRef}
+          />
+        </Suspense>
+      ) : null}
       </div>
     </>
   )

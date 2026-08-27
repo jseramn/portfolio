@@ -8,7 +8,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react"
-import { shouldUseLiquidGlass } from "../lib/shouldUseLiquidGlass"
+import { chromiumRuntimeHint, shouldUseLiquidGlass } from "../lib/shouldUseLiquidGlass"
 import { prefersReducedMotion } from "../lib/webgl"
 
 export type GlassPreset = "bar" | "pill" | "dock" | "button" | "card" | "modal"
@@ -91,102 +91,116 @@ const PRESETS: Record<
 const STRETCH_PRESETS = new Set<GlassPreset>(["bar", "modal"])
 const CARD_FAMILY = new Set<GlassPreset>(["bar", "card", "modal"])
 
-type PortraitBox = { x: number; y: number; w: number; h: number }
+type CssBox = { left: number; top: number; width: number; height: number }
 
-function readPortraitBox(ascii: HTMLCanvasElement): PortraitBox {
-  const raw = ascii.dataset.glassBox
-  if (raw) {
-    const [x, y, w, h] = raw.split(",").map(Number)
-    if (w > 1 && h > 1) return { x, y, w, h }
+/** Map a pane's on-screen box onto the ASCII bitmap that sits behind it. */
+export function behindRect(
+  asciiW: number,
+  asciiH: number,
+  asciiCss: CssBox,
+  hostCss: CssBox,
+  mag = 1,
+  occupied?: CssBox,
+) {
+  const scaleX = asciiW / Math.max(asciiCss.width, 1)
+  const scaleY = asciiH / Math.max(asciiCss.height, 1)
+  let sw = Math.max(1, (hostCss.width * scaleX) / mag)
+  let sh = Math.max(1, (hostCss.height * scaleY) / mag)
+  if (sw > asciiW) {
+    sh *= asciiW / sw
+    sw = asciiW
   }
-  return { x: 0, y: 0, w: ascii.width, h: ascii.height }
-}
-
-function lensRect(box: PortraitBox, destW: number, destH: number) {
-  const aspect = destW / Math.max(destH, 1)
-  let srcH = box.h
-  let srcW = srcH * aspect
-  if (srcW > box.w) {
-    srcW = box.w
-    srcH = srcW / aspect
+  if (sh > asciiH) {
+    sw *= asciiH / sh
+    sh = asciiH
   }
-  const sx = box.x + (box.w - srcW) / 2
-  const maxSy = Math.max(0, box.h - srcH)
-  const sy = box.y + Math.min(maxSy, Math.max(0, box.h * 0.32 - srcH / 2))
-  return { sx, sy, sw: srcW, sh: srcH }
+  const cx = (hostCss.left + hostCss.width / 2 - asciiCss.left) * scaleX
+  const cy = (hostCss.top + hostCss.height / 2 - asciiCss.top) * scaleY
+  let sx = Math.min(Math.max(0, cx - sw / 2), Math.max(0, asciiW - sw))
+  let sy = Math.min(Math.max(0, cy - sh / 2), Math.max(0, asciiH - sh))
+  if (occupied && occupied.width >= 2 && occupied.height >= 2) {
+    const ox = occupied.left
+    const oy = occupied.top
+    const ow = occupied.width
+    const oh = occupied.height
+    if (sw > ow) {
+      sh *= ow / sw
+      sw = ow
+    }
+    if (sh > oh) {
+      sw *= oh / sh
+      sh = oh
+    }
+    const padX = Math.min(ow / 2, Math.max(sw / 2, ow * 0.22))
+    const padY = Math.min(oh / 2, Math.max(sh / 2, oh * 0.22))
+    const ncx = Math.min(Math.max(cx, ox + padX), ox + ow - padX)
+    const ncy = Math.min(Math.max(cy, oy + padY), oy + oh - padY)
+    sx = Math.min(Math.max(ox, ncx - sw / 2), Math.max(ox, ox + ow - sw))
+    sy = Math.min(Math.max(oy, ncy - sh / 2), Math.max(oy, oy + oh - sh))
+  }
+  return { sx, sy, sw, sh }
 }
 
 const GLASS_MS = 1000 / 12
 const glassJobs = new Set<() => void>()
 let glassPump = 0
 let glassPumpAt = 0
-let glassPaintN = 0
-let glassSkipN = 0
-let glassTickN = 0
-let glassPaintMs = 0
-let glassLogAt = 0
+let pumpAscii: HTMLCanvasElement | null = null
+let pumpAsciiRect: DOMRect | null = null
+let glassResumeBound = false
 
 const LiquidGlass = lazy(() => import("liquid-glass-react"))
 
-// #region agent log
-function dbg(
-  hypothesisId: string,
-  location: string,
-  message: string,
-  data: Record<string, unknown>,
-) {
-  fetch("http://127.0.0.1:7586/ingest/00af1405-f462-421b-a094-07596f9f5fa4", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "2d62cf",
-    },
-    body: JSON.stringify({
-      sessionId: "2d62cf",
-      runId: "post-fix",
-      hypothesisId,
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {})
+function glassShouldPause() {
+  if (typeof document === "undefined") return true
+  if (document.hidden) return true
+  if (document.querySelector("[data-contact-modal-open]")) return true
+  if (document.querySelector('[role="dialog"][aria-modal="true"]')) return true
+  return false
 }
-// #endregion
 
-function reportGlassPump(now: number) {
-  glassTickN++
-  if (now - glassLogAt < 1000) return
-  const payload = {
-    jobs: glassJobs.size,
-    ticks: glassTickN,
-    paints: glassPaintN,
-    skips: glassSkipN,
-    avgTickMs: Number((glassPaintMs / Math.max(glassTickN, 1)).toFixed(3)),
-    hz: 12,
-    dpr: 1,
+function bindGlassResume() {
+  if (glassResumeBound || typeof document === "undefined") return
+  glassResumeBound = true
+  const resume = () => {
+    if (glassShouldPause()) return
+    ensureGlassPump()
   }
-  // #region agent log
-  dbg("Q", "GlassSurface.tsx:pump", "shared glass pump 1s", payload)
-  document.documentElement.setAttribute("data-glass-perf", JSON.stringify(payload))
-  // #endregion
-  glassTickN = 0
-  glassPaintN = 0
-  glassSkipN = 0
-  glassPaintMs = 0
-  glassLogAt = now
+  document.addEventListener("visibilitychange", resume)
+  const observer = new MutationObserver(resume)
+  observer.observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-contact-modal-open", "aria-modal", "hidden"],
+  })
 }
 
 function ensureGlassPump() {
   if (glassPump) return
+  if (glassShouldPause()) {
+    bindGlassResume()
+    return
+  }
   const step = (now: number) => {
+    if (glassJobs.size === 0) {
+      glassPump = 0
+      return
+    }
+    if (glassShouldPause()) {
+      cancelAnimationFrame(glassPump)
+      glassPump = 0
+      bindGlassResume()
+      return
+    }
     glassPump = requestAnimationFrame(step)
     if (now - glassPumpAt < GLASS_MS) return
     glassPumpAt = now
-    const t0 = performance.now()
+    pumpAscii = document.querySelector(
+      "[data-hero-root] > .hero-ascii-display",
+    ) as HTMLCanvasElement | null
+    pumpAsciiRect = pumpAscii?.getBoundingClientRect() ?? null
     for (const job of glassJobs) job()
-    glassPaintMs += performance.now() - t0
-    reportGlassPump(now)
   }
   glassPump = requestAnimationFrame(step)
 }
@@ -220,110 +234,47 @@ export function GlassSurface({
   const frostPx = 4 + cfg.blurAmount * 32
 
   useEffect(() => {
-    const userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent
-    const reducedMotion = typeof window === "undefined" ? false : prefersReducedMotion()
-    const live = shouldUseLiquidGlass(userAgent, reducedMotion)
-    // #region agent log
-    dbg("A", "GlassSurface.tsx:gate", "liquid-glass gate", {
-      preset,
-      live,
-      reducedMotion,
-      ua: userAgent.slice(0, 120),
-      href: typeof location === "undefined" ? "" : location.href,
-    })
-    // #endregion
-    setUseLiveGlass(live)
-  }, [preset])
-
-  useEffect(() => {
-    if (!useLiveGlass) return
     let cancelled = false
-    const frame = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (cancelled) return
-        const host = hostRef.current
-        const warp = host?.querySelector(".glass__warp") as HTMLElement | null
-        const glass = host?.querySelector(".glass") as HTMLElement | null
-        const rel = host?.querySelector(":scope > .relative") as HTMLElement | null
-        const svgFilter = host?.querySelector("filter")
-        const warpCs = warp ? getComputedStyle(warp) : null
-        const overlays = host
-          ? [...host.querySelectorAll(":scope > .bg-black")].map((el) => {
-              const cs = getComputedStyle(el)
-              return {
-                opacity: cs.opacity,
-                bg: cs.backgroundColor,
-                pe: cs.pointerEvents,
+    const arm = () => {
+      if (cancelled) return
+      const userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent
+      const reducedMotion = typeof window === "undefined" ? false : prefersReducedMotion()
+      const chromeObject =
+        typeof window !== "undefined" &&
+        Boolean((window as Window & { chrome?: unknown }).chrome)
+      const brands =
+        typeof navigator !== "undefined" && "userAgentData" in navigator
+          ? (
+              navigator as Navigator & {
+                userAgentData?: { brands?: { brand: string }[] }
               }
-            })
+            ).userAgentData?.brands?.map((item) => item.brand) ?? []
           : []
-        // #region agent log
-        dbg("B", "GlassSurface.tsx:host-lock", "host transform lock", {
-          preset,
-          hostTransform: host ? getComputedStyle(host).transform : "no-host",
-          relTransform: rel ? getComputedStyle(rel).transform : "no-rel",
-          mouseContainer: Boolean(mouseContainer.current),
-        })
-        dbg("C", "GlassSurface.tsx:warp", "glass warp computed", {
-          preset,
-          hasWarp: Boolean(warp),
-          warpFilter: warpCs?.filter ?? "none",
-          warpBackdrop: warpCs?.webkitBackdropFilter || warpCs?.backdropFilter || "none",
-          warpW: warp ? Math.round(warp.getBoundingClientRect().width) : 0,
-          warpH: warp ? Math.round(warp.getBoundingClientRect().height) : 0,
-          glassOverflow: glass ? getComputedStyle(glass).overflow : "no-glass",
-          filterId: svgFilter?.id ?? "",
-          asciiTag: document.querySelector(".hero-ascii-display")?.tagName ?? "missing",
-          asciiInHeroRoot: Boolean(
-            document.querySelector("[data-hero-root] > .hero-ascii-display"),
-          ),
-          canvasZ: (() => {
-            const el = document.querySelector("[data-hero-root] > .hero-ascii-display")
-            return el ? getComputedStyle(el).zIndex : "missing"
-          })(),
-          scrimZ: [...document.querySelectorAll("[class*='hero-scrim']")].map(
-            (el) => getComputedStyle(el).zIndex,
-          ),
-          glassBg: glass ? getComputedStyle(glass).backgroundColor : "no-glass",
-          spanMix: host
-            ? [...host.querySelectorAll(":scope > span")].map(
-                (el) => getComputedStyle(el).mixBlendMode,
-              )
-            : [],
-          heroBg: (() => {
-            const root = document.querySelector("[data-hero-root]")
-            return root instanceof HTMLElement
-              ? root.style.backgroundImage.slice(0, 32) || "none"
-              : "no-root"
-          })(),
-        })
-        dbg("D", "GlassSurface.tsx:overlays", "bg-black overlay paint", {
-          preset,
-          overlayCount: overlays.length,
-          overlays,
-        })
-        dbg("E", "GlassSurface.tsx:mouse", "mouse container for elasticity", {
-          preset,
-          mouseContainer: Boolean(mouseContainer.current),
-          elasticity: cfg.elasticity,
-          displacementScale: cfg.displacementScale,
-        })
-        // #endregion
-      })
-    })
+      const chromiumRuntime = chromiumRuntimeHint(userAgent, chromeObject, brands)
+      const live = shouldUseLiquidGlass(userAgent, reducedMotion, chromiumRuntime)
+      setUseLiveGlass(live)
+    }
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(arm, { timeout: 2000 })
+      return () => {
+        cancelled = true
+        cancelIdleCallback(id)
+      }
+    }
+    const timer = window.setTimeout(arm, 2000)
     return () => {
       cancelled = true
-      cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
     }
-  }, [useLiveGlass, preset, mouseContainer, cfg.elasticity, cfg.displacementScale])
+  }, [preset])
 
   useEffect(() => {
     if (!useLiveGlass || stretch) return
     const container = mouseContainer.current
     const host = hostRef.current
     if (!container || !host) return
-    let loggedMove = false
     const onMove = (event: MouseEvent) => {
+      if (container.dataset.glassSettling === "1") return
       const rect = host.getBoundingClientRect()
       const dx = event.clientX - (rect.left + rect.width / 2)
       const dy = event.clientY - (rect.top + rect.height / 2)
@@ -347,148 +298,109 @@ export function GlassSurface({
       host.style.setProperty("--glass-ey", `${y.toFixed(2)}px`)
       host.style.setProperty("--glass-sx", scaleX.toFixed(4))
       host.style.setProperty("--glass-sy", scaleY.toFixed(4))
-      if (!loggedMove) {
-        loggedMove = true
-        // #region agent log
-        dbg("K", "GlassSurface.tsx:elasticity", "first mouse elasticity", {
-          preset,
-          ex: x,
-          ey: y,
-          scaleX,
-          scaleY,
-          fade,
-        })
-        // #endregion
-      }
+      host.style.left = `${x.toFixed(2)}px`
+      host.style.top = `${y.toFixed(2)}px`
     }
+    container.addEventListener("pointermove", onMove)
     container.addEventListener("mousemove", onMove)
-    return () => container.removeEventListener("mousemove", onMove)
+    return () => {
+      container.removeEventListener("pointermove", onMove)
+      container.removeEventListener("mousemove", onMove)
+    }
   }, [useLiveGlass, stretch, mouseContainer, cfg.elasticity])
 
   useEffect(() => {
-    if (!useLiveGlass) return
     const host = hostRef.current
     const dest = refractionRef.current
     if (!host || !dest) return
     let cancelled = false
     let boot = 0
     let tries = 0
-    let loggedBind = false
-    let loggedPaint = false
     let lastGen = ""
-    let hostW = 0
-    let hostH = 0
+    let lastPos = ""
 
     const bindFilter = () => {
-      const svg = host.querySelector("svg")
       const filterEl = host.querySelector("filter")
-      const warp = host.querySelector(".glass__warp") as HTMLElement | null
       const rect = host.getBoundingClientRect()
-      hostW = Math.max(0, Math.round(rect.width))
-      hostH = Math.max(0, Math.round(rect.height))
       host.style.setProperty("--glass-frost", `${frostPx}px`)
+      const svg = filterEl?.closest("svg")
       if (svg) {
         svg.style.overflow = "visible"
         svg.style.width = `${rect.width}px`
         svg.style.height = `${rect.height}px`
-      }
-      if (filterEl?.id && !loggedBind) {
-        loggedBind = true
-        // #region agent log
-        dbg("I", "GlassSurface.tsx:refraction", "ascii clone filter bind", {
-          preset,
-          filterId: filterEl.id,
-          cloneFilter: getComputedStyle(dest).filter,
-          svgW: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
-          hostW: Math.round(rect.width),
-          hostH: Math.round(rect.height),
-          warpBF: warp ? getComputedStyle(warp).backdropFilter : "no-warp",
-        })
-        dbg("J", "GlassSurface.tsx:svg-size", "svg vs host after bind", {
-          preset,
-          svgStyleW: svg instanceof SVGElement ? svg.style.width : "",
-          svgOverflow: svg ? getComputedStyle(svg).overflow : "no-svg",
-        })
-        // #endregion
       }
       return Boolean(filterEl?.id)
     }
 
     const paint = () => {
       if (cancelled) return
-      const ascii = document.querySelector(
-        "[data-hero-root] > .hero-ascii-display",
-      ) as HTMLCanvasElement | null
-      if (!ascii || ascii.width < 800) return
-      const gen = ascii.dataset.glassGen ?? ""
-      const w = hostW
-      const h = hostH
+      const ascii = pumpAscii
+      const ar = pumpAsciiRect
+      const ready = Boolean(
+        ascii &&
+          ar &&
+          ascii.width >= 2 &&
+          ascii.height >= 2 &&
+          ascii.dataset.glassGen,
+      )
+      if (!ready) {
+        return
+      }
+      if (!ascii || !ar) return
+      const hr = host.getBoundingClientRect()
+      const w = Math.max(1, Math.round(hr.width))
+      const h = Math.max(1, Math.round(hr.height))
       if (w < 1 || h < 1) return
-      if (gen === lastGen && dest.width === w && dest.height === h) {
-        glassSkipN++
+      const gen = ascii.dataset.glassGen ?? ""
+      const pos = `${Math.round(hr.left)},${Math.round(hr.top)}`
+      if (gen === lastGen && dest.width === w && dest.height === h && pos === lastPos) {
         return
       }
       lastGen = gen
-      glassPaintN++
+      lastPos = pos
       if (dest.width !== w) dest.width = w
       if (dest.height !== h) dest.height = h
       const ctx = dest.getContext("2d")
       if (!ctx) return
-      const box = readPortraitBox(ascii)
-      const lens = lensRect(box, w, h)
+      const boxRaw = ascii.dataset.glassBox ?? ""
+      const boxParts = boxRaw.split(",").map(Number)
+      const occupied =
+        boxParts.length === 4 &&
+        boxParts.every((n) => Number.isFinite(n) && n >= 0) &&
+        boxParts[2] >= 2 &&
+        boxParts[3] >= 2
+          ? { left: boxParts[0], top: boxParts[1], width: boxParts[2], height: boxParts[3] }
+          : undefined
+      const lens = behindRect(ascii.width, ascii.height, ar, hr, 1.25, occupied)
       ctx.fillStyle = "#000"
       ctx.fillRect(0, 0, w, h)
       ctx.drawImage(ascii, lens.sx, lens.sy, lens.sw, lens.sh, 0, 0, w, h)
-      if (!loggedPaint && dest.width > 0) {
-        loggedPaint = true
-        // #region agent log
-        dbg("P", "GlassSurface.tsx:refraction-paint", "shared 12fps css frost", {
-          preset,
-          destW: dest.width,
-          destH: dest.height,
-          asciiW: ascii.width,
-          asciiH: ascii.height,
-          box,
-          lens,
-          frostPx,
-          hz: 12,
-        })
-        host.setAttribute(
-          "data-glass-debug",
-          JSON.stringify({
-            preset,
-            destW: dest.width,
-            destH: dest.height,
-            box,
-            lens,
-            hz: 12,
-          }),
-        )
-        // #endregion
-      }
     }
 
     const waitForFilter = () => {
       if (cancelled) return
-      if (bindFilter() || tries++ > 90) {
-        glassJobs.add(paint)
-        ensureGlassPump()
-        return
-      }
+      if (bindFilter() || tries++ > 90) return
       boot = requestAnimationFrame(waitForFilter)
     }
 
-    boot = requestAnimationFrame(waitForFilter)
-    const ro = new ResizeObserver(() => {
-      if (!cancelled) bindFilter()
-    })
-    ro.observe(host)
+    glassJobs.add(paint)
+    ensureGlassPump()
+    let ro: ResizeObserver | undefined
+    if (useLiveGlass) {
+      boot = requestAnimationFrame(waitForFilter)
+      ro = new ResizeObserver(() => {
+        if (!cancelled) bindFilter()
+      })
+      ro.observe(host)
+    } else {
+      host.style.setProperty("--glass-frost", `${frostPx}px`)
+    }
     return () => {
       cancelled = true
       cancelAnimationFrame(boot)
       glassJobs.delete(paint)
       stopGlassPumpIfIdle()
-      ro.disconnect()
+      ro?.disconnect()
     }
   }, [useLiveGlass, preset, frostPx])
 
@@ -508,7 +420,14 @@ export function GlassSurface({
     </div>
   )
 
-  if (!useLiveGlass) return fallback
+  if (!useLiveGlass) {
+    return (
+      <div ref={hostRef} className={shellClassName} style={shellStyle}>
+        <canvas ref={refractionRef} className="glass-refraction" aria-hidden />
+        {children}
+      </div>
+    )
+  }
 
   const pane = stretch ? (
     <div className="min-w-0 w-full overflow-hidden">{children}</div>

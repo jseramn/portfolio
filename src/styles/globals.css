@@ -213,7 +213,25 @@ body {
 }
 
 .glass-fallback {
-  /* Shared fallback shell hook. Family frost lives on -card / -button. */
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-fallback > canvas.glass-refraction {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  border-radius: inherit;
+  filter: blur(var(--glass-frost, 4px)) brightness(2.6) contrast(1.45);
+}
+
+.glass-fallback > :not(canvas) {
+  position: relative;
+  z-index: 1;
 }
 
 .glass-fallback-card {
@@ -224,6 +242,11 @@ body {
 .glass-fallback-button {
   backdrop-filter: blur(7px) saturate(1);
   -webkit-backdrop-filter: blur(7px) saturate(1);
+}
+
+.glass-fallback:has(> canvas.glass-refraction) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /*
