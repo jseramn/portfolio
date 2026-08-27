@@ -15,7 +15,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 source_png="${1:-}"
 chrome_path="${CHROME_PATH:-$HOME/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome}"
-capture_url="${CAPTURE_URL:-https://www.jseramn.tech/}"
+capture_url="${CAPTURE_URL:-https://jseramn.tech/}"
 
 wait_and_capture() {
   local out="$1"
@@ -105,12 +105,12 @@ magick "$source_png" -crop 800x800+560+140 +repage PNG32:"$tmp/portrait-sq.png"
 magick "$tmp/portrait-sq.png" -resize 180x180! -strip PNG32:"$public/apple-touch-icon.png"
 magick "$tmp/portrait-sq.png" -resize 192x192! -strip PNG32:"$public/android-chrome-192x192.png"
 magick "$tmp/portrait-sq.png" -resize 512x512! -strip PNG32:"$public/android-chrome-512x512.png"
-magick "$tmp/portrait-sq.png" -resize 32x32! -strip PNG32:"$public/favicon.png"
+magick "$tmp/portrait-sq.png" -resize 32x32! -sigmoidal-contrast 3x50% -strip PNG32:"$public/favicon.png"
 
 magick "$tmp/portrait-sq.png" \
-  \( -clone 0 -resize 16x16 \) \
-  \( -clone 0 -resize 32x32 \) \
-  \( -clone 0 -resize 48x48 \) \
+  \( -clone 0 -resize 16x16 -sigmoidal-contrast 3x50% \) \
+  \( -clone 0 -resize 32x32 -sigmoidal-contrast 3x50% \) \
+  \( -clone 0 -resize 48x48 -sigmoidal-contrast 3x50% \) \
   -delete 0 -strip "$public/favicon.ico"
 
 cat > "$public/site.webmanifest" <<'EOF'
@@ -118,6 +118,9 @@ cat > "$public/site.webmanifest" <<'EOF'
   "name": "José Ramón García Del Risco",
   "short_name": "jseramn",
   "description": "Helping people with technology while I build things",
+  "lang": "en",
+  "id": "/",
+  "scope": "/",
   "start_url": "/",
   "display": "browser",
   "background_color": "#000000",

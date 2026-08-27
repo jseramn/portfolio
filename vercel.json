@@ -58,7 +58,7 @@
       ]
     },
     {
-      "source": "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png)",
+      "source": "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png|oembed.json)",
       "headers": [
         {
           "key": "Cross-Origin-Resource-Policy",

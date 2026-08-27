@@ -45,10 +45,16 @@ describe("preview assets", () => {
     const manifest = JSON.parse(readFileSync(join(publicDir, "site.webmanifest"), "utf8")) as {
       short_name: string
       theme_color: string
+      lang: string
+      id: string
+      scope: string
       icons: { src: string; sizes: string }[]
     }
     expect(manifest.short_name).toBe("jseramn")
     expect(manifest.theme_color).toBe("#000000")
+    expect(manifest.lang).toBe("en")
+    expect(manifest.id).toBe("/")
+    expect(manifest.scope).toBe("/")
     expect(manifest.icons.map((icon) => icon.sizes).sort()).toEqual(["192x192", "512x512"])
   })
 
@@ -62,7 +68,14 @@ describe("preview assets", () => {
       'property="og:image:alt"',
       'property="og:image:type"',
       'name="twitter:site"',
+      'name="twitter:url"',
       'name="twitter:image:alt"',
+      'property="og:locale:alternate"',
+      "es_CO",
+      'rel="alternate"',
+      "application/json+oembed",
+      "/oembed.json?url=",
+      "encodeURIComponent(canonical)",
       'sizes="16x16 32x32 48x48"',
       "content={canonical}",
     ]) {
@@ -90,13 +103,65 @@ describe("preview asset crawler headers", () => {
     expect(headers["Cache-Control"]).toBe(
       "public, max-age=86400, stale-while-revalidate=604800",
     )
+    expect(PREVIEW_ASSET_SOURCE).toContain("oembed.json")
   })
 })
 
 describe("generate-preview-assets script", () => {
+  const scriptPath = join(root, "scripts/generate-preview-assets.sh")
+  const script = () => readFileSync(scriptPath, "utf8")
+
   it("exists and is executable", () => {
-    const script = join(root, "scripts/generate-preview-assets.sh")
-    expect(existsSync(script)).toBe(true)
-    expect(Boolean(readFileSync(script).length)).toBe(true)
+    expect(existsSync(scriptPath)).toBe(true)
+    expect(Boolean(readFileSync(scriptPath).length)).toBe(true)
+  })
+
+  it("recaptures production and rejects dirty local Hero chrome", () => {
+    const source = script()
+    expect(source).toContain('capture_url="${CAPTURE_URL:-https://jseramn.tech/}"')
+    expect(source).toContain('querySelector(".hero-ascii-display")')
+    expect(source).not.toContain("/home/jseramn/portfolio")
+    expect(source).not.toContain("localhost")
+    expect(source).not.toContain("127.0.0.1")
+    expect(source).not.toContain('PNG32:"$public/favicon.svg"')
+    expect(source).not.toMatch(/cat > "\$public\/favicon\.svg"/)
+  })
+
+  it("boosts contrast only on 16/32/48 ICO frames and the 32px PNG", () => {
+    const source = script()
+    expect(source).toContain(
+      'magick "$tmp/portrait-sq.png" -resize 32x32! -sigmoidal-contrast 3x50% -strip PNG32:"$public/favicon.png"',
+    )
+    expect(source).toContain("-resize 16x16 -sigmoidal-contrast 3x50%")
+    expect(source).toContain("-resize 32x32 -sigmoidal-contrast 3x50%")
+    expect(source).toContain("-resize 48x48 -sigmoidal-contrast 3x50%")
+    const ogBlock = source.slice(
+      source.indexOf("# Open Graph / Twitter"),
+      source.indexOf("# ASCII portrait square"),
+    )
+    expect(ogBlock).toContain("thumbnail.png")
+    expect(ogBlock).not.toContain("sigmoidal-contrast")
+    expect(source).not.toContain("-resize 180x180! -sigmoidal-contrast")
+    expect(source).not.toContain("-resize 192x192! -sigmoidal-contrast")
+    expect(source).not.toContain("-resize 512x512! -sigmoidal-contrast")
+    expect(source).toContain(
+      'magick "$tmp/portrait-sq.png" -resize 180x180! -strip PNG32:"$public/apple-touch-icon.png"',
+    )
+    expect(source).toContain(
+      'magick "$tmp/portrait-sq.png" -resize 192x192! -strip PNG32:"$public/android-chrome-192x192.png"',
+    )
+    expect(source).toContain(
+      'magick "$tmp/portrait-sq.png" -resize 512x512! -strip PNG32:"$public/android-chrome-512x512.png"',
+    )
+    expect(source).toContain("-resize 1200x630! -strip PNG32:\"$tmp/thumbnail.png\"")
+  })
+
+  it("writes lang, id, and scope from the heredoc so public-only fields cannot survive", () => {
+    const source = script()
+    expect(source).toContain('cat > "$public/site.webmanifest" <<\'EOF\'')
+    const heredoc = source.slice(source.indexOf("<<'EOF'"), source.indexOf("\nEOF"))
+    expect(heredoc).toContain('"lang": "en"')
+    expect(heredoc).toContain('"id": "/"')
+    expect(heredoc).toContain('"scope": "/"')
   })
 })
