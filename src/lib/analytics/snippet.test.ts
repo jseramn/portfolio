@@ -29,6 +29,9 @@ describe("posthog.astro snippet", () => {
     expect(snippet).toContain('person_profiles: "identified_only"')
     expect(snippet).toContain("2026-05-30")
     expect(snippet).toContain("https://us.i.posthog.com")
+    expect(snippet).toContain("posthog.init")
+    expect(snippet).toContain("setTimeout(arm,6000)")
+    expect(snippet).not.toContain("requestIdleCallback")
   })
 
   it("is mounted in Layout next to cookieless PostHog; product events stay off Vercel; posthog-node stays off Edge middleware", () => {
@@ -41,6 +44,8 @@ describe("posthog.astro snippet", () => {
     )
     expect(vercelAnalytics).toMatch(/from ["']@vercel\/analytics\/astro["']/)
     expect(vercelAnalytics).toContain("<Analytics />")
+    expect(vercelAnalytics).toContain("localhost")
+    expect(vercelAnalytics).toContain("127.0.0.1")
     expect(vercelAnalytics).toContain("/policy")
     expect(vercelAnalytics).toContain("/terms")
     expect(vercelAnalytics).toContain("/data-deletion")

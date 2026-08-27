@@ -65,6 +65,14 @@ describe("built HTML overlay", () => {
     expect(readableLength(agentCopy("home")) / 25_000).toBeGreaterThanOrEqual(0.05)
   })
 
+  it("homepage source wraps the hero in a main landmark", () => {
+    const home = readFileSync(join(root, "src/pages/index.astro"), "utf8")
+    expect(home).toMatch(/<main\b/)
+    expect(home).toContain('<main class="contents">')
+    expect(home.indexOf("<main")).toBeLessThan(home.indexOf("<h1>"))
+    expect(home.indexOf("</main>")).toBeGreaterThan(home.indexOf("<Hero client:load"))
+  })
+
   it("homepage has h1, ≥800 readable chars, ≥5% ratio, sr-only, canonical, hero, email-only JSON-LD", async () => {
     let html: string | null = null
     const live = await fetchIfUp("/")
@@ -74,6 +82,7 @@ describe("built HTML overlay", () => {
 
     const text = readableText(html)
     expect(html).toMatch(/<h1[\s>]/)
+    expect(html).toMatch(/<main[\s>]/)
     expect(html.match(/<h2[\s>]/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
     expect(text.length).toBeGreaterThanOrEqual(800)
     const isViteDev = html.includes("/@vite/")

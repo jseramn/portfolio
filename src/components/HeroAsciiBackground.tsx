@@ -32,9 +32,9 @@ export default function HeroAsciiBackground({
     let cancelled = false
     let unmount: (() => void) | undefined
 
-    void import("../lib/heroAsciiRuntime").then(({ mountHeroAscii }) => {
+    void import("../lib/heroAsciiRuntime").then(async ({ mountHeroAscii }) => {
       if (cancelled || !host.isConnected) return
-      const dispose = mountHeroAscii(
+      const dispose = await mountHeroAscii(
         host,
         {
           samplerWebm: site.asciiSamplerWebm,

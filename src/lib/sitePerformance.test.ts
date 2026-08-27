@@ -35,7 +35,7 @@ describe("site performance chrome load", () => {
     expect(pkg.dependencies).not.toHaveProperty("@react-three/fiber")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/postprocessing")
     expect(pkg.dependencies).not.toHaveProperty("postprocessing")
-    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('from "three"')
+    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('import("three")')
   })
 
   it("compresses HTML without flipping prerender", () => {
@@ -57,12 +57,17 @@ describe("site performance chrome load", () => {
     expect(hero).toContain("onMouseLeave={desc.stop}")
   })
 
-  it("preloads Geist sans and mono woff2 without restyling ink or scrims", () => {
+  it("preloads Geist sans woff2 without restyling ink or scrims", () => {
     const layout = readSrc("layouts/Layout.astro")
     const css = readSrc("styles/globals.css")
     expect(layout).toContain("Geist-Variable.woff2?url")
-    expect(layout).toContain("GeistMono-Variable.woff2?url")
-    expect(layout).toContain('as="font" type="font/woff2" crossorigin')
+    expect(layout).not.toContain("GeistMono-Variable.woff2?url")
+    expect(layout).toContain('as="font"')
+    expect(layout).toContain('type="font/woff2"')
+    expect(layout).toContain('fetchpriority="high"')
+    expect(layout).toContain('globals.css?inline')
+    expect(css).toContain("GeistMono-Variable.woff2")
+    expect(css).toContain("font-display: optional")
     expect(css).toContain("--hero-ink")
     expect(css).toContain(".hero-scrim-top")
   })
@@ -94,5 +99,7 @@ describe("site performance chrome load", () => {
       expect(source).not.toContain("@react-three/fiber")
       expect(source).not.toContain("@react-three/postprocessing")
     }
+    expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
+    expect(ascii).toContain("VIDEO_PRELOAD")
   })
 })

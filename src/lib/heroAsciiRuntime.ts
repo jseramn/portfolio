@@ -1,17 +1,24 @@
 import {
-  BufferAttribute,
-  BufferGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  PerspectiveCamera,
-  PlaneGeometry,
-  Points,
-  PointsMaterial,
-  Scene,
-  SRGBColorSpace,
-  VideoTexture,
-  WebGLRenderer,
-} from "three"
+  MAX_CELLS,
+  VIDEO_PRELOAD,
+  cellBudget,
+  isPointerCoarse,
+  pickGrid,
+  planAsciiFrame,
+  sampleMsForLoop,
+  shouldRefineOccupancy,
+  shouldSkipSample,
+  shouldStartLoop,
+  shouldYieldToMain,
+  stampSliceEnd,
+  yieldToMain,
+} from "./heroAsciiBudget"
+import {
+  cellDestRect,
+  rgbaOffset,
+  shouldContinueStamp,
+  stampGlyphAlpha,
+} from "./heroAsciiStamp"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
@@ -38,7 +45,6 @@ const SAMPLE_ROWS = 54
 const EXTRUDE = 2.4
 const CENTER_THRESHOLD = 0.3
 const CHARSET = " .:-=+*#%@" // idx 8 = "%", idx 9 = "@"
-const ASCII_FPS = 12
 const PAPER_LUMA = 0.12
 const OPACITY_FLOOR = 0.16
 const OCCUPIED_IDX_MIN = 2
@@ -47,9 +53,6 @@ const STRETCH_LO = 0.02
 const STRETCH_HI = 0.98
 const LUMA_CONTRAST = 2.6
 const OCCUPANCY_MIN_NEIGHBORS = 2
-const MAX_CELLS = 12_000
-const GL_RESOLUTION = 0.15
-const SAMPLE_MS = 1000 / ASCII_FPS
 const CHARSET_LAST = CHARSET.length - 1
 const OCCUPIED_IDX_SPAN = CHARSET_LAST - OCCUPIED_IDX_MIN
 
@@ -99,33 +102,35 @@ function tryPlay(video: HTMLVideoElement) {
   void video.play().catch(() => {})
 }
 
-function pickGrid(cssW: number, cssH: number) {
-  let cols = Math.max(1, Math.floor(cssW * GL_RESOLUTION))
-  let rows = Math.max(1, Math.floor((cssH * GL_RESOLUTION) / 2))
-  const cells = cols * rows
-  if (cells > MAX_CELLS) {
-    const scale = Math.sqrt(MAX_CELLS / cells)
-    cols = Math.max(1, Math.floor(cols * scale))
-    rows = Math.max(1, Math.floor(rows * scale))
-    if (cols * rows > MAX_CELLS) {
-      rows = Math.max(1, Math.floor(MAX_CELLS / cols))
-    }
-  }
-  return { cols, rows }
-}
-
-export function mountHeroAscii(
+export async function mountHeroAscii(
   host: HTMLElement,
   opts: HeroAsciiMountOpts,
   paintCanvas?: HTMLCanvasElement | null,
-): () => void {
+): Promise<() => void> {
+  await yieldToMain()
+  const {
+    BufferAttribute,
+    BufferGeometry,
+    Mesh,
+    MeshBasicMaterial,
+    PerspectiveCamera,
+    PlaneGeometry,
+    Points,
+    PointsMaterial,
+    Scene,
+    SRGBColorSpace,
+    VideoTexture,
+    WebGLRenderer,
+  } = await import("three")
+  await yieldToMain()
+
   const video = document.createElement("video")
   video.muted = true
   video.defaultMuted = true
   video.loop = true
   video.playsInline = true
   video.controls = false
-  video.preload = "auto"
+  video.preload = VIDEO_PRELOAD
   video.disablePictureInPicture = true
   video.setAttribute("playsinline", "")
   video.setAttribute("webkit-playsinline", "")
@@ -148,9 +153,6 @@ export function mountHeroAscii(
     tryPlay(video)
   }
   video.addEventListener("error", onVideoError)
-  video.addEventListener("loadeddata", () => tryPlay(video))
-  video.addEventListener("canplay", () => tryPlay(video))
-  tryPlay(video)
 
   let renderer: WebGLRenderer
   try {
@@ -158,7 +160,7 @@ export function mountHeroAscii(
       alpha: false,
       antialias: false,
       powerPreference: "low-power",
-      preserveDrawingBuffer: true,
+      preserveDrawingBuffer: false,
     })
   } catch {
     video.pause()
@@ -191,6 +193,8 @@ export function mountHeroAscii(
   const cellLuma = new Float32Array(MAX_CELLS)
   const cellOccupied = new Uint8Array(MAX_CELLS)
   const occupiedLumaScratch = new Float32Array(MAX_CELLS)
+  const cellGlyphIdx = new Uint8Array(MAX_CELLS)
+  const cellAlpha = new Float32Array(MAX_CELLS)
   const pointsGeometry = new BufferGeometry()
   pointsGeometry.setAttribute("position", new BufferAttribute(positions, 3))
   pointsGeometry.setAttribute("color", new BufferAttribute(colors, 3))
@@ -219,7 +223,10 @@ export function mountHeroAscii(
     displayCanvas.setAttribute("aria-hidden", "true")
     host.appendChild(displayCanvas)
   }
-  const displayCtx = displayCanvas.getContext("2d")
+  const displayCtx =
+    displayCanvas.getContext("2d", { alpha: true, desynchronized: true }) ??
+    displayCanvas.getContext("2d", { alpha: true }) ??
+    displayCanvas.getContext("2d")
   if (displayCtx) {
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height)
   }
@@ -237,6 +244,25 @@ export function mountHeroAscii(
   let pausedForModal = false
   let cellW = 1
   let cellH = 1
+  let glyphBits: Uint8ClampedArray[] = []
+  let glyphAtlasW = 1
+  let glyphAtlasH = 1
+  let displayPixels = new Uint8ClampedArray(4)
+  let displayImage = new ImageData(displayPixels, 1, 1)
+  let glPixels = new Uint8Array(4)
+  let stampCursor = -1
+  let stampMinGX = 0
+  let stampMinGY = 0
+  let stampMaxGX = 0
+  let stampMaxGY = 0
+  let appliedZoom = Number.NaN
+  let appliedMouseX = Number.NaN
+  let appliedMouseY = Number.NaN
+  let lastRasterMs = 0
+  let rastersCompleted = 0
+  let rasterBusy = false
+  let skipNextSample = false
+  const mountedAt = performance.now()
 
   const applySize = () => {
     const sizeHost =
@@ -250,7 +276,7 @@ export function mountHeroAscii(
     camera.position.z = cameraDistance(aspect)
     camera.updateProjectionMatrix()
 
-    const { cols, rows } = pickGrid(width, height)
+    const { cols, rows } = pickGrid(width, height, cellBudget(width, isPointerCoarse()))
     renderer.setPixelRatio(1)
     renderer.setSize(cols, rows)
     asciiSample.width = cols
@@ -264,6 +290,30 @@ export function mountHeroAscii(
       displayCtx.font = `${Math.ceil(cellH)}px courier new, monospace`
       displayCtx.textBaseline = "top"
       displayCtx.textAlign = "left"
+      glyphAtlasW = Math.max(1, Math.ceil(cellW))
+      glyphAtlasH = Math.max(1, Math.ceil(cellH))
+      const atlas = document.createElement("canvas")
+      atlas.width = glyphAtlasW * CHARSET.length
+      atlas.height = glyphAtlasH
+      const atlasCtx = atlas.getContext("2d", { willReadFrequently: true })
+      glyphBits = []
+      if (atlasCtx) {
+        atlasCtx.font = displayCtx.font
+        atlasCtx.textBaseline = "top"
+        atlasCtx.textAlign = "left"
+        atlasCtx.fillStyle = "#fff"
+        for (let i = 0; i < CHARSET.length; i++) {
+          const glyph = CHARSET[i]
+          if (glyph) atlasCtx.fillText(glyph, i * glyphAtlasW, 0)
+          glyphBits.push(
+            atlasCtx.getImageData(i * glyphAtlasW, 0, glyphAtlasW, glyphAtlasH).data,
+          )
+        }
+      }
+      displayPixels = new Uint8ClampedArray(width * height * 4)
+      displayImage = new ImageData(displayPixels, width, height)
+      glPixels = new Uint8Array(cols * rows * 4)
+      stampCursor = -1
     }
   }
 
@@ -320,22 +370,23 @@ export function mountHeroAscii(
     colorAttr.needsUpdate = true
   }
 
-  const rasterGlyphs = (image: ImageData) => {
-    if (!displayCtx) return
+  const prepareCellGlyphs = (data: Uint8Array | Uint8ClampedArray, flipY: boolean) => {
     const cols = asciiSample.width
     const rows = asciiSample.height
-    const cssW = displayCanvas.width
-    const cssH = displayCanvas.height
-    displayCtx.clearRect(0, 0, cssW, cssH)
-    const data = image.data
     const cellCount = Math.min(cols * rows, MAX_CELLS)
+    const refine = shouldRefineOccupancy(performance.now(), mountedAt)
 
-    let occupiedN = 0
-    for (let i = 0; i < cellCount; i++) {
-      const p = i * 4
-      const luma = (0.3 * data[p] + 0.59 * data[p + 1] + 0.11 * data[p + 2]) / 255
-      cellLuma[i] = luma
-      cellOccupied[i] = luma < PAPER_LUMA ? 0 : 1
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const i = y * cols + x
+        if (i >= cellCount) continue
+        const p = rgbaOffset(x, y, cols, rows, flipY)
+        const luma = (0.3 * data[p] + 0.59 * data[p + 1] + 0.11 * data[p + 2]) / 255
+        cellLuma[i] = luma
+        cellOccupied[i] = luma < PAPER_LUMA ? 0 : 1
+        cellGlyphIdx[i] = 0
+        cellAlpha[i] = 0
+      }
     }
 
     const occupiedAt = (nx: number, ny: number): number => {
@@ -345,27 +396,33 @@ export function mountHeroAscii(
       return cellOccupied[ni]
     }
 
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = y * cols + x
-        if (i >= cellCount || cellOccupied[i] === 0) continue
-        const n =
-          occupiedAt(x - 1, y) +
-          occupiedAt(x + 1, y) +
-          occupiedAt(x, y - 1) +
-          occupiedAt(x, y + 1)
-        if (n < OCCUPANCY_MIN_NEIGHBORS) occupiedLumaScratch[i] = 1
-        else occupiedLumaScratch[i] = 0
+    let occupiedN = 0
+    if (refine) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const i = y * cols + x
+          if (i >= cellCount || cellOccupied[i] === 0) continue
+          const n =
+            occupiedAt(x - 1, y) +
+            occupiedAt(x + 1, y) +
+            occupiedAt(x, y - 1) +
+            occupiedAt(x, y + 1)
+          occupiedLumaScratch[i] = n < OCCUPANCY_MIN_NEIGHBORS ? 1 : 0
+        }
       }
-    }
-    for (let i = 0; i < cellCount; i++) {
-      if (cellOccupied[i] !== 0 && occupiedLumaScratch[i] === 1) cellOccupied[i] = 0
-      if (cellOccupied[i] !== 0) occupiedLumaScratch[occupiedN++] = cellLuma[i]
+      for (let i = 0; i < cellCount; i++) {
+        if (cellOccupied[i] !== 0 && occupiedLumaScratch[i] === 1) cellOccupied[i] = 0
+        if (cellOccupied[i] !== 0) occupiedLumaScratch[occupiedN++] = cellLuma[i]
+      }
+    } else {
+      for (let i = 0; i < cellCount; i++) {
+        if (cellOccupied[i] !== 0) occupiedLumaScratch[occupiedN++] = cellLuma[i]
+      }
     }
 
     let p10 = 0
     let p90 = 1
-    let skipStretch = occupiedN < 2
+    let skipStretch = !refine || occupiedN < 2
     if (!skipStretch) {
       const sorted = occupiedLumaScratch.subarray(0, occupiedN)
       sorted.sort((a, b) => a - b)
@@ -383,10 +440,10 @@ export function mountHeroAscii(
       return cellLuma[ni]
     }
 
-    let minGX = cols
-    let minGY = rows
-    let maxGX = 0
-    let maxGY = 0
+    stampMinGX = cols
+    stampMinGY = rows
+    stampMaxGX = 0
+    stampMaxGY = 0
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
@@ -394,42 +451,134 @@ export function mountHeroAscii(
         if (i >= cellCount || cellOccupied[i] === 0) continue
 
         const luma = cellLuma[i]
-        const stretched = skipStretch
-          ? luma
-          : clamp((luma - p10) / stretchRange, 0, 1)
+        const stretched = skipStretch ? luma : clamp((luma - p10) / stretchRange, 0, 1)
         const contrasted = contrast01(stretched, LUMA_CONTRAST)
         const alpha = OPACITY_FLOOR + contrasted * (1 - OPACITY_FLOOR)
-        displayCtx.fillStyle = `rgba(255,255,255,${alpha})`
-
         const baseIdx = clamp(
           OCCUPIED_IDX_MIN + Math.round((1 - contrasted) * OCCUPIED_IDX_SPAN),
           OCCUPIED_IDX_MIN,
           CHARSET_LAST,
         )
-        const maxDelta = Math.max(
-          Math.abs(luma - neighborLuma(x - 1, y)),
-          Math.abs(luma - neighborLuma(x + 1, y)),
-          Math.abs(luma - neighborLuma(x, y - 1)),
-          Math.abs(luma - neighborLuma(x, y + 1)),
-        )
+        const maxDelta = refine
+          ? Math.max(
+              Math.abs(luma - neighborLuma(x - 1, y)),
+              Math.abs(luma - neighborLuma(x + 1, y)),
+              Math.abs(luma - neighborLuma(x, y - 1)),
+              Math.abs(luma - neighborLuma(x, y + 1)),
+            )
+          : 0
         const rimStep =
           maxDelta >= RIM_LUMA_DELTA * 2 ? 2 : maxDelta >= RIM_LUMA_DELTA ? 1 : 0
         const idx = Math.min(CHARSET_LAST, baseIdx + rimStep)
         const glyph = CHARSET[idx]
-        if (glyph !== undefined && glyph !== " ") {
-          displayCtx.fillText(glyph, x * cellW, y * cellH)
-          if (x < minGX) minGX = x
-          if (y < minGY) minGY = y
-          if (x > maxGX) maxGX = x
-          if (y > maxGY) maxGY = y
-        }
+        if (glyph === undefined || glyph === " ") continue
+        cellGlyphIdx[i] = idx
+        cellAlpha[i] = alpha
+        if (x < stampMinGX) stampMinGX = x
+        if (y < stampMinGY) stampMinGY = y
+        if (x > stampMaxGX) stampMaxGX = x
+        if (y > stampMaxGY) stampMaxGY = y
       }
     }
+  }
 
-    if (maxGX >= minGX && maxGY >= minGY) {
-      displayCanvas.dataset.glassBox = `${minGX * cellW},${minGY * cellH},${(maxGX - minGX + 1) * cellW},${(maxGY - minGY + 1) * cellH}`
+  const stampRow = (y: number) => {
+    const cols = asciiSample.width
+    const cssW = displayCanvas.width
+    const cssH = displayCanvas.height
+    const cellCount = Math.min(cols * asciiSample.height, MAX_CELLS)
+    for (let x = 0; x < cols; x++) {
+      const i = y * cols + x
+      if (i >= cellCount) continue
+      const idx = cellGlyphIdx[i]
+      if (idx === 0) continue
+      const bits = glyphBits[idx]
+      if (!bits) continue
+      const rect = cellDestRect(x, y, cellW, cellH, cssW, cssH)
+      stampGlyphAlpha(
+        displayPixels,
+        cssW,
+        cssH,
+        bits,
+        glyphAtlasW,
+        glyphAtlasH,
+        rect.dx,
+        rect.dy,
+        rect.dw,
+        rect.dh,
+        cellAlpha[i],
+      )
+    }
+  }
+
+  const finishStamp = () => {
+    if (stampMaxGX >= stampMinGX && stampMaxGY >= stampMinGY) {
+      displayCanvas.dataset.glassBox = `${stampMinGX * cellW},${stampMinGY * cellH},${(stampMaxGX - stampMinGX + 1) * cellW},${(stampMaxGY - stampMinGY + 1) * cellH}`
     }
     displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
+    stampCursor = -1
+    rastersCompleted += 1
+    rasterBusy = false
+  }
+
+  const stampSlice = () => {
+    if (!alive) {
+      rasterBusy = false
+      stampCursor = -1
+      return
+    }
+    const rows = asciiSample.height
+    if (!shouldContinueStamp(stampCursor, rows)) {
+      finishStamp()
+      return
+    }
+    const started = performance.now()
+    let y = stampCursor
+    let end = stampSliceEnd(y, rows, started, started)
+    while (y < end) {
+      stampRow(y)
+      y += 1
+      end = stampSliceEnd(stampCursor, rows, started, performance.now())
+    }
+    stampCursor = y
+    lastRasterMs = performance.now() - started
+    skipNextSample = shouldSkipSample(lastRasterMs)
+    if (displayCtx) displayCtx.putImageData(displayImage, 0, 0)
+    if (shouldContinueStamp(stampCursor, rows)) {
+      rasterBusy = true
+      return
+    }
+    finishStamp()
+  }
+
+  const runRasterPass = () => {
+    const t = video.currentTime
+    if (t !== lastVideoTime) {
+      lastVideoTime = t
+      sampleLuminance()
+      videoTexture.needsUpdate = true
+    }
+    applyCameraIfNeeded()
+    renderer.render(scene, camera)
+    const cols = asciiSample.width
+    const rows = asciiSample.height
+    const need = cols * rows * 4
+    if (glPixels.length < need) glPixels = new Uint8Array(need)
+    let flipY = true
+    try {
+      const gl = renderer.getContext()
+      if (!gl || cols <= 0 || rows <= 0) throw new Error("no-gl")
+      gl.readPixels(0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, glPixels)
+    } catch {
+      if (!asciiCtx) return
+      asciiCtx.drawImage(renderer.domElement, 0, 0)
+      glPixels.set(asciiCtx.getImageData(0, 0, cols, rows).data)
+      flipY = false
+    }
+    prepareCellGlyphs(glPixels, flipY)
+    displayPixels.fill(0)
+    stampCursor = 0
+    stampSlice()
   }
 
   const onMouseMove = (event: MouseEvent) => {
@@ -475,6 +624,17 @@ export function mountHeroAscii(
     zoom = clamp(zoom + event.deltaY * VIDEO_ZOOM.wheelStep, VIDEO_ZOOM.min, VIDEO_ZOOM.max)
   }
 
+  const cameraDirty = () =>
+    zoom !== appliedZoom || mouseX !== appliedMouseX || mouseY !== appliedMouseY
+
+  const applyCameraIfNeeded = () => {
+    if (!cameraDirty()) return
+    applyCamera()
+    appliedZoom = zoom
+    appliedMouseX = mouseX
+    appliedMouseY = mouseY
+  }
+
   const tick = (now: number) => {
     if (!alive) return
     raf = requestAnimationFrame(tick)
@@ -491,21 +651,76 @@ export function mountHeroAscii(
       tryPlay(video)
     }
 
-    if (now - lastSampleAt >= SAMPLE_MS) {
-      lastSampleAt = now
-      const t = video.currentTime
-      if (t !== lastVideoTime) {
-        lastVideoTime = t
-        sampleLuminance()
-        videoTexture.needsUpdate = true
+    if (shouldContinueStamp(stampCursor, asciiSample.height)) {
+      stampSlice()
+      return
+    }
+
+    const plan = planAsciiFrame({
+      now,
+      lastSampleAt,
+      cameraDirty: cameraDirty(),
+      sampleMs: sampleMsForLoop(now, mountedAt, rastersCompleted),
+    })
+    if (plan === "idle") return
+    if (plan === "camera") {
+      applyCameraIfNeeded()
+      return
+    }
+    if (rasterBusy) return
+
+    lastSampleAt = now
+    if (skipNextSample) {
+      skipNextSample = false
+      applyCameraIfNeeded()
+      return
+    }
+
+    const beginPass = () => {
+      try {
+        if (!alive) {
+          stampCursor = -1
+          return
+        }
+        runRasterPass()
+      } catch {
+        stampCursor = -1
+      } finally {
+        if (!shouldContinueStamp(stampCursor, asciiSample.height)) rasterBusy = false
       }
     }
 
-    applyCamera()
-    renderer.render(scene, camera)
-    if (!asciiCtx) return
-    asciiCtx.drawImage(renderer.domElement, 0, 0)
-    rasterGlyphs(asciiCtx.getImageData(0, 0, asciiSample.width, asciiSample.height))
+    if (shouldYieldToMain(rastersCompleted, lastRasterMs)) {
+      const yielded = yieldToMain()
+      if (yielded) {
+        rasterBusy = true
+        void yielded.then(beginPass)
+        return
+      }
+    }
+
+    beginPass()
+  }
+
+  const videoReady = () => video.readyState >= 2
+
+  const startLoop = () => {
+    if (
+      !shouldStartLoop({
+        alive,
+        raf,
+        hidden: document.hidden,
+        videoReady: videoReady(),
+      })
+    ) {
+      return
+    }
+    raf = requestAnimationFrame(tick)
+  }
+
+  const onVideoReady = () => {
+    tryPlay(video)
+    startLoop()
   }
 
   const onVisibility = () => {
@@ -516,7 +731,7 @@ export function mountHeroAscii(
       return
     }
     tryPlay(video)
-    if (alive && raf === 0) raf = requestAnimationFrame(tick)
+    startLoop()
   }
 
   applySize()
@@ -528,8 +743,13 @@ export function mountHeroAscii(
   window.addEventListener("wheel", onWheel, { passive: false })
   window.addEventListener("resize", applySize)
   document.addEventListener("visibilitychange", onVisibility)
-  if (!document.hidden) raf = requestAnimationFrame(tick)
-  else video.pause()
+  video.addEventListener("loadeddata", onVideoReady)
+  video.addEventListener("canplay", onVideoReady)
+  if (videoReady()) onVideoReady()
+  else {
+    tryPlay(video)
+    if (document.hidden) video.pause()
+  }
 
   return () => {
     alive = false
@@ -543,6 +763,8 @@ export function mountHeroAscii(
     window.removeEventListener("resize", applySize)
     document.removeEventListener("visibilitychange", onVisibility)
     video.removeEventListener("error", onVideoError)
+    video.removeEventListener("loadeddata", onVideoReady)
+    video.removeEventListener("canplay", onVideoReady)
     video.pause()
     video.removeAttribute("src")
     video.load()

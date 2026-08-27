@@ -22,6 +22,9 @@ describe("homepage viewport lock", () => {
 
     const home = readFileSync(join(root, "src/pages/index.astro"), "utf8")
     expect(home).toContain("lockScroll")
+    expect(home).toContain('<main class="contents">')
+    expect(home.indexOf("<main")).toBeLessThan(home.indexOf("<h1>"))
+    expect(home.indexOf("</main>")).toBeGreaterThan(home.indexOf("<Hero client:load"))
 
     const about = readFileSync(join(root, "src/pages/about.astro"), "utf8")
     expect(about).not.toContain("lockScroll")

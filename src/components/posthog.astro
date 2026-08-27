@@ -21,7 +21,11 @@ const initConfig = {
   },
 }
 
-const snippet = `${POSTHOG_LOADER}\nposthog.init(${JSON.stringify(posthogKey)}, ${JSON.stringify(initConfig)})`
+const snippet = `${POSTHOG_LOADER}
+(function(){
+  var arm=function(){posthog.init(${JSON.stringify(posthogKey)}, ${JSON.stringify(initConfig)})};
+  setTimeout(arm,6000);
+})();`
 ---
 
 {posthogKey ? <script is:inline set:html={snippet} /> : null}

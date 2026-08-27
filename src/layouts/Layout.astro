@@ -1,11 +1,10 @@
 ---
-import "../styles/globals.css"
+import globalCss from "../styles/globals.css?inline"
 import PostHog from "../components/posthog.astro"
 import VercelAnalytics from "../components/VercelAnalytics.astro"
 import { buildGraphJsonLd } from "../lib/agent/jsonld"
 import { site } from "../config/site"
 import geistSans from "../assets/fonts/Geist-Variable.woff2?url"
-import geistMono from "../assets/fonts/GeistMono-Variable.woff2?url"
 
 interface Props {
   title?: string
@@ -43,8 +42,15 @@ const sameAs = site.socials
     <meta name="robots" content="index, follow" />
 
     <link rel="canonical" href={canonical} />
-    <link rel="preload" href={geistSans} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={geistMono} as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href={geistSans}
+      as="font"
+      type="font/woff2"
+      crossorigin
+      fetchpriority="high"
+    />
+    <style is:inline set:html={globalCss} />
     <link
       rel="alternate"
       type="application/json+oembed"

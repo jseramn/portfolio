@@ -559,6 +559,7 @@ export default function Hero() {
           className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
           aria-label={`Open contact form — current role: ${activeRole}`}
         >
+          <span aria-hidden="true">
           <TextLoop
             interval={2.5}
             transition={{ duration: 0.4 }}
@@ -571,6 +572,7 @@ export default function Hero() {
               </span>
             ))}
           </TextLoop>
+          </span>
         </button>
         </GlassSurface>
         <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
