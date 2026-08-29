@@ -32,17 +32,12 @@ describe("preview assets", () => {
     expect(readFileSync(join(publicDir, "thumbnail.png")).byteLength).toBeLessThan(1_000_000)
   })
 
-  it("does not ship the colorful portrait or videobg samplers", () => {
-    for (const name of [
-      "portrait.jpg",
-      "ascii-poster.webp",
-      "videobg.webm",
-      "videobg.mp4",
-      "videobg-480.webm",
-      "videobg-480.mp4",
-    ]) {
+  it("does not ship the colorful portrait stills", () => {
+    for (const name of ["portrait.jpg", "ascii-poster.webp"]) {
       expect(existsSync(join(publicDir, name)), name).toBe(false)
     }
+    expect(existsSync(join(publicDir, "videobg-480.webm"))).toBe(true)
+    expect(existsSync(join(publicDir, "videobg-480.mp4"))).toBe(true)
   })
 
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {
@@ -133,9 +128,7 @@ describe("generate-preview-assets script", () => {
   it("recaptures production and rejects dirty local Hero chrome", () => {
     const source = script()
     expect(source).toContain('capture_url="${CAPTURE_URL:-https://jseramn.tech/}"')
-    expect(source).toContain('waitForSelector("[data-hero-root]"')
-    expect(source).not.toContain("getImageData")
-    expect(source).not.toContain('querySelector(".hero-ascii-display")')
+    expect(source).toContain('querySelector(".hero-ascii-display")')
     expect(source).not.toContain("/home/jseramn/portfolio")
     expect(source).not.toContain("localhost")
     expect(source).not.toContain("127.0.0.1")

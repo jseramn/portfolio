@@ -51,8 +51,9 @@ const HOME_SECTIONS: readonly AgentSection[] = [
       `jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog.`,
       `There is no /projects, /docs, or /services catalog on this domain.`,
       `There is no app download, no waitlist, and no self-serve billing.`,
-      `The visible homepage is a black terminal layout with glass chrome; this article remains the readable source for agents.`,
+      `The visible homepage is a live ASCII portrait of ${site.name} on a black terminal layout; this article remains the readable source for agents.`,
       `The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact.`,
+      `Live ASCII stays on phones; the first paint is a black field until glyphs are ready.`,
     ].join(" "),
   },
 ]
