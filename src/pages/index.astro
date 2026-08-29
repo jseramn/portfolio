@@ -3,12 +3,28 @@ export const prerender = false
 import Layout from "../layouts/Layout.astro"
 import Hero from "../components/Hero"
 import { agentCopy } from "../lib/agent/copy"
+import { site } from "../config/site"
 
 const home = agentCopy("home")
 const homeSections = home.sections ?? []
 ---
 
-<Layout lockScroll>
+<Layout lockScroll bootPending>
+  <link
+    slot="head"
+    rel="preload"
+    href={site.asciiSamplerWebm}
+    as="video"
+    type="video/webm"
+  />
+  <div
+    id="boot-loader"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading"
+  >
+    <div class="loader"></div>
+  </div>
   <main class="contents">
     <article class="sr-only">
       <h1>{home.h1}</h1>
@@ -21,4 +37,8 @@ const homeSections = home.sections ?? []
     </article>
     <Hero client:load />
   </main>
+  <script>
+    import { installBootLoader } from "../lib/bootLoader"
+    installBootLoader()
+  </script>
 </Layout>

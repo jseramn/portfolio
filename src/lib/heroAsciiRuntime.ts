@@ -20,6 +20,7 @@ import {
   shouldContinueStamp,
   stampGlyphAlpha,
 } from "./heroAsciiStamp"
+import { signalHeroBootReady } from "./bootLoader"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
@@ -208,6 +209,7 @@ export async function mountHeroAscii(
   } catch {
     video.pause()
     video.remove()
+    signalHeroBootReady()
     return () => {}
   }
 
@@ -551,7 +553,9 @@ export async function mountHeroAscii(
       displayCanvas.dataset.glassBox = `${stampMinGX * cellW},${stampMinGY * cellH},${(stampMaxGX - stampMinGX + 1) * cellW},${(stampMaxGY - stampMinGY + 1) * cellH}`
     }
     displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
+    const firstPaint = displayCanvas.dataset.asciiPaint !== "1"
     displayCanvas.dataset.asciiPaint = "1"
+    if (firstPaint) signalHeroBootReady()
     stampCursor = -1
     rastersCompleted += 1
     rasterBusy = false

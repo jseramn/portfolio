@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { site } from "../config/site"
+import { signalHeroBootReady } from "../lib/bootLoader"
 import { canUseWebGL, prefersReducedMotion } from "../lib/webgl"
 
 type Phase = "boot" | "ascii" | "photo"
@@ -57,8 +58,18 @@ export default function HeroAsciiBackground({
     }
   }, [phase, paintCanvasRef])
 
+  useEffect(() => {
+    if (phase === "photo") signalHeroBootReady()
+  }, [phase])
+
   if (phase === "photo") {
-    return <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black" aria-hidden />
+    return (
+      <div
+        data-hero-boot-fallback
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black"
+        aria-hidden
+      />
+    )
   }
 
   return <div ref={hostRef} className="hero-ascii-host" aria-hidden />

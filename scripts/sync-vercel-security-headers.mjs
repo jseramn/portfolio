@@ -11,6 +11,8 @@ const ACCEPT_VARY = "Accept, Accept-Encoding"
 export const PREVIEW_ASSET_SOURCE =
   "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png|oembed.json)"
 
+export const VIDEO_BG_ASSET_SOURCE = "/videobg(.*)"
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const vercelPath = join(root, "vercel.json")
 
@@ -33,6 +35,15 @@ export function buildVercelHeaderRules() {
         {
           key: "Cache-Control",
           value: "public, max-age=86400, stale-while-revalidate=604800",
+        },
+      ],
+    },
+    {
+      source: VIDEO_BG_ASSET_SOURCE,
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
         },
       ],
     },

@@ -115,7 +115,6 @@ export default function Hero() {
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
   const [contactOpen, setContactOpen] = useState(false)
-  const [asciiReady, setAsciiReady] = useState(false)
   const [roleIndex, setRoleIndex] = useState(0)
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<any>(null)
@@ -124,39 +123,6 @@ export default function Hero() {
   const asciiPaintRef = useRef<HTMLCanvasElement>(null)
   const trackIndexRef = useRef(trackIndex)
   trackIndexRef.current = trackIndex
-
-  useEffect(() => {
-    let cancelled = false
-    let idleId = 0
-    let timer = 0
-    const arm = () => {
-      if (!cancelled) setAsciiReady(true)
-    }
-    const idleArm = () => {
-      if (cancelled) return
-      if (typeof requestIdleCallback === "function") {
-        idleId = requestIdleCallback(arm, { timeout: 0 })
-        return
-      }
-      timer = window.setTimeout(arm, 0)
-    }
-    const afterFirstPaint = () => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(idleArm)
-      })
-    }
-    const fonts = document.fonts?.ready
-    if (fonts) {
-      void fonts.then(afterFirstPaint)
-    } else {
-      afterFirstPaint()
-    }
-    return () => {
-      cancelled = true
-      if (idleId) cancelIdleCallback(idleId)
-      if (timer) window.clearTimeout(timer)
-    }
-  }, [])
 
   useEffect(() => {
     return () => {
@@ -420,11 +386,9 @@ export default function Hero() {
 
   return (
     <>
-      {asciiReady ? (
-        <Suspense fallback={null}>
-          <HeroAsciiBackground paintCanvasRef={asciiPaintRef} />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={null}>
+        <HeroAsciiBackground paintCanvasRef={asciiPaintRef} />
+      </Suspense>
       <div
         ref={heroRootRef}
         className="relative z-10 flex h-dvh max-h-dvh flex-col overflow-hidden md:block"

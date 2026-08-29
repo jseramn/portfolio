@@ -1,0 +1,91 @@
+import { describe, expect, it, vi } from "vitest"
+import {
+  ASCII_PAINT_SELECTOR,
+  BOOT_FALLBACK_SELECTOR,
+  BOOT_LOADER_ID,
+  BOOT_READY_EVENT,
+  BOOT_TIMEOUT_MS,
+  applyBootLoaderHidden,
+  createBootLoaderSession,
+  isHeroBootReady,
+  shouldDismissBootLoader,
+  signalHeroBootReady,
+  wipeAnimationEnabled,
+} from "./bootLoader"
+
+function fakeRoot(hits: string[]) {
+  return {
+    querySelector(selector: string) {
+      return hits.includes(selector) ? {} : null
+    },
+  }
+}
+
+describe("boot loader dismiss", () => {
+  it("is ready on first ASCII stamp or the reduced-motion fallback", () => {
+    expect(isHeroBootReady(fakeRoot([]))).toBe(false)
+    expect(isHeroBootReady(fakeRoot([ASCII_PAINT_SELECTOR]))).toBe(true)
+    expect(isHeroBootReady(fakeRoot([BOOT_FALLBACK_SELECTOR]))).toBe(true)
+  })
+
+  it("dismisses on ready, timeout, or bfcache restore — not otherwise", () => {
+    expect(shouldDismissBootLoader({ ready: true, timedOut: false, pageshowPersisted: false })).toBe(
+      true,
+    )
+    expect(shouldDismissBootLoader({ ready: false, timedOut: true, pageshowPersisted: false })).toBe(
+      true,
+    )
+    expect(
+      shouldDismissBootLoader({ ready: false, timedOut: false, pageshowPersisted: true }),
+    ).toBe(true)
+    expect(
+      shouldDismissBootLoader({ ready: false, timedOut: false, pageshowPersisted: false }),
+    ).toBe(false)
+  })
+
+  it("keeps the wipe animation only when motion is allowed", () => {
+    expect(wipeAnimationEnabled(false)).toBe(true)
+    expect(wipeAnimationEnabled(true)).toBe(false)
+  })
+
+  it("hides the overlay and clears busy state once", () => {
+    const overlay = { hidden: false, setAttribute: vi.fn() }
+    const html = { removeAttribute: vi.fn() }
+    applyBootLoaderHidden(overlay, html)
+    expect(overlay.hidden).toBe(true)
+    expect(overlay.setAttribute).toHaveBeenCalledWith("aria-hidden", "true")
+    expect(html.removeAttribute).toHaveBeenCalledWith("aria-busy")
+    expect(html.removeAttribute).toHaveBeenCalledWith("data-boot-pending")
+  })
+
+  it("session dismisses once across ready, timeout, and persisted pageshow", () => {
+    const hide = vi.fn()
+    const session = createBootLoaderSession({ hide })
+    session.onReady()
+    session.onTimeout()
+    session.onPageshow(true)
+    expect(hide).toHaveBeenCalledTimes(1)
+    session.onPageshow(false)
+    expect(hide).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not dismiss on a normal pageshow", () => {
+    const hide = vi.fn()
+    const session = createBootLoaderSession({ hide })
+    session.onPageshow(false)
+    expect(hide).not.toHaveBeenCalled()
+  })
+
+  it("signals ready on an EventTarget", () => {
+    const target = new EventTarget()
+    const onReady = vi.fn()
+    target.addEventListener(BOOT_READY_EVENT, onReady)
+    signalHeroBootReady(target)
+    expect(onReady).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps overlay id and 8s failsafe stable", () => {
+    expect(BOOT_LOADER_ID).toBe("boot-loader")
+    expect(BOOT_TIMEOUT_MS).toBe(8_000)
+  })
+})
