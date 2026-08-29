@@ -17,7 +17,7 @@ Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://git
 
 ## Features
 
-- Fullscreen black hero with glass chrome
+- Fullscreen ASCII portrait (black until glyphs paint)
 - Rotating roles, marquee (orgs + GitHub commit ticker), YouTube ambient audio
 - **Encrypted contact modal** — ciphertext to `contacto@jseramn.tech`; decryption key via X / Instagram DM
 - SEO: Open Graph, Twitter Cards, JSON-LD, sitemap, `robots.txt`
@@ -60,7 +60,7 @@ src/
     api/contact.ts        # Resend relay (ciphertext only)
 public/
   llms.txt                # Machine-readable site & profile summary
-  thumbnail.png, favicons, site.webmanifest
+  videobg.webm, videobg.mp4, thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot
