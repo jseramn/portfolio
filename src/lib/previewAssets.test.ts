@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import {
   PREVIEW_ASSET_SOURCE,
+  VIDEO_BG_ASSET_SOURCE,
   buildVercelHeaderRules,
 } from "../../scripts/sync-vercel-security-headers.mjs"
 
@@ -114,6 +115,18 @@ describe("preview asset crawler headers", () => {
     expect(PREVIEW_ASSET_SOURCE).toContain("oembed.json")
     expect(PREVIEW_ASSET_SOURCE).not.toContain("ascii-poster.webp")
   })
+
+  it("caches videobg samplers for a year after the global security rule", () => {
+    const rules = buildVercelHeaderRules()
+    const globalIdx = rules.findIndex((rule) => rule.source === "/(.*)")
+    const videoIdx = rules.findIndex((rule) => rule.source === VIDEO_BG_ASSET_SOURCE)
+    expect(videoIdx).toBeGreaterThan(globalIdx)
+    const headers = Object.fromEntries(
+      (rules[videoIdx]?.headers ?? []).map((header) => [header.key, header.value]),
+    )
+    expect(VIDEO_BG_ASSET_SOURCE).toBe("/videobg(.*)")
+    expect(headers["Cache-Control"]).toBe("public, max-age=31536000, immutable")
+  })
 })
 
 describe("generate-preview-assets script", () => {
@@ -129,6 +142,7 @@ describe("generate-preview-assets script", () => {
     const source = script()
     expect(source).toContain('capture_url="${CAPTURE_URL:-https://jseramn.tech/}"')
     expect(source).toContain('querySelector(".hero-ascii-display")')
+    expect(source).toContain('getElementById("boot-loader")')
     expect(source).not.toContain("/home/jseramn/portfolio")
     expect(source).not.toContain("localhost")
     expect(source).not.toContain("127.0.0.1")

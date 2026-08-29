@@ -11,12 +11,14 @@ interface Props {
   title?: string
   description?: string
   lockScroll?: boolean
+  bootPending?: boolean
 }
 
 const {
   title = site.seo.title,
   description = site.seo.description,
   lockScroll = false,
+  bootPending = false,
 } = Astro.props
 
 const lockClass = lockScroll ? "h-dvh overflow-hidden overscroll-none" : ""
@@ -31,7 +33,12 @@ const sameAs = site.socials
 ---
 
 <!doctype html>
-<html lang="en" class:list={["bg-black", lockClass]}>
+<html
+  lang="en"
+  class:list={["bg-black", lockClass]}
+  aria-busy={bootPending ? "true" : undefined}
+  data-boot-pending={bootPending ? "" : undefined}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -52,6 +59,7 @@ const sameAs = site.socials
       fetchpriority="high"
     />
     <style is:inline set:html={globalCss} />
+    <slot name="head" />
     <link
       rel="alternate"
       type="application/json+oembed"

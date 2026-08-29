@@ -1,0 +1,107 @@
+export const BOOT_LOADER_ID = "boot-loader"
+export const BOOT_READY_EVENT = "hero:boot-ready"
+export const BOOT_TIMEOUT_MS = 8_000
+export const BOOT_FALLBACK_ATTR = "data-hero-boot-fallback"
+export const ASCII_PAINT_SELECTOR = "canvas.hero-ascii-display[data-ascii-paint]"
+export const BOOT_FALLBACK_SELECTOR = `[${BOOT_FALLBACK_ATTR}]`
+
+export type BootDismissInput = {
+  ready: boolean
+  timedOut: boolean
+  pageshowPersisted: boolean
+}
+
+export function isHeroBootReady(root: {
+  querySelector: (selector: string) => unknown
+}): boolean {
+  return Boolean(
+    root.querySelector(ASCII_PAINT_SELECTOR) || root.querySelector(BOOT_FALLBACK_SELECTOR),
+  )
+}
+
+export function shouldDismissBootLoader(input: BootDismissInput): boolean {
+  return input.ready || input.timedOut || input.pageshowPersisted
+}
+
+export function wipeAnimationEnabled(reducedMotion: boolean): boolean {
+  return !reducedMotion
+}
+
+export function applyBootLoaderHidden(
+  overlay: { hidden: boolean; setAttribute: (name: string, value: string) => void },
+  html: { removeAttribute: (name: string) => void },
+): void {
+  overlay.hidden = true
+  overlay.setAttribute("aria-hidden", "true")
+  html.removeAttribute("aria-busy")
+  html.removeAttribute("data-boot-pending")
+}
+
+export function signalHeroBootReady(target?: EventTarget | null): void {
+  const dest = target ?? (typeof window === "undefined" ? null : window)
+  if (!dest) return
+  dest.dispatchEvent(new Event(BOOT_READY_EVENT))
+}
+
+export function createBootLoaderSession(opts: { hide: () => void }): {
+  dismiss: () => void
+  onReady: () => void
+  onPageshow: (persisted: boolean) => void
+  onTimeout: () => void
+} {
+  let done = false
+  const dismiss = () => {
+    if (done) return
+    done = true
+    opts.hide()
+  }
+  return {
+    dismiss,
+    onReady: dismiss,
+    onPageshow: (persisted) => {
+      if (persisted) dismiss()
+    },
+    onTimeout: dismiss,
+  }
+}
+
+export function installBootLoader(
+  doc: Document = document,
+  win: Window & typeof globalThis = window,
+): () => void {
+  const overlay = doc.getElementById(BOOT_LOADER_ID)
+  if (!overlay) return () => {}
+
+  const html = doc.documentElement
+  const session = createBootLoaderSession({
+    hide: () => applyBootLoaderHidden(overlay, html),
+  })
+
+  const check = () => {
+    if (isHeroBootReady(doc)) session.onReady()
+  }
+
+  const onReadyEvent = () => session.onReady()
+  const onPageshow = (event: Event) => {
+    session.onPageshow("persisted" in event && Boolean((event as PageTransitionEvent).persisted))
+  }
+
+  const observer = new MutationObserver(check)
+  observer.observe(html, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-ascii-paint", BOOT_FALLBACK_ATTR],
+  })
+  win.addEventListener(BOOT_READY_EVENT, onReadyEvent)
+  win.addEventListener("pageshow", onPageshow)
+  const timeoutId = win.setTimeout(() => session.onTimeout(), BOOT_TIMEOUT_MS)
+  check()
+
+  return () => {
+    observer.disconnect()
+    win.removeEventListener(BOOT_READY_EVENT, onReadyEvent)
+    win.removeEventListener("pageshow", onPageshow)
+    win.clearTimeout(timeoutId)
+  }
+}

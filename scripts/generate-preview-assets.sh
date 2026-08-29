@@ -46,6 +46,8 @@ try {
     () => {
       const el = document.querySelector(".hero-ascii-display")
       if (!(el instanceof HTMLCanvasElement) || !el.width || !el.height) return false
+      const boot = document.getElementById("boot-loader")
+      if (boot && !boot.hidden) return false
       const ctx = el.getContext("2d")
       if (!ctx) return false
       const { width: w, height: h } = el
