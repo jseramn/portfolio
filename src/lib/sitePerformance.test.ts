@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -27,15 +27,18 @@ describe("site performance chrome load", () => {
     expect(read("pnpm-workspace.yaml")).not.toContain("minimumReleaseAgeExclude")
   })
 
-  it("drops unused R3F while keeping three", () => {
+  it("drops unused three and R3F", () => {
     const pkg = JSON.parse(read("package.json")) as {
       dependencies: Record<string, string>
+      devDependencies: Record<string, string>
     }
-    expect(pkg.dependencies.three).toBeTruthy()
+    expect(pkg.dependencies).not.toHaveProperty("three")
+    expect(pkg.devDependencies).not.toHaveProperty("@types/three")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/fiber")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/postprocessing")
     expect(pkg.dependencies).not.toHaveProperty("postprocessing")
-    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('import("three")')
+    expect(existsSync(join(src, "lib/heroAsciiRuntime.ts"))).toBe(false)
+    expect(existsSync(join(src, "components/HeroAsciiBackground.tsx"))).toBe(false)
   })
 
   it("compresses HTML without flipping prerender", () => {
@@ -66,24 +69,23 @@ describe("site performance chrome load", () => {
     expect(layout).toContain('type="font/woff2"')
     expect(layout).toContain('fetchpriority="high"')
     expect(layout).toContain('globals.css?inline')
-    expect(layout).toContain("site.asciiPosterSrc")
-    expect(layout).toContain('as="image"')
-    expect(layout).toContain('type="image/webp"')
-    expect(layout).toContain('pathname === "/"')
+    expect(layout).not.toContain("site.asciiPosterSrc")
+    expect(layout).not.toContain('as="image"')
+    expect(layout).not.toContain('type="image/webp"')
     expect(css).toContain("GeistMono-Variable.woff2")
     expect(css).toContain("font-display: optional")
     expect(css).toContain("--hero-ink")
     expect(css).toContain(".hero-scrim-top")
-    expect(css).toContain('url("/ascii-poster.webp")')
-    expect(css).toContain("img.hero-ascii-poster")
-    expect(css).toContain("data-ascii-paint")
+    expect(css).not.toContain('url("/ascii-poster.webp")')
+    expect(css).not.toContain("img.hero-ascii-poster")
+    expect(css).not.toContain("data-ascii-paint")
     const home = readSrc("pages/index.astro")
-    expect(home).toContain("hero-ascii-poster")
-    expect(home).toContain("site.asciiPosterSrc")
-    expect(home).toContain('fetchpriority="high"')
+    expect(home).not.toContain("hero-ascii-poster")
+    expect(home).not.toContain("site.asciiPosterSrc")
+    expect(home).toContain("<Hero client:load />")
   })
 
-  it("defers YouTube, ContactModal, and ASCII off the chrome load graph", () => {
+  it("defers YouTube and ContactModal off the chrome load graph", () => {
     const hero = readSrc("components/Hero.tsx")
     expect(hero).not.toMatch(/import \{ ContactModal \}/)
     expect(hero).toContain('import("./ContactModal")')
@@ -95,27 +97,19 @@ describe("site performance chrome load", () => {
     expect(firstApi).toBeGreaterThan(ensureAt)
     expect(lastApi).toBeGreaterThan(ensureAt)
     expect(hero).not.toMatch(/useEffect\(\(\) => \{[\s\S]{0,80}iframe_api/)
-    expect(hero).toContain("setAsciiReady(true)")
-    expect(hero).toContain("timeout: 0")
-    expect(hero).not.toContain("timeout: 2000")
-    expect(hero).toContain("requestIdleCallback")
-    expect(hero).toContain("document.fonts")
-    expect(hero).toContain("afterFirstPaint")
+    expect(hero).not.toContain("HeroAsciiBackground")
+    expect(hero).not.toContain("setAsciiReady")
   })
 
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
     const glass = readSrc("components/GlassSurface.tsx")
-    const ascii = readSrc("lib/heroAsciiRuntime.ts")
     const hero = readSrc("components/Hero.tsx")
-    const asciiBg = readSrc("components/HeroAsciiBackground.tsx")
-    for (const source of [glass, ascii, hero, asciiBg]) {
+    for (const source of [glass, hero]) {
       expect(source).not.toContain("127.0.0.1:7586/ingest")
       expect(source).not.toContain("@react-three/fiber")
       expect(source).not.toContain("@react-three/postprocessing")
     }
-    expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
-    expect(ascii).toContain("VIDEO_PRELOAD")
-    expect(ascii).toContain("blitHeroPoster")
-    expect(ascii).toContain('video.preload = "metadata"')
+    expect(hero).not.toContain("VIDEO_PRELOAD")
+    expect(hero).not.toContain("blitHeroPoster")
   })
 })

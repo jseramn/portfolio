@@ -27,13 +27,11 @@
     "react": "^19",
     "react-dom": "^19",
     "react-use-measure": "^2.1.7",
-    "resend": "^6.18.0",
-    "three": "^0.185.1"
+    "resend": "^6.18.0"
   },
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.185.1",
     "autoprefixer": "^10.4.20",
     "tailwindcss": "^3.4.17",
     "typescript": "^5",

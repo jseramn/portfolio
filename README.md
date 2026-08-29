@@ -1,6 +1,6 @@
 # jseramn.tech
 
-Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://github.com/jseramn)) — Vesper terminal aesthetic, video hero, encrypted contact, and live GitHub presence.
+Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://github.com/jseramn)) — Vesper terminal aesthetic, encrypted contact, and live GitHub presence.
 
 **Live:** [jseramn.tech](https://jseramn.tech) · **LLM summary:** [/llms.txt](https://jseramn.tech/llms.txt)
 
@@ -17,7 +17,7 @@ Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://git
 
 ## Features
 
-- Fullscreen video background (parallax, wheel zoom)
+- Fullscreen black hero with glass chrome
 - Rotating roles, marquee (orgs + GitHub commit ticker), YouTube ambient audio
 - **Encrypted contact modal** — ciphertext to `contacto@jseramn.tech`; decryption key via X / Instagram DM
 - SEO: Open Graph, Twitter Cards, JSON-LD, sitemap, `robots.txt`
@@ -49,7 +49,7 @@ src/
     Hero.tsx              # Main island
     ContactModal.tsx      # age encrypt + API send
     TurnstileField.tsx    # Optional bot check
-    TextLoop.tsx, InfiniteSlider.tsx, VideoBackground.tsx
+    TextLoop.tsx, InfiniteSlider.tsx
   lib/
     contactEncrypt.ts     # Client-side age passphrase encryption
     contactEmail.ts       # Payload validation + email body
@@ -60,7 +60,7 @@ src/
     api/contact.ts        # Resend relay (ciphertext only)
 public/
   llms.txt                # Machine-readable site & profile summary
-  videobg.webm, videobg.mp4, thumbnail.png, favicons, site.webmanifest
+  thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot
