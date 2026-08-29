@@ -59,7 +59,7 @@ export const site = {
       "José Ramón García Del Risco, jseramn, Ayudo a las personas con tecnología mientras construyo cosas, cybersecurity, web developer, tech lead, founder",
     ogImage: "https://jseramn.tech/thumbnail.png",
     ogImageAlt:
-      "Homepage of jseramn.tech: ASCII portrait of José Ramón García Del Risco on a black terminal layout",
+      "Homepage of jseramn.tech: black terminal layout with glass chrome",
     appleTouchIcon: "https://jseramn.tech/apple-touch-icon.png",
     twitter: "@jseramn_",
     knowsAbout: ["Cybersecurity", "Web Development", "Artificial Intelligence", "Entrepreneurship"],
@@ -68,12 +68,6 @@ export const site = {
       { "@type": "Organization" as const, name: "Presencia Pyme" },
     ],
   },
-  videoSrcWebm: "/videobg.webm",
-  videoSrcMp4: "/videobg.mp4",
-  asciiPosterSrc: "/ascii-poster.webp",
-  portraitSrc: "/ascii-poster.webp",
-  asciiSamplerWebm: "/videobg-480.webm",
-  asciiSamplerMp4: "/videobg-480.mp4",
   contactCrypto: {
     ageRepo: "https://github.com/FiloSottile/age",
     typageRepo: "https://github.com/FiloSottile/typage",

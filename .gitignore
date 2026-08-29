@@ -38,7 +38,7 @@ Thumbs.db
 Untitled
 Untitled.*
 
-# local video backups (canonical assets: public/videobg.webm / .mp4)
+# local media scratch
 public/videobg__*
 .vercel
 .openspec

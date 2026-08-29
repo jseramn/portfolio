@@ -9,7 +9,7 @@ import {
   type RefObject,
 } from "react"
 import { chromiumRuntimeHint, shouldUseLiquidGlass } from "../lib/shouldUseLiquidGlass"
-import { isPointerCoarse } from "../lib/heroAsciiBudget"
+import { isPointerCoarse } from "../lib/pointer"
 import { prefersReducedMotion } from "../lib/webgl"
 
 export type GlassPreset = "bar" | "pill" | "dock" | "button" | "card" | "modal"

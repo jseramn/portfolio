@@ -104,7 +104,7 @@ describe("built HTML overlay", () => {
     expect(html).toContain("https://jseramn.tech/apple-touch-icon.png")
     expect(html).toMatch(/"image"\s*:\s*"https:\/\/jseramn\.tech\/thumbnail\.png"/)
     expect(html).toContain("https://jseramn.tech")
-    expect(html).toMatch(/hero-ascii-host|videobg|component-url="[^"]*Hero/)
+    expect(html).toMatch(/hero-ascii-display|component-url="[^"]*Hero/)
     expect(html).toContain("contacto@jseramn.tech")
     expect(html).toContain("contactPoint")
     expect(html).toContain("PostalAddress")

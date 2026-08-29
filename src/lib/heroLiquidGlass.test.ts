@@ -169,15 +169,12 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain('className="glass-refraction"')
   })
 
-  it("clones ascii on a shared 12fps pump without CPU blur or getImageData", () => {
+  it("clones the hero canvas on a shared 12fps pump without CPU blur or getImageData", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
     const css = read("styles/globals.css")
     expect(glass).toContain("const GLASS_MS = 1000 / 12")
     expect(glass).not.toContain("getImageData")
     expect(glass).not.toContain("ctx.filter")
-    expect(ascii).toContain("dataset.glassBox")
-    expect(ascii).toContain("dataset.glassGen")
     expect(css).toContain("var(--glass-frost")
     expect(glass).toContain('--glass-frost"')
     expect(glass).toContain('filterEl?.closest("svg")')
@@ -186,6 +183,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("bindGlassAsciiWait")
     expect(glass).toContain("data-glass-gen")
     expect(glass).toContain("isPointerCoarse")
+    expect(glass).toContain('../lib/pointer')
   })
 
   it("samples ascii behind each pane instead of a shared portrait box", () => {
@@ -244,7 +242,6 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(hero).toContain("box.top - 2000")
     expect(glass).toContain("pointermove")
     expect(glass).toContain("host.style.left")
-    expect(read("lib/heroAsciiRuntime.ts")).toContain("pointermove")
     expect(hero).toContain('preset="pill"')
     expect(hero).toContain(
       "font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0",
@@ -283,10 +280,8 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("strips glass debug ingest and debug attributes", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
     const hero = read("components/Hero.tsx")
-    const asciiBg = read("components/HeroAsciiBackground.tsx")
-    for (const source of [glass, ascii, hero, asciiBg]) {
+    for (const source of [glass, hero]) {
       expect(source).not.toContain("127.0.0.1:7586/ingest")
     }
     expect(glass).not.toContain("data-glass-debug")

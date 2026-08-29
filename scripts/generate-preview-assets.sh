@@ -42,26 +42,7 @@ const browser = await puppeteer.launch({
 try {
   const page = await browser.newPage()
   await page.goto(url, { waitUntil: "networkidle2", timeout: 60_000 })
-  await page.waitForFunction(
-    () => {
-      const el = document.querySelector(".hero-ascii-display")
-      if (!(el instanceof HTMLCanvasElement) || !el.width || !el.height) return false
-      const ctx = el.getContext("2d")
-      if (!ctx) return false
-      const { width: w, height: h } = el
-      const sampleW = Math.min(w, 160)
-      const sampleH = Math.min(h, 160)
-      const sx = Math.floor((w - sampleW) / 2)
-      const sy = Math.floor((h - sampleH) / 2)
-      const data = ctx.getImageData(sx, sy, sampleW, sampleH).data
-      let lit = 0
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i] + data[i + 1] + data[i + 2] > 12) lit++
-      }
-      return lit / (sampleW * sampleH) > 0.02
-    },
-    { timeout: 20_000 },
-  )
+  await page.waitForSelector("[data-hero-root]", { timeout: 20_000 })
   await new Promise((resolve) => setTimeout(resolve, 400))
   await page.screenshot({ path: out, type: "png", captureBeyondViewport: false })
 } finally {

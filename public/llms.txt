@@ -26,7 +26,7 @@ The on-site contact form encrypts messages in the browser with [age](https://git
 
 - **URL:** https://jseramn.tech
 - **Stack:** Astro 5, React islands, Tailwind, Motion; Vercel hosting; Resend for transactional email
-- **Notable behavior:** ASCII canvas hero, GitHub contribution ticker, encrypted contact form on `/` and `/contact` (POST-only; not a GET document). Agents should use `/contact` or mailto:contacto@jseramn.tech.
+- **Notable behavior:** Black terminal homepage with glass chrome, GitHub contribution ticker, encrypted contact form on `/` and `/contact` (POST-only; not a GET document). Agents should use `/contact` or mailto:contacto@jseramn.tech.
 - **Source:** https://github.com/jseramn/portfolio
 - **Human docs:** https://github.com/jseramn/portfolio/blob/main/README.md
 
