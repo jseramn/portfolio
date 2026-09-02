@@ -29,6 +29,9 @@ Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://git
 pnpm install
 cp .env.example .env   # local only — never commit .env
 pnpm dev
+pnpm check
+pnpm test:e2e
+pnpm format
 ```
 
 Production build:
