@@ -305,7 +305,7 @@ Home `/` lab targets from `B-report` budget (production HEAD `8f9a743`; mobile m
 |------|------|--------|
 | Before first paint | Black field, inlined CSS, Geist preload (`swap`), SSR tagline, boot overlay on `/` | `Layout.astro:53–61`, `index.astro:12–27` |
 | `client:load` chrome only | Hero island (hire + tagline + marquee). Must **not** start YouTube, live LiquidGlass, ASCII three/video, or ContactModal/`age-encryption` | openspec site-performance |
-| After first paint / idle | ASCII Three (`lazy` `HeroAsciiBackground`), live glass after `requestIdleCallback` 2 s (`GlassSurface.tsx:297–304`) | |
+| After first paint / idle | ASCII Three: `HeroAsciiBackground` waits double-rAF then `requestIdleCallback` (1.5 s timeout, or `setTimeout(0)` if rIC is missing) before `mountHeroAscii` / `import("three")`. Startup yields between renderer, scene, first `readPixels`, `prepareCellGlyphs`, and the first glyph stamp. Boot overlay dismisses on the first glyph slice (`data-ascii-paint` + `hero:boot-ready`), not the finished first frame. Live glass after `requestIdleCallback` 2 s (`GlassSurface.tsx:297–304`) | |
 | Gesture | YouTube `iframe_api` | `Hero.tsx:170–173` |
 | Hire click | ContactModal + `age-encryption` | `Hero.tsx:570–578` |
 | 6 s | PostHog `setTimeout(arm, 6000)` — **never** `requestIdleCallback` | `posthog.astro:27`, invariant 6 |
