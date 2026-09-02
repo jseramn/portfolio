@@ -26,8 +26,8 @@ const updated = "August 27, 2026"
       JavaScript exceptions. PostHog records these as cookieless, anonymous events. Session
       replay, surveys, console-log recording, and Core Web Vitals collection are disabled. I do
       not identify visitors, set analytics cookies, or send contact-form contents, names, emails, or
-      decryption passphrases to PostHog. Draft surveys may exist in PostHog
-      but are not shown until I launch them.
+      decryption passphrases to PostHog. With surveys disabled in the client, survey scripts do not
+      load even if a survey is launched in the PostHog project.
     </li>
     <li>
       <strong>Contact form:</strong> the message you submit is encrypted in your browser before
