@@ -29,8 +29,7 @@
     "posthog-node": "^5.50.0",
     "react": "^19",
     "react-dom": "^19",
-    "resend": "^6.18.0",
-    "three": "^0.185.1"
+    "resend": "^6.18.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
@@ -38,7 +37,6 @@
     "@playwright/test": "^1.62.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.185.4",
     "autoprefixer": "^10.4.20",
     "tailwindcss": "^3.4.17",
     "typescript": "^5",

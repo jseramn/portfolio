@@ -6,57 +6,29 @@ import {
   yieldToMain,
 } from "../../heroAsciiBudget"
 import { signalHeroBootReady, takeFirstAsciiPaint } from "../../bootLoader"
-import { applyCameraIfNeeded, EXTRUDE, PLANE_H, PLANE_W, SAMPLE_COLS, SAMPLE_ROWS } from "./scene"
+import { applyCameraIfNeeded } from "./scene"
 import { prepareCellGlyphs } from "./glyphs"
 import { cellDestRect, shouldContinueStamp, stampGlyphAlpha } from "./stamp"
 import type { HeroAsciiSession } from "./session"
-
-export function sampleLuminance(session: HeroAsciiSession) {
-  if (!session.sampleCtx || session.video.readyState < 2) return
-  session.sampleCtx.drawImage(session.video, 0, 0, SAMPLE_COLS, SAMPLE_ROWS)
-  const pixels = session.sampleCtx.getImageData(0, 0, SAMPLE_COLS, SAMPLE_ROWS).data
-  for (let row = 0; row < SAMPLE_ROWS; row++) {
-    for (let col = 0; col < SAMPLE_COLS; col++) {
-      const i = row * SAMPLE_COLS + col
-      const p = i * 4
-      const r = pixels[p] / 255
-      const g = pixels[p + 1] / 255
-      const b = pixels[p + 2] / 255
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b
-      const i3 = i * 3
-      session.positions[i3] = ((col + 0.5) / SAMPLE_COLS - 0.5) * PLANE_W
-      session.positions[i3 + 1] = (0.5 - (row + 0.5) / SAMPLE_ROWS) * PLANE_H
-      session.positions[i3 + 2] = lum * EXTRUDE
-      session.colors[i3] = r
-      session.colors[i3 + 1] = g
-      session.colors[i3 + 2] = b
-    }
-  }
-  session.pointsGeometry.getAttribute("position").needsUpdate = true
-  session.pointsGeometry.getAttribute("color").needsUpdate = true
-}
 
 export function captureGlPixels(session: HeroAsciiSession): boolean {
   const t = session.video.currentTime
   if (t !== session.lastVideoTime) {
     session.lastVideoTime = t
-    sampleLuminance(session)
-    session.videoTexture.needsUpdate = true
+    session.sampler.uploadVideo(session.video)
   }
   applyCameraIfNeeded(session)
-  session.renderer.render(session.scene, session.camera)
+  session.sampler.draw(session.camera)
   const cols = session.asciiSample.width
   const rows = session.asciiSample.height
   const need = cols * rows * 4
   if (session.glPixels.length < need) session.glPixels = new Uint8Array(need)
   let flipY = true
   try {
-    const gl = session.renderer.getContext()
-    if (!gl || cols <= 0 || rows <= 0) throw new Error("no-gl")
-    gl.readPixels(0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, session.glPixels)
+    if (!session.sampler.readPixels(session.glPixels)) throw new Error("no-gl")
   } catch {
     if (!session.asciiCtx) return false
-    session.asciiCtx.drawImage(session.renderer.domElement, 0, 0)
+    session.asciiCtx.drawImage(session.sampler.canvas as HTMLCanvasElement, 0, 0)
     session.glPixels.set(session.asciiCtx.getImageData(0, 0, cols, rows).data)
     flipY = false
   }

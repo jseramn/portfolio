@@ -1,15 +1,5 @@
-import type {
-  BufferGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  PerspectiveCamera,
-  PlaneGeometry,
-  Points,
-  PointsMaterial,
-  Scene,
-  VideoTexture,
-  WebGLRenderer,
-} from "three"
+import type { AsciiSampler } from "./gl"
+import type { AsciiCamera } from "./scene"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
@@ -22,17 +12,8 @@ export type HeroAsciiSession = {
   displayCanvas: HTMLCanvasElement
   displayCtx: CanvasRenderingContext2D | null
   video: HTMLVideoElement
-  renderer: WebGLRenderer
-  scene: Scene
-  camera: PerspectiveCamera
-  videoTexture: VideoTexture
-  plane: Mesh<PlaneGeometry, MeshBasicMaterial>
-  points: Points<BufferGeometry, PointsMaterial>
-  pointsGeometry: BufferGeometry
-  positions: Float32Array
-  colors: Float32Array
-  sample: HTMLCanvasElement
-  sampleCtx: CanvasRenderingContext2D | null
+  sampler: AsciiSampler
+  camera: AsciiCamera
   asciiSample: HTMLCanvasElement
   asciiCtx: CanvasRenderingContext2D | null
   cellLuma: Float32Array

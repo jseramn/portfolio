@@ -51,15 +51,31 @@ describe("site performance chrome load", () => {
     expect(read("pnpm-workspace.yaml")).not.toContain("minimumReleaseAgeExclude")
   })
 
-  it("drops unused R3F while keeping three", () => {
+  it("drops three from the ASCII sampler and first-load JS", () => {
     const pkg = JSON.parse(read("package.json")) as {
       dependencies: Record<string, string>
+      devDependencies?: Record<string, string>
     }
-    expect(pkg.dependencies.three).toBeTruthy()
+    expect(pkg.dependencies).not.toHaveProperty("three")
+    expect(pkg.devDependencies ?? {}).not.toHaveProperty("@types/three")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/fiber")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/postprocessing")
     expect(pkg.dependencies).not.toHaveProperty("postprocessing")
-    expect(readAsciiRuntime()).toContain('import("three")')
+
+    const ascii = readAsciiRuntime()
+    expect(ascii).not.toContain('import("three")')
+    expect(ascii).not.toMatch(/from ["']three["']/)
+    expect(ascii).toContain("webgl2")
+
+    const astroDir = join(root, "dist/client/_astro")
+    if (!existsSync(astroDir)) return
+    const chunks = readdirSync(astroDir)
+    expect(chunks.filter((name) => /three\.module/.test(name))).toEqual([])
+    for (const name of chunks.filter((file) => file.endsWith(".js"))) {
+      const source = readFileSync(join(astroDir, name), "utf8")
+      expect(source, name).not.toContain('import("three")')
+      expect(source, name).not.toContain('from "three"')
+    }
   })
 
   it("compresses HTML without flipping prerender", async () => {
