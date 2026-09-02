@@ -1,8 +1,9 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { behindRect } from "../components/GlassSurface"
+import { CONTACT_MODAL_OPEN_ATTR } from "./domSignals"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const src = join(root, "src")
@@ -11,10 +12,24 @@ function read(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
 }
 
+function readAsciiRuntime(): string {
+  const dir = join(src, "lib/hero/ascii")
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
+    .sort()
+    .map((name) => readFileSync(join(dir, name), "utf8"))
+    .join("\n")
+}
+
+function countGlassSurfaces(source: string): number {
+  return source.match(/<GlassSurface\b/g)?.length ?? 0
+}
+
 function presetBlock(glass: string, name: string): string {
   const match = glass.match(new RegExp(`\\b${name}: \\{[\\s\\S]*?\\n  \\},`))
   expect(match, `missing preset ${name}`).toBeTruthy()
-  return match![0]
+  if (!match) throw new Error(`missing preset ${name}`)
+  return match[0]
 }
 
 function expectCardOptics(block: string) {
@@ -41,8 +56,8 @@ describe("hero liquid-glass chrome wiring", () => {
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(6)
-    expect(modal.match(/<GlassSurface /g)?.length).toBe(1)
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(modal)).toBe(1)
     for (const preset of ["bar", "pill", "dock", "button", "card"] as const) {
       expect(hero).toContain(`preset="${preset}"`)
     }
@@ -51,7 +66,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain('mode="standard"')
     expect(glass).not.toContain('mode="shader"')
     expect(glass).toContain("displacementScale={cfg.displacementScale}")
-    expect(hero).not.toContain("mode=\"shader\"")
+    expect(hero).not.toContain('mode="shader"')
   })
 
   it("wraps the marquee bar and hire button, not duplicated slider or loop children", () => {
@@ -172,9 +187,9 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("clones ascii on a shared 12fps pump without CPU blur or getImageData", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const css = read("styles/globals.css")
-    expect(glass).toContain("const GLASS_MS = 1000 / 12")
+    expect(glass).toContain("const GLASS_MS = 1000 / ASCII_FPS")
     expect(glass).not.toContain("getImageData")
     expect(glass).not.toContain("ctx.filter")
     expect(ascii).toContain("dataset.glassBox")
@@ -185,8 +200,8 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).not.toContain('host.querySelector("svg")')
     expect(glass).toContain("asciiReadyForGlass")
     expect(glass).toContain("bindGlassAsciiWait")
-    expect(glass).toContain("data-glass-gen")
-    expect(glass).toContain("isPointerCoarse")
+    expect(glass).toContain("GLASS_GEN_ATTR")
+    expect(glass).toContain("getCapabilities")
   })
 
   it("samples ascii behind each pane instead of a shared portrait box", () => {
@@ -201,14 +216,27 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(dock.sw).toBeCloseTo(226)
     expect(card.sh).toBeCloseTo(80)
     const occupied = { left: 700, top: 200, width: 500, height: 600 }
-    const dockGlyph = behindRect(1920, 1080, asciiCss, { left: 32, top: 96, width: 226, height: 42 }, 1, occupied)
-    const cardGlyph = behindRect(1920, 1080, asciiCss, { left: 1400, top: 900, width: 480, height: 80 }, 1, occupied)
+    const dockGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 32, top: 96, width: 226, height: 42 },
+      1,
+      occupied,
+    )
+    const cardGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 1400, top: 900, width: 480, height: 80 },
+      1,
+      occupied,
+    )
     expect(dockGlyph.sx).toBeGreaterThanOrEqual(occupied.left)
     expect(dockGlyph.sx + dockGlyph.sw).toBeLessThanOrEqual(occupied.left + occupied.width + 0.01)
     expect(cardGlyph.sx).toBeGreaterThan(dockGlyph.sx)
-    expect(glass).toContain("function behindRect")
     expect(glass).not.toContain("ascii.width < 800")
-    expect(glass).toContain("ascii.dataset.glassGen")
+    expect(glass).toContain("readGlassGen")
     expect(glass).not.toContain("box.h * 0.32")
     expect(glass).not.toContain("readPortraitBox")
     expect(glass).not.toContain("lensRect(")
@@ -236,7 +264,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(hero).toContain("env(safe-area-inset-top)")
     expect(hero).toContain("env(safe-area-inset-bottom)")
     expect(hero).toContain("self-start")
-    expect(hero).toContain("md:contents")
+    expect(hero).toContain("hud:contents")
     expect(hero).not.toContain("bottom-[max(11.25rem")
     expect(hero.match(/preset="dock"/g)?.length).toBe(1)
     expect(hero).toContain("pointermove")
@@ -245,10 +273,10 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(hero).toContain("box.top - 2000")
     expect(glass).toContain("pointermove")
     expect(glass).toContain("host.style.left")
-    expect(read("lib/heroAsciiRuntime.ts")).toContain("pointermove")
+    expect(readAsciiRuntime()).toContain("pointermove")
     expect(hero).toContain('preset="pill"')
     expect(hero).toContain(
-      "font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0",
+      "font-mono text-xs md:text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0",
     )
   })
 
@@ -266,25 +294,25 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("requestIdleCallback")
     expect(glass).toContain("timeout: 2000")
     expect(glass).toContain("setUseLiveGlass")
-    expect(glass).toContain("isPointerCoarse()")
-    expect(glass).toContain("function behindRect")
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(6)
-    expect(read("components/ContactModal.tsx").match(/<GlassSurface /g)?.length).toBe(1)
+    expect(glass).toContain("getCapabilities().liveGlass")
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(read("components/ContactModal.tsx"))).toBe(1)
   })
 
   it("pauses the shared pump when the document is hidden or contact is open", () => {
     const glass = read("components/GlassSurface.tsx")
     expect(glass).toContain("document.hidden")
-    expect(glass).toContain("[data-contact-modal-open]")
-    expect(glass).toContain('[role="dialog"][aria-modal="true"]')
+    expect(glass).toContain("isUiBlockingOverlayOpen")
+    expect(glass).toContain("CONTACT_MODAL_OPEN_ATTR")
+    expect(glass).toContain("ARIA_MODAL_ATTR")
     expect(glass).toContain("cancelAnimationFrame")
     expect(glass).toContain("visibilitychange")
-    expect(read("components/ContactModal.tsx")).toContain("data-contact-modal-open")
+    expect(read("components/ContactModal.tsx")).toContain(CONTACT_MODAL_OPEN_ATTR)
   })
 
   it("strips glass debug ingest and debug attributes", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const hero = read("components/Hero.tsx")
     const asciiBg = read("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {

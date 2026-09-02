@@ -2,12 +2,18 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
-import { ACCEPT_VARY } from "../src/lib/agent/accept"
 import {
+  AGENT_FILE_CACHE_CONTROL,
+  AGENT_FILES_SOURCE,
+  ASTRO_ASSET_SOURCE,
+  CDN_SWR_CACHE_CONTROL,
+  GITHUB_STATS_API_SOURCE,
+  IMMUTABLE_ASSET_CACHE_CONTROL,
+  WELL_KNOWN_SOURCE,
   buildContentSecurityPolicy,
   buildLegalContentSecurityPolicy,
 } from "../src/lib/security/siteSecurityHeaders.mjs"
-import { buildVercelHeaderRules } from "./sync-vercel-security-headers.mjs"
+import { buildVercelHeaderRules, buildVercelRedirects } from "./sync-vercel-security-headers.mjs"
 
 const POSTHOG_HOST = "https://*.posthog.com"
 const here = dirname(fileURLToPath(import.meta.url))
@@ -26,13 +32,29 @@ function directive(csp: string, name: string): string {
 }
 
 describe("sync-vercel-security-headers", () => {
-  it("emits Vary after security headers on /(.*)", () => {
+  it("does not attach Vary: Accept to the global or hashed-asset rules", () => {
     const rules = buildVercelHeaderRules()
     const global = rules.find((rule) => rule.source === "/(.*)")
-    expect(global).toBeDefined()
-    const keys = global?.headers.map((h) => h.key) ?? []
-    expect(keys.at(-1)).toBe("Vary")
-    expect(global?.headers.at(-1)?.value).toBe(ACCEPT_VARY)
+    const astro = rules.find((rule) => rule.source === ASTRO_ASSET_SOURCE)
+    expect(global?.headers.some((header) => header.key === "Vary")).toBe(false)
+    expect(astro?.headers).toEqual([{ key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL }])
+  })
+
+  it("overrides /api catch-all no-store for public github-stats JSON", () => {
+    const rules = buildVercelHeaderRules()
+    const apiIdx = rules.findIndex((rule) => rule.source === "/api/(.*)")
+    const statsIdx = rules.findIndex((rule) => rule.source === GITHUB_STATS_API_SOURCE)
+    expect(apiIdx).toBeGreaterThanOrEqual(0)
+    expect(statsIdx).toBeGreaterThan(apiIdx)
+    expect(rules[apiIdx]?.headers).toEqual(
+      expect.arrayContaining([{ key: "Cache-Control", value: "no-store" }]),
+    )
+    expect(rules[statsIdx]?.headers).toEqual(
+      expect.arrayContaining([
+        { key: "Cache-Control", value: CDN_SWR_CACHE_CONTROL },
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      ]),
+    )
   })
 
   it("overrides CORP for social preview assets after the global rule", () => {
@@ -50,7 +72,7 @@ describe("sync-vercel-security-headers", () => {
     )
   })
 
-  it("allows PostHog on both CSPs and Vercel Analytics hosts only on the main CSP", () => {
+  it("allows PostHog on both CSPs and omits Vercel Analytics hosts", () => {
     const mainCsp = cspFor("/(.*)")
     const legalCsp = cspFor("/(policy|terms|data-deletion)")
 
@@ -66,10 +88,10 @@ describe("sync-vercel-security-headers", () => {
     expect(directive(legalCsp, "frame-src")).toContain(POSTHOG_HOST)
     expect(directive(legalCsp, "worker-src")).toContain("blob:")
 
-    expect(directive(mainCsp, "script-src")).toContain("https://va.vercel-scripts.com")
-    expect(directive(mainCsp, "connect-src")).toContain("https://vitals.vercel-insights.com")
-    expect(directive(legalCsp, "script-src")).not.toContain("https://va.vercel-scripts.com")
-    expect(directive(legalCsp, "connect-src")).not.toContain("https://vitals.vercel-insights.com")
+    expect(directive(mainCsp, "script-src")).not.toMatch(/va\.vercel/)
+    expect(directive(mainCsp, "connect-src")).not.toMatch(/vitals\.vercel/)
+    expect(directive(legalCsp, "script-src")).not.toMatch(/va\.vercel/)
+    expect(directive(legalCsp, "connect-src")).not.toMatch(/vitals\.vercel/)
 
     expect(legalCsp).toContain("frame-ancestors *")
     expect(legalCsp).not.toContain("youtube")
@@ -79,5 +101,61 @@ describe("sync-vercel-security-headers", () => {
     const middleware = readFileSync(join(here, "../src/middleware.ts"), "utf8")
     expect(middleware).toContain("buildLegalContentSecurityPolicy")
     expect(middleware).not.toMatch(/posthog-node/)
+  })
+
+  it("opens CORS for agent-readable files after the global ACAO lock", () => {
+    const rules = buildVercelHeaderRules()
+    const globalIdx = rules.findIndex((rule) => rule.source === "/(.*)")
+    const agentIdx = rules.findIndex((rule) => rule.source === AGENT_FILES_SOURCE)
+    const wellKnownIdx = rules.findIndex((rule) => rule.source === WELL_KNOWN_SOURCE)
+    const apiIdx = rules.findIndex((rule) => rule.source === "/api/(.*)")
+    expect(agentIdx).toBeGreaterThan(globalIdx)
+    expect(wellKnownIdx).toBeGreaterThan(globalIdx)
+    expect(apiIdx).toBeGreaterThan(agentIdx)
+    expect(apiIdx).toBeGreaterThan(wellKnownIdx)
+
+    const expected = [
+      { key: "Access-Control-Allow-Origin", value: "*" },
+      { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+      { key: "Cache-Control", value: AGENT_FILE_CACHE_CONTROL },
+    ]
+    expect(rules[agentIdx]?.headers).toEqual(expected)
+    expect(rules[wellKnownIdx]?.headers).toEqual(expected)
+    expect(rules[apiIdx]?.headers).toEqual(
+      expect.arrayContaining([{ key: "Cache-Control", value: "no-store" }]),
+    )
+  })
+
+  it("permanently redirects /security.txt and keeps vercel.json in sync", () => {
+    const redirects = [
+      { source: "/privacy", destination: "/policy", permanent: true },
+      {
+        source: "/security.txt",
+        destination: "/.well-known/security.txt",
+        permanent: true,
+      },
+    ]
+    expect(buildVercelRedirects()).toEqual(redirects)
+    const vercel = JSON.parse(readFileSync(join(here, "../vercel.json"), "utf8"))
+    expect(vercel.headers).toEqual(buildVercelHeaderRules())
+    expect(vercel.redirects).toEqual(redirects)
+  })
+
+  it("publishes RFC 9116 security.txt with a future Expires within one year", () => {
+    const parsed = Object.fromEntries(
+      readFileSync(join(here, "../public/.well-known/security.txt"), "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => line.split(/:\s(.+)/).filter(Boolean)),
+    )
+    expect(parsed.Contact).toBe("mailto:contacto@jseramn.tech")
+    expect(parsed["Preferred-Languages"]).toBe("en, es")
+    expect(parsed.Canonical).toBe("https://www.jseramn.tech/.well-known/security.txt")
+    expect(parsed.Policy).toBe("https://jseramn.tech/policy")
+    expect(parsed.Encryption).toBeUndefined()
+    const expiresAt = Date.parse(parsed.Expires)
+    expect(parsed.Expires).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/)
+    expect(expiresAt).toBeGreaterThan(Date.now())
+    expect(expiresAt - Date.now()).toBeLessThanOrEqual(365 * 24 * 60 * 60 * 1000)
   })
 })

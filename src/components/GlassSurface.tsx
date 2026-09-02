@@ -8,9 +8,18 @@ import {
   type ReactNode,
   type RefObject,
 } from "react"
-import { chromiumRuntimeHint, shouldUseLiquidGlass } from "../lib/shouldUseLiquidGlass"
-import { isPointerCoarse } from "../lib/pointer"
-import { prefersReducedMotion } from "../lib/webgl"
+import { ASCII_FPS, getCapabilities } from "../lib/capabilities"
+import {
+  ARIA_MODAL_ATTR,
+  CONTACT_MODAL_OPEN_ATTR,
+  GLASS_GEN_ATTR,
+  getAsciiCanvas,
+  getHeroRoot,
+  isAsciiReadyForGlass,
+  isUiBlockingOverlayOpen,
+  readGlassBox,
+  readGlassGen,
+} from "../lib/domSignals"
 
 export type GlassPreset = "bar" | "pill" | "dock" | "button" | "card" | "modal"
 
@@ -142,7 +151,7 @@ export function behindRect(
   return { sx, sy, sw, sh }
 }
 
-const GLASS_MS = 1000 / 12
+const GLASS_MS = 1000 / ASCII_FPS
 const glassJobs = new Set<() => void>()
 let glassPump = 0
 let glassPumpAt = 0
@@ -150,60 +159,71 @@ let pumpAscii: HTMLCanvasElement | null = null
 let pumpAsciiRect: DOMRect | null = null
 let glassResumeBound = false
 let glassAsciiWaitBound = false
+let glassResumeObserver: MutationObserver | null = null
+let glassResumeOnVis: (() => void) | null = null
+let glassAsciiWaitObserver: MutationObserver | null = null
 
 const LiquidGlass = lazy(() => import("liquid-glass-react"))
 
 function glassShouldPause() {
   if (typeof document === "undefined") return true
   if (document.hidden) return true
-  if (document.querySelector("[data-contact-modal-open]")) return true
-  if (document.querySelector('[role="dialog"][aria-modal="true"]')) return true
-  return false
+  return isUiBlockingOverlayOpen(document)
 }
 
 function asciiReadyForGlass(): HTMLCanvasElement | null {
   if (typeof document === "undefined") return null
-  const ascii = document.querySelector(
-    "[data-hero-root] > .hero-ascii-display",
-  ) as HTMLCanvasElement | null
-  if (!ascii) return null
-  if (!ascii.dataset.glassGen) return null
-  if (ascii.width < 2 || ascii.height < 2) return null
-  return ascii
+  const ascii = getAsciiCanvas(document)
+  return isAsciiReadyForGlass(ascii) ? ascii : null
+}
+
+function unbindGlassAsciiWait() {
+  glassAsciiWaitObserver?.disconnect()
+  glassAsciiWaitObserver = null
+  glassAsciiWaitBound = false
+}
+
+function unbindGlassResume() {
+  if (glassResumeOnVis) {
+    document.removeEventListener("visibilitychange", glassResumeOnVis)
+    glassResumeOnVis = null
+  }
+  glassResumeObserver?.disconnect()
+  glassResumeObserver = null
+  glassResumeBound = false
 }
 
 function bindGlassAsciiWait() {
   if (glassAsciiWaitBound || typeof document === "undefined") return
   glassAsciiWaitBound = true
-  const observer = new MutationObserver(() => {
+  glassAsciiWaitObserver = new MutationObserver(() => {
     if (!asciiReadyForGlass()) return
-    glassAsciiWaitBound = false
-    observer.disconnect()
+    unbindGlassAsciiWait()
     ensureGlassPump()
   })
-  const root = document.querySelector("[data-hero-root]") ?? document.documentElement
-  observer.observe(root, {
+  const root = getHeroRoot(document) ?? document.documentElement
+  glassAsciiWaitObserver.observe(root, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["data-glass-gen"],
+    attributeFilter: [GLASS_GEN_ATTR],
   })
 }
 
 function bindGlassResume() {
   if (glassResumeBound || typeof document === "undefined") return
   glassResumeBound = true
-  const resume = () => {
+  glassResumeOnVis = () => {
     if (glassShouldPause()) return
     ensureGlassPump()
   }
-  document.addEventListener("visibilitychange", resume)
-  const observer = new MutationObserver(resume)
-  observer.observe(document.documentElement, {
+  document.addEventListener("visibilitychange", glassResumeOnVis)
+  glassResumeObserver = new MutationObserver(glassResumeOnVis)
+  glassResumeObserver.observe(document.documentElement, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["data-contact-modal-open", "aria-modal", "hidden"],
+    attributeFilter: [CONTACT_MODAL_OPEN_ATTR, ARIA_MODAL_ATTR, "hidden"],
   })
 }
 
@@ -219,7 +239,7 @@ function ensureGlassPump() {
   }
   const step = (now: number) => {
     if (glassJobs.size === 0) {
-      glassPump = 0
+      stopGlassPumpIfIdle()
       return
     }
     if (glassShouldPause()) {
@@ -231,9 +251,7 @@ function ensureGlassPump() {
     glassPump = requestAnimationFrame(step)
     if (now - glassPumpAt < GLASS_MS) return
     glassPumpAt = now
-    pumpAscii = document.querySelector(
-      "[data-hero-root] > .hero-ascii-display",
-    ) as HTMLCanvasElement | null
+    pumpAscii = getAsciiCanvas(document)
     pumpAsciiRect = pumpAscii?.getBoundingClientRect() ?? null
     for (const job of glassJobs) job()
   }
@@ -244,6 +262,8 @@ function stopGlassPumpIfIdle() {
   if (glassJobs.size > 0) return
   cancelAnimationFrame(glassPump)
   glassPump = 0
+  unbindGlassResume()
+  unbindGlassAsciiWait()
 }
 
 type GlassSurfaceProps = {
@@ -272,27 +292,7 @@ export function GlassSurface({
     let cancelled = false
     const arm = () => {
       if (cancelled) return
-      const userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent
-      const reducedMotion = typeof window === "undefined" ? false : prefersReducedMotion()
-      const chromeObject =
-        typeof window !== "undefined" &&
-        Boolean((window as Window & { chrome?: unknown }).chrome)
-      const brands =
-        typeof navigator !== "undefined" && "userAgentData" in navigator
-          ? (
-              navigator as Navigator & {
-                userAgentData?: { brands?: { brand: string }[] }
-              }
-            ).userAgentData?.brands?.map((item) => item.brand) ?? []
-          : []
-      const chromiumRuntime = chromiumRuntimeHint(userAgent, chromeObject, brands)
-      const live = shouldUseLiquidGlass(
-        userAgent,
-        reducedMotion,
-        chromiumRuntime,
-        isPointerCoarse(),
-      )
-      setUseLiveGlass(live)
+      setUseLiveGlass(getCapabilities().liveGlass)
     }
     if (typeof requestIdleCallback === "function") {
       const id = requestIdleCallback(arm, { timeout: 2000 })
@@ -328,11 +328,15 @@ export function GlassSurface({
       const stretchIntensity = Math.min(Math.hypot(dx, dy) / 300, 1) * cfg.elasticity * fade
       const scaleX = Math.max(
         0.8,
-        1 + Math.abs(dx / dist) * stretchIntensity * 0.3 - Math.abs(dy / dist) * stretchIntensity * 0.15,
+        1 +
+          Math.abs(dx / dist) * stretchIntensity * 0.3 -
+          Math.abs(dy / dist) * stretchIntensity * 0.15,
       )
       const scaleY = Math.max(
         0.8,
-        1 + Math.abs(dy / dist) * stretchIntensity * 0.3 - Math.abs(dx / dist) * stretchIntensity * 0.15,
+        1 +
+          Math.abs(dy / dist) * stretchIntensity * 0.3 -
+          Math.abs(dx / dist) * stretchIntensity * 0.15,
       )
       host.style.setProperty("--glass-ex", `${x.toFixed(2)}px`)
       host.style.setProperty("--glass-ey", `${y.toFixed(2)}px`)
@@ -376,13 +380,7 @@ export function GlassSurface({
       if (cancelled) return
       const ascii = pumpAscii
       const ar = pumpAsciiRect
-      const ready = Boolean(
-        ascii &&
-          ar &&
-          ascii.width >= 2 &&
-          ascii.height >= 2 &&
-          ascii.dataset.glassGen,
-      )
+      const ready = Boolean(ascii && ar && isAsciiReadyForGlass(ascii))
       if (!ready) {
         return
       }
@@ -391,7 +389,7 @@ export function GlassSurface({
       const w = Math.max(1, Math.round(hr.width))
       const h = Math.max(1, Math.round(hr.height))
       if (w < 1 || h < 1) return
-      const gen = ascii.dataset.glassGen ?? ""
+      const gen = readGlassGen(ascii)
       const pos = `${Math.round(hr.left)},${Math.round(hr.top)}`
       if (gen === lastGen && dest.width === w && dest.height === h && pos === lastPos) {
         return
@@ -402,7 +400,7 @@ export function GlassSurface({
       if (dest.height !== h) dest.height = h
       const ctx = dest.getContext("2d")
       if (!ctx) return
-      const boxRaw = ascii.dataset.glassBox ?? ""
+      const boxRaw = readGlassBox(ascii)
       const boxParts = boxRaw.split(",").map(Number)
       const occupied =
         boxParts.length === 4 &&
@@ -444,9 +442,7 @@ export function GlassSurface({
     }
   }, [useLiveGlass, preset, frostPx])
 
-  const familyClass = CARD_FAMILY.has(preset)
-    ? "glass-fallback-card"
-    : "glass-fallback-button"
+  const familyClass = CARD_FAMILY.has(preset) ? "glass-fallback-card" : "glass-fallback-button"
   const shellClassName = ["glass-fallback", familyClass, className].filter(Boolean).join(" ")
   const shellStyle: CSSProperties = {
     padding: cfg.padding,
@@ -469,11 +465,7 @@ export function GlassSurface({
     )
   }
 
-  const pane = stretch ? (
-    <div className="min-w-0 w-full overflow-hidden">{children}</div>
-  ) : (
-    children
-  )
+  const pane = stretch ? <div className="min-w-0 w-full overflow-hidden">{children}</div> : children
 
   return (
     <div

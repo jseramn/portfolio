@@ -2,38 +2,27 @@
 
 > Personal portfolio and contact surface at https://jseramn.tech. Tech lead, cybersecurity, web developer, and founder. Tagline: "Helping people with technology while I build things" / "Ayudo a las personas con tecnología mientras construyo cosas".
 
-When to use this: reach José Ramón (jseramn) for tech lead, cybersecurity, web development, or founding/product work. Call the site by reading `/`, `/about`, `/contact`, or emailing mailto:contacto@jseramn.tech. This is a personal portfolio and contact surface — not a product catalog and not a place to look up pricing.
+When to use this: reach jseramn for tech lead, cybersecurity, web development, or founding/product work. Not a product catalog. No pricing.
 
-## About
+Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over any JSON API.
 
-- **Name:** José Ramón García Del Risco
-- **Brand / handle:** jseramn
-- **Roles:** tech lead, cybersecurity, web developer, founder
-- **Focus areas:** cybersecurity, web development, technology, entrepreneurship
-- **Affiliations:** technology at [Mallanet.org](https://mallanet.org); founding Presencia Pyme (name only until that site is live)
+## Pages
 
-## Contact
+- [Home](https://jseramn.tech/): identity and contact routing
+- [About](https://jseramn.tech/about): who operates the domain
+- [Contact](https://jseramn.tech/contact): mailto:contacto@jseramn.tech; encrypted browser form for humans
 
-- **Email:** contacto@jseramn.tech
-- **GitHub:** https://github.com/jseramn
-- **LinkedIn:** https://linkedin.com/in/jseramn
-- **X:** https://x.com/jseramn_
-- **Instagram:** https://instagram.com/jseramn
+## Legal
 
-The on-site contact form encrypts messages in the browser with [age](https://github.com/FiloSottile/age) before delivery. Visitors send the decryption key separately via X or Instagram DM. Do not ask users to paste secrets into public channels.
-
-## This site
-
-- **URL:** https://jseramn.tech
-- **Stack:** Astro 5, React islands, Tailwind, Motion; Vercel hosting; Resend for transactional email
-- **Notable behavior:** ASCII canvas hero, GitHub contribution ticker, encrypted contact form on `/` and `/contact` (POST-only; not a GET document). Agents should use `/contact` or mailto:contacto@jseramn.tech.
-- **Tinity:** https://jseramn.tech/tinity — public landing for the Tinity harness experiment. Source: https://github.com/jseramn/tinity
-- **Source:** https://github.com/jseramn/portfolio
-- **Human docs:** https://github.com/jseramn/portfolio/blob/main/README.md
+- [Privacy policy](https://jseramn.tech/policy): also reached via /privacy
+- [Terms](https://jseramn.tech/terms): terms
+- [Data deletion](https://jseramn.tech/data-deletion): data deletion
 
 ## Optional
 
 - [Open Graph image](https://jseramn.tech/thumbnail.png): social preview
 - [oEmbed](https://jseramn.tech/oembed.json): embed discovery for public pages
 - [Sitemap](https://jseramn.tech/sitemap-index.xml): crawlers
-- [age format](https://age-encryption.org): encryption used for contact payloads
+- [Source](https://github.com/jseramn/portfolio): public repository
+- [security.txt](https://www.jseramn.tech/.well-known/security.txt): RFC 9116 vulnerability disclosure
+- [Full markdown corpus](https://jseramn.tech/llms-full.txt): concatenated markdown for /, /about, and /contact

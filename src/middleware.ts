@@ -1,8 +1,19 @@
 import { defineMiddleware } from "astro:middleware"
-import { ACCEPT_VARY, negotiate } from "./lib/agent/accept"
-import { applyApiNoStoreHeaders } from "./lib/agent/apiCacheHeaders"
+import { negotiate } from "./lib/agent/accept"
+import {
+  applyApiNoStoreHeaders,
+  applyDescribedbyLinkHeader,
+  applyNegotiatedResponseHeaders,
+} from "./lib/agent/apiCacheHeaders"
+import {
+  buildGraphJsonLd,
+  jsonLdCanonicalFromPath,
+  jsonLdPageKindFromPath,
+  jsonLdSameAs,
+  type JsonLdPageKind,
+} from "./lib/agent/jsonld"
 import { notFoundMarkdown, pageFromPath, toMarkdown } from "./lib/agent/markdown"
-import { skipNegotiate } from "./lib/agent/skip"
+import { shouldNegotiateAccept } from "./lib/agent/skip"
 import { applySecurityHeaders } from "./lib/security/headers"
 import { buildLegalContentSecurityPolicy } from "./lib/security/siteSecurityHeaders.mjs"
 
@@ -16,12 +27,21 @@ function applyLegalOverrides(pathname: string, response: Response): void {
   response.headers.set("Content-Security-Policy", buildLegalContentSecurityPolicy())
 }
 
+function jsonLdResponse(pathname: string, kind: JsonLdPageKind, status: number): Response {
+  const body = JSON.stringify(
+    buildGraphJsonLd(jsonLdSameAs(), { kind, canonical: jsonLdCanonicalFromPath(pathname) }),
+  )
+  return new Response(body, {
+    status,
+    headers: { "Content-Type": "application/ld+json; charset=utf-8" },
+  })
+}
+
 function finish(pathname: string, response: Response, vary: boolean): Response {
   applySecurityHeaders(response)
   applyApiNoStoreHeaders(pathname, response.headers)
-  if (vary) {
-    response.headers.set("Vary", ACCEPT_VARY)
-  }
+  applyNegotiatedResponseHeaders(response.headers, vary)
+  applyDescribedbyLinkHeader(response.headers, response.status, vary)
   applyLegalOverrides(pathname, response)
   return response
 }
@@ -29,7 +49,7 @@ function finish(pathname: string, response: Response, vary: boolean): Response {
 export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = context.url.pathname
 
-  if (skipNegotiate(pathname)) {
+  if (!shouldNegotiateAccept(pathname, context.isPrerendered)) {
     const response = await next()
     return finish(pathname, response, false)
   }
@@ -46,6 +66,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
       },
     })
     return finish(pathname, response, true)
+  }
+
+  if (preferred === "application/ld+json") {
+    const known = jsonLdPageKindFromPath(pathname)
+    if (known) return finish(pathname, jsonLdResponse(pathname, known, 200), true)
+    const html = await next()
+    if (html.status === 404 || html.status === 410) {
+      return finish(pathname, jsonLdResponse(pathname, "notfound", html.status), true)
+    }
+    return finish(pathname, html, true)
   }
 
   if (preferred === "text/markdown") {

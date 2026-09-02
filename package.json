@@ -5,9 +5,15 @@
   "license": "MIT",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/sync-vercel-security-headers.mjs && astro build",
+    "build": "node scripts/sync-vercel-security-headers.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-llms-full.mjs && astro build",
     "preview": "astro preview",
-    "test": "vitest run"
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "astro check && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test"
   },
   "dependencies": {
     "@astrojs/react": "^4",
@@ -16,21 +22,20 @@
     "@astrojs/vercel": "^8.2.11",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
     "age-encryption": "^0.3.0",
     "astro": "^5",
     "liquid-glass-react": "1.1.1",
-    "lucide-react": "^0.454.0",
     "motion": "^12.33.0",
     "posthog-node": "^5.50.0",
     "react": "^19",
     "react-dom": "^19",
-    "react-use-measure": "^2.1.7",
     "resend": "^6.18.0",
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@biomejs/biome": "^2.5.11",
+    "@playwright/test": "^1.62.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.185.4",

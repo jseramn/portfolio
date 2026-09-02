@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { VIDEO_PRELOAD } from "./heroAsciiBudget"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const src = join(root, "src")
@@ -14,6 +15,15 @@ function readSrc(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
 }
 
+function readAsciiRuntime(): string {
+  const dir = join(src, "lib/hero/ascii")
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
+    .sort()
+    .map((name) => readFileSync(join(dir, name), "utf8"))
+    .join("\n")
+}
+
 describe("site performance chrome load", () => {
   it("keeps Astro 5 pins and does not mix Astro 7", () => {
     const pkg = JSON.parse(read("package.json")) as {
@@ -22,7 +32,8 @@ describe("site performance chrome load", () => {
     expect(pkg.dependencies.astro).toMatch(/^\^?5/)
     expect(pkg.dependencies["@astrojs/react"]).toMatch(/^\^?4/)
     expect(pkg.dependencies["@astrojs/vercel"]).toBe("^8.2.11")
-    expect(pkg.dependencies["@vercel/analytics"]).toBeTruthy()
+    const vercelVendor = Object.keys(pkg.dependencies).filter((name) => name.startsWith("@vercel/"))
+    expect(vercelVendor).toEqual([])
     expect(pkg.dependencies.astro).not.toMatch(/7/)
     expect(read("pnpm-workspace.yaml")).not.toContain("minimumReleaseAgeExclude")
   })
@@ -35,12 +46,13 @@ describe("site performance chrome load", () => {
     expect(pkg.dependencies).not.toHaveProperty("@react-three/fiber")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/postprocessing")
     expect(pkg.dependencies).not.toHaveProperty("postprocessing")
-    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('import("three")')
+    expect(readAsciiRuntime()).toContain('import("three")')
   })
 
-  it("compresses HTML without flipping prerender", () => {
-    expect(read("astro.config.mjs")).toContain("compressHTML: true")
-    for (const page of ["index", "about", "contact", "404", "tinity/index"]) {
+  it("compresses HTML without flipping prerender", async () => {
+    const astro = await import("../../astro.config.mjs")
+    expect(astro.default.compressHTML).toBe(true)
+    for (const page of ["index", "about", "contact", "404", "policy", "terms", "data-deletion"]) {
       expect(readSrc(`pages/${page}.astro`)).toMatch(/export const prerender = false/)
       expect(readSrc(`pages/${page}.astro`)).not.toMatch(/prerender = true/)
     }
@@ -65,7 +77,7 @@ describe("site performance chrome load", () => {
     expect(layout).toContain('as="font"')
     expect(layout).toContain('type="font/woff2"')
     expect(layout).toContain('fetchpriority="high"')
-    expect(layout).toContain('globals.css?inline')
+    expect(layout).toContain("globals.css?inline")
     expect(layout).not.toContain("site.asciiPosterSrc")
     expect(layout).not.toContain('as="image"')
     expect(layout).not.toContain('type="image/webp"')
@@ -83,18 +95,23 @@ describe("site performance chrome load", () => {
     expect(home).not.toContain("hero-ascii-poster")
     expect(home).not.toContain("site.asciiPosterSrc")
     expect(home).toContain("<Hero client:load />")
-    expect(home).toContain('as="video"')
-    expect(home).toContain("site.asciiSamplerWebm")
+    expect(home).not.toContain('as="video"')
+    expect(home).not.toMatch(/rel=["']preload["']/)
+    expect(home).not.toContain("asciiSamplerWebm")
     expect(home).toContain('id="boot-loader"')
     expect(home).not.toContain("videoSrcMp4")
+    expect(home).not.toContain("videoSrcWebm")
+    expect(home).not.toContain("/videobg.webm")
     expect(home).not.toContain("/videobg.mp4")
+    expect(VIDEO_PRELOAD).toBe("none")
+    expect(readAsciiRuntime()).toContain("video.preload = VIDEO_PRELOAD")
     expect(layout).not.toContain('as="video"')
     expect(readSrc("pages/about.astro")).not.toContain("boot-loader")
     expect(readSrc("pages/contact.astro")).not.toContain("boot-loader")
     expect(readSrc("pages/tinity/index.astro")).not.toContain("boot-loader")
   })
 
-  it("defers YouTube and ContactModal; ASCII stays lazy without an idle gate", () => {
+  it("defers YouTube and ContactModal; ASCII stays lazy outside the Hero chrome file", () => {
     const hero = readSrc("components/Hero.tsx")
     expect(hero).not.toMatch(/import \{ ContactModal \}/)
     expect(hero).toContain('import("./ContactModal")')
@@ -116,7 +133,7 @@ describe("site performance chrome load", () => {
 
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
     const glass = readSrc("components/GlassSurface.tsx")
-    const ascii = readSrc("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const hero = readSrc("components/Hero.tsx")
     const asciiBg = readSrc("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {
@@ -125,9 +142,7 @@ describe("site performance chrome load", () => {
       expect(source).not.toContain("@react-three/postprocessing")
     }
     expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
-    expect(ascii).toContain("VIDEO_PRELOAD")
-    expect(ascii).toContain("blitHeroPoster")
-    expect(ascii).toContain('video.preload = "metadata"')
+    expect(ascii).toContain("video.preload = VIDEO_PRELOAD")
     expect(ascii).toContain("signalHeroBootReady")
     expect(asciiBg).toContain("data-hero-boot-fallback")
     expect(asciiBg).toContain("signalHeroBootReady")

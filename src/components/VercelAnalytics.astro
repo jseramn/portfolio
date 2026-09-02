@@ -1,9 +1,0 @@
----
-import Analytics from "@vercel/analytics/astro"
-
-const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/"
-const legal = pathname === "/policy" || pathname === "/terms" || pathname === "/data-deletion"
-const local = Astro.url.hostname === "localhost" || Astro.url.hostname === "127.0.0.1"
----
-
-{legal || local ? null : <Analytics />}

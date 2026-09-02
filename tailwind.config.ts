@@ -2,9 +2,7 @@ import type { Config } from "tailwindcss"
 
 const config: Config = {
   darkMode: ["class"],
-  content: [
-    "./src/**/*.{astro,html,js,jsx,ts,tsx}",
-  ],
+  content: ["./src/**/*.{astro,html,js,jsx,ts,tsx}"],
   theme: {
     container: {
       center: true,
@@ -64,6 +62,12 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-geist-sans)"],
         mono: ["var(--font-geist-mono)"],
+      },
+      screens: {
+        hud: { raw: "(min-width: 768px) and (min-height: 700px)" },
+        short: {
+          raw: "(max-height: 499px), (min-width: 768px) and (max-height: 699px)",
+        },
       },
       keyframes: {
         flicker: {

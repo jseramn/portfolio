@@ -1,0 +1,150 @@
+## https://jseramn.tech/
+
+# José Ramón García Del Risco (jseramn)
+
+## Who this is
+
+José Ramón García Del Risco, known as jseramn, runs this site as a personal portfolio and contact surface. Tagline: Helping people with technology while I build things / Ayudo a las personas con tecnología mientras construyo cosas. Affiliations shown on the site: co-founder @ Mallanet.org (https://mallanet.org); co-founder @ Presencia Pyme. If you are deciding whether this domain is relevant: it is the public identity of José Ramón García Del Risco and the place to start a conversation about technology leadership, security, or building on the web.
+
+## Who it is for
+
+It is for people and teams who want to reach him about tech lead, cybersecurity, web development, founder work. Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step. Source and human docs live in the public GitHub repository linked from llms.txt.
+
+## How to get in touch
+
+How to get in touch: email contacto@jseramn.tech, open /contact, or use the on-site encrypted contact form. The form encrypts messages in the browser with age (typage) before delivery. The server only relays the ciphertext. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels. Write when you have a concrete collaboration or hiring context.
+
+## What this site is not
+
+jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog. There is no /projects, /docs, or /services catalog on this domain. There is no app download, no waitlist, and no self-serve billing. The visible homepage is a live ASCII portrait of José Ramón García Del Risco on a black terminal layout; this article remains the readable source for agents. The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact. Live ASCII stays on phones; the first paint is a black field until glyphs are ready.
+
+## https://jseramn.tech/about
+
+# About jseramn
+
+José Ramón García Del Risco (jseramn) is a tech lead, cybersecurity, web development, founder. This page exists so people and agents can verify who operates jseramn.tech: a personal portfolio and contact surface, not a company storefront. He helps people with technology while building things. Typical jobs to bring him: technology leadership, cybersecurity, web development, and founding or product work. He is affiliated with co-founder @ Mallanet.org ([https://mallanet.org](https://mallanet.org)); co-founder @ Presencia Pyme. Those are separate organizations; this domain is his own contact surface. There is no product SKU, no pricing table, and no self-serve checkout on this site. Public profiles: GitHub [https://github.com/jseramn](https://github.com/jseramn), X [https://x.com/jseramn_](https://x.com/jseramn_), LinkedIn [https://linkedin.com/in/jseramn](https://linkedin.com/in/jseramn), Instagram [https://instagram.com/jseramn](https://instagram.com/jseramn). Email [contacto@jseramn.tech](mailto:contacto@jseramn.tech). For a longer message use [/contact](/contact) or the encrypted homepage form. Privacy policy is at [/policy](/policy) (also reached via [/privacy](/privacy)). Terms are at [/terms](/terms).
+
+## https://jseramn.tech/contact
+
+# Contact jseramn
+
+Contact José Ramón García Del Risco (jseramn) when you need a tech lead, cybersecurity, web development, founder. jseramn.tech is the contact surface for that work. It is not a product support desk and it does not sell plans. Preferred email: [contacto@jseramn.tech](mailto:contacto@jseramn.tech). You can also use the encrypted contact form on the homepage. Messages submitted through the form are encrypted in the browser with age (typage) before they leave your device. The server only relays the ciphertext. After you send ciphertext, deliver the decryption passphrase by DM on X ([https://x.com/jseramn_](https://x.com/jseramn_)) or Instagram ([https://instagram.com/jseramn](https://instagram.com/jseramn)). Do not paste passphrases or private keys into public issues, comments, or group chats. If an agent is routing a human: point them at [contacto@jseramn.tech](mailto:contacto@jseramn.tech), this [/contact](/contact) page, or the homepage form. Include the role they need (tech lead, cybersecurity, web development, founding or product). Legal: [/policy](/policy), [/terms](/terms), [/data-deletion](/data-deletion). Sitemap: [/sitemap-index.xml](/sitemap-index.xml). Agent index: [/llms.txt](/llms.txt).
+
+## https://jseramn.tech/policy
+
+# Privacy Policy
+
+Last updated: August 27, 2026
+
+This policy describes how José Ramón García Del Risco ("I", "me") collects and uses information when you visit [jseramn.tech](https://jseramn.tech), use the contact form, or message me through WhatsApp or other Meta messaging channels connected to my services (including the AUREUS assistant).
+
+## Information I collect
+
+- **Website visitors:** pages viewed, clicks and other autocaptured interactions, approximate location derived from IP, browser and device type, referral source, and JavaScript exceptions. PostHog records these as cookieless, anonymous events. Session replay, surveys, console-log recording, and Core Web Vitals collection are disabled. I do not identify visitors, set analytics cookies, or send contact-form contents, names, emails, or decryption passphrases to PostHog. With surveys disabled in the client, survey scripts do not load even if a survey is launched in the PostHog project.
+- **Contact form:** the message you submit is encrypted in your browser before transmission. I receive only ciphertext by email. Optional anti-abuse signals (for example Cloudflare Turnstile and rate-limit metadata) may be processed.
+- **WhatsApp / Meta messaging:** your phone number, display name, message content, timestamps, and delivery status as provided by Meta's WhatsApp Business Platform when you contact me or use connected automations.
+- **GitHub presence:** public profile and contribution statistics displayed on the site are fetched from GitHub's public API; I do not receive your GitHub credentials.
+
+## How I use information
+
+I use this data to operate and secure the site, respond to inquiries, provide messaging services you request, prevent abuse, and improve reliability. I do not sell personal data.
+
+## Third-party services
+
+- **Vercel** — hosting and CDN
+- **PostHog** — cookieless product analytics, autocapture, exception capture, and feature flags (Cloud US). Session replay, surveys, console recording, and web vitals are off.
+- **Meta / WhatsApp** — messaging delivery and Business Platform APIs
+- **Resend** — encrypted contact email delivery
+- **Cloudflare** — Turnstile bot protection (when enabled)
+- **Upstash** — rate limiting for the contact API (when enabled)
+- **GitHub** — public stats shown on the portfolio
+
+These providers process data under their own terms and privacy policies. Messaging through WhatsApp is also subject to [WhatsApp's Privacy Policy](https://www.whatsapp.com/legal/privacy-policy).
+
+## Retention
+
+Contact ciphertext and message logs are kept only as long as needed to respond, operate services, or meet legal obligations, then deleted or anonymized where practical. Server and analytics logs follow each provider's default retention periods.
+
+## Your rights
+
+Depending on your location, you may request access, correction, deletion, or restriction of personal data I control. To exercise these rights, email [contacto@jseramn.tech](mailto:contacto@jseramn.tech) or use the [data deletion instructions](/data-deletion). I will verify requests before acting.
+
+## Contact
+
+Operator: José Ramón García Del Risco
+Email: [contacto@jseramn.tech](mailto:contacto@jseramn.tech)
+Website: [jseramn.tech](https://jseramn.tech)
+
+See also: [Terms of Service](/terms) · [Data Deletion](/data-deletion)
+
+## https://jseramn.tech/terms
+
+# Terms of Service
+
+Last updated: August 9, 2026
+
+By using [jseramn.tech](https://jseramn.tech) or messaging me through connected WhatsApp or Meta channels (including AUREUS), you agree to these terms. If you do not agree, do not use the services.
+
+## Services
+
+This site is a personal portfolio and contact channel. Messaging features are provided for legitimate communication and assistance. I may modify, suspend, or discontinue any feature at any time.
+
+## Acceptable use
+
+- Do not send unlawful, harassing, fraudulent, or abusive content.
+- Do not attempt to disrupt, probe, or overload the site or APIs.
+- Do not use automated means to scrape or spam the contact form or messaging endpoints.
+
+## No warranties
+
+The site and messaging services are provided "as is" without warranties of any kind. I do not guarantee uninterrupted availability, accuracy of automated responses, or fitness for a particular purpose.
+
+## Limitation of liability
+
+To the fullest extent permitted by law, I am not liable for indirect, incidental, or consequential damages arising from your use of the site or messaging services.
+
+## Third-party platforms
+
+WhatsApp and other Meta products are governed by their own terms. Your use of those platforms remains subject to Meta's policies in addition to these terms.
+
+## Changes
+
+I may update these terms by posting a new version on this page. Continued use after changes constitutes acceptance of the updated terms.
+
+## Contact
+
+Questions: [contacto@jseramn.tech](mailto:contacto@jseramn.tech)
+
+See also: [Privacy Policy](/policy) · [Data Deletion](/data-deletion)
+
+## https://jseramn.tech/data-deletion
+
+# Data Deletion Instructions
+
+Last updated: August 27, 2026
+
+You can request deletion of personal data that José Ramón García Del Risco controls in connection with [jseramn.tech](https://jseramn.tech) or WhatsApp / Meta messaging services (including AUREUS).
+
+## How to request deletion
+
+1. Email [contacto@jseramn.tech](mailto:contacto@jseramn.tech) from the address or phone number associated with your data, or message me on the same WhatsApp number you used previously.
+2. Include "Data deletion request" in the subject or first line and specify what you want removed (for example: contact form submission, WhatsApp conversation history I store).
+3. I will confirm your identity and respond within 30 days, or sooner where required by law.
+
+## What can be deleted
+
+- Encrypted contact form submissions and related email records I control
+- Message logs and conversation data stored in my systems
+- Any other personal data I hold that is not required for legal or security purposes
+- PostHog person profiles if any were created in error; anonymous cookieless events have no email or name attached
+
+## What I cannot delete
+
+Data held solely by Meta/WhatsApp, Vercel, PostHog, Resend, or other third-party providers must be requested through those services where applicable. Aggregated analytics without personal identifiers may be retained.
+
+## Contact
+
+Operator: José Ramón García Del Risco
+Email: [contacto@jseramn.tech](mailto:contacto@jseramn.tech)
+
+See also: [Privacy Policy](/policy) · [Terms of Service](/terms)

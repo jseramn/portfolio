@@ -29,6 +29,9 @@ Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://git
 pnpm install
 cp .env.example .env   # local only — never commit .env
 pnpm dev
+pnpm check
+pnpm test:e2e
+pnpm format
 ```
 
 Production build:
@@ -60,7 +63,7 @@ src/
     api/contact.ts        # Resend relay (ciphertext only)
 public/
   llms.txt                # Machine-readable site & profile summary
-  videobg.webm, videobg.mp4, thumbnail.png, favicons, site.webmanifest
+  videobg-480.webm, videobg-480.mp4, thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot
@@ -113,7 +116,7 @@ Domain `jseramn.tech` must stay verified in Resend for the `from` address in `si
 
 ### HTTP headers (static on Vercel)
 
-Astro middleware only runs on server-rendered paths. Static HTML and `/_astro/*` are served from the Vercel CDN **without** middleware, so production security headers are applied via `vercel.json`. The policy lives in `src/lib/security/siteSecurityHeaders.mjs` and is synced into `vercel.json` on every `pnpm build`.
+Astro middleware only runs on server-rendered paths. Static HTML and `/_astro/*` are served from the Vercel CDN **without** middleware, so production security headers are applied via `vercel.json`. The policy lives in `src/lib/security/siteSecurityHeaders.mjs` and is synced into `vercel.json` on every `pnpm build`. On those server-rendered paths the middleware runs inside the Node serverless function, not a separate Edge hop, so `POST` method and body reach `/api/*` handlers.
 
 ### DNS / email (operator — not in this repo)
 

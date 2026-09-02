@@ -2,11 +2,16 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { basename, dirname, join } from "node:path"
 import {
+  AGENT_FILES_SOURCE,
+  WELL_KNOWN_SOURCE,
+  agentReadableFileHeaderGroup,
   buildLegalContentSecurityPolicy,
   buildSecurityHeaderEntries,
+  githubStatsApiHeaderGroup,
+  hashedAstroAssetHeaderGroup,
 } from "../src/lib/security/siteSecurityHeaders.mjs"
 
-const ACCEPT_VARY = "Accept, Accept-Encoding"
+export { ASTRO_ASSET_SOURCE } from "../src/lib/security/siteSecurityHeaders.mjs"
 
 export const PREVIEW_ASSET_SOURCE =
   "/(thumbnail.png|favicon.ico|favicon.png|favicon.svg|apple-touch-icon.png|site.webmanifest|android-chrome-192x192.png|android-chrome-512x512.png|oembed.json)"
@@ -17,10 +22,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const vercelPath = join(root, "vercel.json")
 
 export function buildVercelHeaderRules() {
-  const securityHeaders = [
-    ...buildSecurityHeaderEntries(false),
-    { key: "Vary", value: ACCEPT_VARY },
-  ]
+  const securityHeaders = buildSecurityHeaderEntries(false)
 
   return [
     {
@@ -47,6 +49,9 @@ export function buildVercelHeaderRules() {
         },
       ],
     },
+    hashedAstroAssetHeaderGroup(),
+    agentReadableFileHeaderGroup(AGENT_FILES_SOURCE),
+    agentReadableFileHeaderGroup(WELL_KNOWN_SOURCE),
     {
       source: "/(policy|terms|data-deletion)",
       headers: [
@@ -72,12 +77,25 @@ export function buildVercelHeaderRules() {
         { key: "X-Robots-Tag", value: "noindex, nofollow" },
       ],
     },
+    githubStatsApiHeaderGroup(),
+  ]
+}
+
+export function buildVercelRedirects() {
+  return [
+    { source: "/privacy", destination: "/policy", permanent: true },
+    {
+      source: "/security.txt",
+      destination: "/.well-known/security.txt",
+      permanent: true,
+    },
   ]
 }
 
 export function syncVercelJson() {
   const vercel = JSON.parse(readFileSync(vercelPath, "utf8"))
   vercel.headers = buildVercelHeaderRules()
+  vercel.redirects = buildVercelRedirects()
   writeFileSync(vercelPath, `${JSON.stringify(vercel, null, 2)}\n`)
   console.log("[sync-vercel-security-headers] updated vercel.json")
 }

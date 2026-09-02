@@ -22,7 +22,12 @@ describe("homepage viewport lock", () => {
 
     const home = readFileSync(join(root, "src/pages/index.astro"), "utf8")
     expect(home).toContain("lockScroll")
-    expect(home).toContain('<main class="contents">')
+    expect(home).toContain('id="main"')
+    expect(home).toContain("h-dvh")
+    expect(home).toContain("max-h-dvh")
+    expect(home).toContain("min-h-0")
+    expect(home).toContain("overflow-hidden")
+    expect(home).not.toContain('class="contents"')
     expect(home.indexOf("<main")).toBeLessThan(home.indexOf("<h1>"))
     expect(home.indexOf("</main>")).toBeGreaterThan(home.indexOf("<Hero client:load"))
 
@@ -42,5 +47,29 @@ describe("homepage viewport lock", () => {
     expect(css).toContain("[data-hero-root]")
     expect(css).toContain("height: 100dvh")
     expect(css).toContain("max-height: 100dvh")
+    expect(css).toContain(":focus-visible")
+    expect(css).toContain("outline: 2px solid var(--vesper-accent)")
+    expect(css).toContain("outline-offset: 2px")
+    expect(css).toContain("outline-color: var(--hero-ink)")
+    expect(css).toContain(".skip-link")
+  })
+
+  it("gates four-corner HUD on width and height, not width alone", () => {
+    const hero = readFileSync(join(root, "src/components/Hero.tsx"), "utf8")
+    const tw = readFileSync(join(root, "tailwind.config.ts"), "utf8")
+    expect(tw).toContain("(min-width: 768px) and (min-height: 700px)")
+    expect(tw).toContain("(max-height: 499px)")
+    expect(tw).toContain("(min-width: 768px) and (max-height: 699px)")
+    expect(hero).toContain("hud:block")
+    expect(hero).toContain("hud:contents")
+    expect(hero).toContain("md:shrink-0")
+    expect(hero).toContain("h-dvh")
+    expect(hero).toContain("max-h-dvh")
+    expect(hero).toContain("env(safe-area-inset-top)")
+    expect(hero).toContain("env(safe-area-inset-bottom)")
+    expect(hero).not.toMatch(/overflow-hidden md:block"/)
+    for (const region of ["marquee", "now-playing", "socials", "roles", "tagline"]) {
+      expect(hero).toContain(`data-hud-region="${region}"`)
+    }
   })
 })

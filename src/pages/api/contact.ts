@@ -3,10 +3,7 @@ import { Resend } from "resend"
 import { site } from "../../config/site"
 import { captureNode } from "../../lib/analytics/captureNode"
 import type { ContactSubmittedOutcome } from "../../lib/analytics/events"
-import {
-  buildEncryptedEmailContent,
-  validateContactSubmission,
-} from "../../lib/contactEmail"
+import { buildEncryptedEmailContent, validateContactSubmission } from "../../lib/contactEmail"
 import {
   enforceContactRateLimit,
   getClientIp,
@@ -19,6 +16,13 @@ import {
 export const prerender = false
 
 const genericError = () => Response.json({ error: "request_rejected" }, { status: 400 })
+
+const methodNotAllowed = () =>
+  Response.json({ error: "method_not_allowed" }, { status: 405, headers: { Allow: "POST" } })
+
+export const GET: APIRoute = () => methodNotAllowed()
+
+export const OPTIONS: APIRoute = () => methodNotAllowed()
 
 async function recordOutcome(outcome: ContactSubmittedOutcome): Promise<void> {
   try {

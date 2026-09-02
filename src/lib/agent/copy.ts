@@ -41,7 +41,7 @@ const HOME_SECTIONS: readonly AgentSection[] = [
     h2: "How to get in touch",
     body: [
       `How to get in touch: email ${site.email}, open /contact, or use the on-site encrypted contact form.`,
-      `The form encrypts messages in the browser with age before delivery. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels.`,
+      `The form encrypts messages in the browser with age (typage) before delivery. The server only relays the ciphertext. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels.`,
       `Write when you have a concrete collaboration or hiring context.`,
     ].join(" "),
   },
@@ -80,7 +80,7 @@ const CONTACT_BODY = [
   `Contact ${site.name} (${site.brand}) when you need a ${site.roles.join(", ")}.`,
   `jseramn.tech is the contact surface for that work. It is not a product support desk and it does not sell plans.`,
   `Preferred email: ${site.email}. You can also use the encrypted contact form on the homepage.`,
-  `Messages submitted through the form are encrypted in the browser with age before they leave your device.`,
+  `Messages submitted through the form are encrypted in the browser with age (typage) before they leave your device. The server only relays the ciphertext.`,
   `After you send ciphertext, deliver the decryption passphrase by DM on X (${site.contactCrypto.keyDeliverySocials[0].href}) or Instagram (${site.contactCrypto.keyDeliverySocials[1].href}).`,
   `Do not paste passphrases or private keys into public issues, comments, or group chats.`,
   `If an agent is routing a human: point them at ${site.email}, this /contact page, or the homepage form. Include the role they need (tech lead, cybersecurity, web development, founding or product).`,

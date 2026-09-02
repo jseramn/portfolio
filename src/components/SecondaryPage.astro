@@ -1,0 +1,48 @@
+---
+import Layout from "../layouts/Layout.astro"
+import type { JsonLdPageKind } from "../lib/agent/jsonld"
+import { site } from "../config/site"
+import { SECONDARY_NAV, SECONDARY_TAP_CLASS } from "../lib/agent/secondaryNav"
+
+interface Props {
+  title: string
+  description: string
+  jsonLdPage?: JsonLdPageKind
+}
+
+const { title, description, jsonLdPage } = Astro.props
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/"
+---
+
+<Layout title={title} description={description} jsonLdPage={jsonLdPage}>
+  <main
+    id="main"
+    tabindex="-1"
+    class="min-h-screen bg-black text-vesper-accent pt-[max(4rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(4rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]"
+  >
+    <article class="mx-auto max-w-2xl break-words">
+      <a href="/" class:list={[SECONDARY_TAP_CLASS, "mb-8"]}>
+        ← {site.brand}
+      </a>
+      <slot />
+      <nav aria-label="Secondary pages" class="mt-16 flex flex-wrap gap-2">
+        {
+          SECONDARY_NAV.map((item) =>
+            item.href === currentPath ? (
+              <span
+                class:list={[SECONDARY_TAP_CLASS, "px-2 text-vesper-accent"]}
+                aria-current="page"
+              >
+                {item.label}
+              </span>
+            ) : (
+              <a href={item.href} class:list={[SECONDARY_TAP_CLASS, "px-2"]}>
+                {item.label}
+              </a>
+            ),
+          )
+        }
+      </nav>
+    </article>
+  </main>
+</Layout>

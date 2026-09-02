@@ -3,6 +3,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { agentCopy, readableLength } from "./copy"
+import { LEGAL_PAGE_IDS, legalDocument, legalVisibleText, normalizeLegalVisible } from "./legalCopy"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..")
 const dist = join(root, "dist/client")
@@ -68,7 +69,8 @@ describe("built HTML overlay", () => {
   it("homepage source wraps the hero in a main landmark", () => {
     const home = readFileSync(join(root, "src/pages/index.astro"), "utf8")
     expect(home).toMatch(/<main\b/)
-    expect(home).toContain('<main class="contents">')
+    expect(home).toContain('id="main"')
+    expect(home).not.toContain('class="contents"')
     expect(home.indexOf("<main")).toBeLessThan(home.indexOf("<h1>"))
     expect(home.indexOf("</main>")).toBeGreaterThan(home.indexOf("<Hero client:load"))
   })
@@ -77,7 +79,8 @@ describe("built HTML overlay", () => {
     let html: string | null = null
     const live = await fetchIfUp("/")
     if (live?.ok) html = await live.text()
-    else if (existsSync(join(dist, "index.html"))) html = readFileSync(join(dist, "index.html"), "utf8")
+    else if (existsSync(join(dist, "index.html")))
+      html = readFileSync(join(dist, "index.html"), "utf8")
     if (!html) return
 
     const text = readableText(html)
@@ -96,6 +99,10 @@ describe("built HTML overlay", () => {
     expect(html).toContain('property="og:image:type"')
     expect(html).toContain('property="og:type"')
     expect(html).toContain('rel="canonical"')
+    expect(html).toContain('rel="describedby"')
+    expect(html).toContain('href="/llms.txt"')
+    expect(html).toContain('type="text/markdown"')
+    expect((html.match(/rel="describedby"/g) ?? []).length).toBe(1)
     expect(html).toContain('rel="apple-touch-icon"')
     expect(html).toContain('rel="manifest"')
     expect(html).toContain('name="theme-color"')
@@ -116,6 +123,8 @@ describe("built HTML overlay", () => {
   })
 
   it("about and contact are ≥500 readable characters", async () => {
+    expect(readableLength(agentCopy("about"))).toBeGreaterThanOrEqual(500)
+    expect(readableLength(agentCopy("contact"))).toBeGreaterThanOrEqual(500)
     for (const path of ["/about", "/contact"]) {
       const live = await fetchIfUp(path)
       let html: string | null = null
@@ -139,13 +148,41 @@ describe("built HTML overlay", () => {
       html = readFileSync(join(dist, "404.html"), "utf8")
     }
     if (html) {
-      for (const href of ["/", "/llms.txt", "/sitemap-index.xml", "/about", "/contact", "/policy"]) {
+      for (const href of [
+        "/",
+        "/llms.txt",
+        "/sitemap-index.xml",
+        "/about",
+        "/contact",
+        "/policy",
+      ]) {
         expect(html).toContain(href)
       }
     }
     if (existsSync(dist)) {
       expect(walk(dist).filter((file) => file.endsWith(".md"))).toEqual([])
     }
+  })
+
+  it("Layout advertises llms.txt describedby and markdown alternate at the canonical URL", () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    expect(layout).toContain('rel="describedby"')
+    expect(layout).toContain('href="/llms.txt"')
+    expect(layout).toContain('type="text/markdown"')
+    expect(layout).toContain("href={canonical}")
+    expect((layout.match(/rel="describedby"/g) ?? []).length).toBe(1)
+  })
+
+  it("home HTML prefetches about and contact via speculation rules", async () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    expect(layout).toContain('type="speculationrules"')
+    expect(layout).toMatch(/urls:\s*\["\/about",\s*"\/contact"\]/)
+    expect(layout).toContain('pathname === "/"')
+    expect(layout).not.toMatch(/"\/api\//)
+    const home = await fetchIfUp("/")
+    if (home?.ok) expect(await home.text()).toContain('type="speculationrules"')
+    const about = await fetchIfUp("/about")
+    if (about?.ok) expect(await about.text()).not.toContain('type="speculationrules"')
   })
 
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
@@ -161,8 +198,16 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")
-    expect(llms).toContain("linkedin.com")
     expect(llms).toContain("https://jseramn.tech/oembed.json")
+    expect(llms).toMatch(/^## Pages$/m)
+    expect(llms).toMatch(/^## Legal$/m)
+    expect(llms).toMatch(/^## Optional$/m)
+    expect(llms).toContain("Accept: text/markdown")
+    expect(llms).toContain("Prefer email over any JSON API")
+    expect(llms).toContain("/.well-known/security.txt")
+    expect(llms).not.toMatch(/^- \*\*/m)
+    const fileList = llms.match(/^- \[[^\]]+\]\([^)]+\)/gm) ?? []
+    expect(fileList.length).toBeGreaterThanOrEqual(6)
 
     const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8")) as {
       redirects: { source: string; destination: string; permanent: boolean }[]
@@ -194,6 +239,29 @@ describe("built HTML overlay", () => {
         "linkedin.com",
       ])
       expect(allowedExternal.has(parsed.hostname), url).toBe(true)
+    }
+  })
+
+  it("legal HTML readable text matches the shared legal copy", async () => {
+    for (const id of LEGAL_PAGE_IDS) {
+      const doc = legalDocument(id)
+      const expected = legalVisibleText(doc)
+      const live = await fetchIfUp(doc.path)
+      let html: string | null = null
+      if (live?.ok) html = await live.text()
+      else {
+        const rel = `${doc.path.slice(1)}/index.html`
+        if (existsSync(join(dist, rel))) html = readFileSync(join(dist, rel), "utf8")
+      }
+      if (!html) {
+        expect(expected.length).toBeGreaterThan(100)
+        expect(expected).toContain("jseramn.tech")
+        continue
+      }
+      const text = normalizeLegalVisible(readableText(html))
+      expect(text).toContain(`Last updated: ${doc.lastUpdated}`)
+      expect(text).toContain(doc.heading)
+      expect(text).toContain(expected)
     }
   })
 })

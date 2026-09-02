@@ -12,7 +12,7 @@ export const site = {
   /** GitHub contribution graph days align with this IANA zone on the site. */
   activityTimeZone: "America/Bogota",
   email: "contacto@jseramn.tech",
-  contactType: "customer support",
+  contactType: "inquiries",
   address: {
     addressLocality: "Medellín",
     addressCountry: "CO",
@@ -75,8 +75,6 @@ export const site = {
       { "@type": "Organization" as const, name: "Presencia Pyme" },
     ],
   },
-  videoSrcWebm: "/videobg.webm",
-  videoSrcMp4: "/videobg.mp4",
   asciiSamplerWebm: "/videobg-480.webm",
   asciiSamplerMp4: "/videobg-480.mp4",
   contactCrypto: {

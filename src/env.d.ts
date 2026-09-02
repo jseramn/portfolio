@@ -17,7 +17,7 @@ interface ImportMeta {
 
 declare namespace App {
   interface Locals {
-    preferredType?: "text/html" | "text/markdown" | null
+    preferredType?: "text/html" | "text/markdown" | "application/ld+json" | null
   }
 }
 

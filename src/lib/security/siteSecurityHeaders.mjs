@@ -1,8 +1,6 @@
 /** Shared security header values — imported by Astro middleware and synced into vercel.json at build. */
 const SITE_ORIGIN = "https://jseramn.tech"
 const POSTHOG_HOST = "https://*.posthog.com"
-const VERCEL_ANALYTICS_SCRIPT = "https://va.vercel-scripts.com"
-const VERCEL_ANALYTICS_CONNECT = "https://vitals.vercel-insights.com"
 
 export function buildContentSecurityPolicy(isDev) {
   const scriptSrc = [
@@ -11,7 +9,6 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     POSTHOG_HOST,
-    VERCEL_ANALYTICS_SCRIPT,
   ]
 
   const connectSrc = [
@@ -21,7 +18,6 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     POSTHOG_HOST,
-    VERCEL_ANALYTICS_CONNECT,
   ]
 
   if (isDev) {
@@ -102,4 +98,40 @@ export function buildSecurityHeaderEntries(isDev) {
   }
 
   return entries
+}
+
+export const ASTRO_ASSET_SOURCE = "/_astro/(.*)"
+export const IMMUTABLE_ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable"
+export const CDN_SWR_CACHE_CONTROL = "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
+export const GITHUB_STATS_API_SOURCE = "/api/github-stats"
+export const AGENT_FILES_SOURCE = "/(llms.txt|llms-full.txt|robots.txt)"
+export const WELL_KNOWN_SOURCE = "/.well-known/(.*)"
+export const AGENT_FILE_CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400"
+
+export function hashedAstroAssetHeaderGroup() {
+  return {
+    source: ASTRO_ASSET_SOURCE,
+    headers: [{ key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL }],
+  }
+}
+
+export function agentReadableFileHeaderGroup(source) {
+  return {
+    source,
+    headers: [
+      { key: "Access-Control-Allow-Origin", value: "*" },
+      { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+      { key: "Cache-Control", value: AGENT_FILE_CACHE_CONTROL },
+    ],
+  }
+}
+
+export function githubStatsApiHeaderGroup() {
+  return {
+    source: GITHUB_STATS_API_SOURCE,
+    headers: [
+      { key: "Cache-Control", value: CDN_SWR_CACHE_CONTROL },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+    ],
+  }
 }

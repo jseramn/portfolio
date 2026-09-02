@@ -1,4 +1,6 @@
-export const ASCII_FPS = 12
+import { ASCII_FPS } from "./capabilities"
+
+export { ASCII_FPS }
 export const SAMPLE_MS = 1000 / ASCII_FPS
 export const MAX_CELLS = 12_000
 export const COARSE_MAX_CELLS = 4_000
@@ -11,8 +13,6 @@ export const ASCII_WARMUP_SAMPLE_MS = 1_000
 export const STAMP_SLICE_MS = 8
 
 export type AsciiFramePlan = "raster" | "camera" | "idle"
-
-export { isPointerCoarse } from "./pointer"
 
 export function cellBudget(cssWidth: number, pointerCoarse: boolean): number {
   if (pointerCoarse || cssWidth < NARROW_VIEWPORT_PX) return COARSE_MAX_CELLS
@@ -72,10 +72,7 @@ export function shouldStartLoop(opts: {
   return opts.alive && opts.raf === 0 && !opts.hidden && opts.videoReady
 }
 
-export function shouldSkipSample(
-  lastRasterMs: number,
-  budgetMs = RASTER_BUDGET_MS,
-): boolean {
+export function shouldSkipSample(lastRasterMs: number, budgetMs = RASTER_BUDGET_MS): boolean {
   return lastRasterMs > budgetMs
 }
 
@@ -107,24 +104,61 @@ export function stampSliceEnd(
   return Math.min(rows, startRow + 1)
 }
 
-export function coverDestRect(
-  srcW: number,
-  srcH: number,
-  dstW: number,
-  dstH: number,
-): { dx: number; dy: number; dw: number; dh: number } {
-  const scale = Math.max(dstW / Math.max(srcW, 1), dstH / Math.max(srcH, 1))
-  const dw = srcW * scale
-  const dh = srcH * scale
-  return { dx: (dstW - dw) / 2, dy: (dstH - dh) / 2, dw, dh }
-}
-
 export function yieldToMain(): Promise<void> {
-  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } })
-    .scheduler
+  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, 0))
   if (typeof scheduler?.yield === "function") {
     return Promise.race([scheduler.yield(), timeout])
   }
   return timeout
+}
+
+export const ASCII_IDLE_TIMEOUT_MS = 1_500
+
+export type AsciiStartHost = {
+  requestAnimationFrame: (cb: (time: number) => void) => number
+  cancelAnimationFrame: (id: number) => void
+  requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number
+  cancelIdleCallback?: (id: number) => void
+  setTimeout: (handler: () => void, timeout?: number) => number
+  clearTimeout: (id: number) => void
+}
+
+export function scheduleAsciiStart(
+  start: () => void,
+  host: AsciiStartHost,
+  idleTimeoutMs = ASCII_IDLE_TIMEOUT_MS,
+): () => void {
+  let cancelled = false
+  let idleId = 0
+  let timeoutId = 0
+  let raf1 = 0
+  let raf2 = 0
+
+  const run = () => {
+    if (!cancelled) start()
+  }
+
+  const afterPaint = () => {
+    if (cancelled) return
+    if (typeof host.requestIdleCallback === "function") {
+      idleId = host.requestIdleCallback(run, { timeout: idleTimeoutMs })
+      return
+    }
+    timeoutId = host.setTimeout(run, 0)
+  }
+
+  raf1 = host.requestAnimationFrame(() => {
+    raf2 = host.requestAnimationFrame(afterPaint)
+  })
+
+  return () => {
+    cancelled = true
+    host.cancelAnimationFrame(raf1)
+    host.cancelAnimationFrame(raf2)
+    if (idleId && typeof host.cancelIdleCallback === "function") {
+      host.cancelIdleCallback(idleId)
+    }
+    if (timeoutId) host.clearTimeout(timeoutId)
+  }
 }

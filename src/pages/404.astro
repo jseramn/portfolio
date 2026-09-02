@@ -1,27 +1,26 @@
 ---
 export const prerender = false
-import Layout from "../layouts/Layout.astro"
+import SecondaryPage from "../components/SecondaryPage.astro"
 import { agentCopy } from "../lib/agent/copy"
 import { RECOVERY_PATHS } from "../lib/agent/markdown"
+import { SECONDARY_TAP_CLASS } from "../lib/agent/secondaryNav"
 import { site } from "../config/site"
 
 const copy = agentCopy("notFound")
 ---
 
-<Layout title={`Not found | ${site.brand}`} description={copy.body}>
-  <main class="min-h-screen bg-black px-6 py-16 text-vesper-accent">
-    <article class="mx-auto max-w-2xl">
-      <h1 class="mb-4 font-sans text-3xl font-semibold tracking-tight">{copy.h1}</h1>
-      <p class="mb-8 font-sans text-sm leading-relaxed text-vesper-accent/85">{copy.body}</p>
-      <ul class="list-disc space-y-1 pl-5 font-mono text-sm">
-        {RECOVERY_PATHS.map((href) => (
-          <li>
-            <a class="underline underline-offset-2" href={href}>
-              {href}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </article>
-  </main>
-</Layout>
+<SecondaryPage title={`Not found | ${site.brand}`} description={copy.body} jsonLdPage="notfound">
+  <h1 class="mb-4 font-sans text-3xl font-semibold tracking-tight">{copy.h1}</h1>
+  <p class="mb-8 font-sans text-sm leading-relaxed text-vesper-accent/85">{copy.body}</p>
+  <ul class="flex flex-col gap-2 font-mono text-sm">
+    {
+      RECOVERY_PATHS.map((href) => (
+        <li>
+          <a class:list={[SECONDARY_TAP_CLASS, "w-full"]} href={href}>
+            {href}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</SecondaryPage>

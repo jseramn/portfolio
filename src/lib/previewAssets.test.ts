@@ -1,12 +1,16 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import {
+  ASTRO_ASSET_SOURCE,
   PREVIEW_ASSET_SOURCE,
   VIDEO_BG_ASSET_SOURCE,
   buildVercelHeaderRules,
 } from "../../scripts/sync-vercel-security-headers.mjs"
+import { site } from "../config/site"
+import { buildGraphJsonLd } from "./agent/jsonld"
+import { IMMUTABLE_ASSET_CACHE_CONTROL } from "./security/siteSecurityHeaders.mjs"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const publicDir = join(root, "public")
@@ -39,6 +43,12 @@ describe("preview assets", () => {
     }
     expect(existsSync(join(publicDir, "videobg-480.webm"))).toBe(true)
     expect(existsSync(join(publicDir, "videobg-480.mp4"))).toBe(true)
+    expect(existsSync(join(publicDir, "videobg.webm"))).toBe(false)
+    expect(existsSync(join(publicDir, "videobg.mp4"))).toBe(false)
+    const fallback = join(publicDir, "ascii-fallback.svg")
+    expect(existsSync(fallback)).toBe(true)
+    expect(statSync(fallback).size).toBeLessThanOrEqual(30_000)
+    expect(readFileSync(fallback, "utf8")).toContain('preserveAspectRatio="xMidYMid slice"')
   })
 
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {
@@ -90,9 +100,13 @@ describe("preview assets", () => {
     ]) {
       expect(layout).toContain(token)
     }
-    const jsonld = readFileSync(join(root, "src/lib/agent/jsonld.ts"), "utf8")
-    expect(jsonld).toContain("image: site.seo.ogImage")
-    expect(jsonld).toContain("logo: site.seo.appleTouchIcon")
+    const graph = buildGraphJsonLd([])
+    const person = graph["@graph"].find((node) => node["@type"] === "Person") as { image: string }
+    const org = graph["@graph"].find((node) => node["@type"] === "Organization") as {
+      logo: string
+    }
+    expect(person.image).toBe(site.seo.ogImage)
+    expect(org.logo).toBe(site.seo.appleTouchIcon)
   })
 })
 
@@ -109,9 +123,7 @@ describe("preview asset crawler headers", () => {
     )
     expect(headers["Cross-Origin-Resource-Policy"]).toBe("cross-origin")
     expect(headers["Access-Control-Allow-Origin"]).toBe("*")
-    expect(headers["Cache-Control"]).toBe(
-      "public, max-age=86400, stale-while-revalidate=604800",
-    )
+    expect(headers["Cache-Control"]).toBe("public, max-age=86400, stale-while-revalidate=604800")
     expect(PREVIEW_ASSET_SOURCE).toContain("oembed.json")
     expect(PREVIEW_ASSET_SOURCE).not.toContain("ascii-poster.webp")
   })
@@ -126,6 +138,15 @@ describe("preview asset crawler headers", () => {
     )
     expect(VIDEO_BG_ASSET_SOURCE).toBe("/videobg(.*)")
     expect(headers["Cache-Control"]).toBe("public, max-age=31536000, immutable")
+  })
+
+  it("caches hashed /_astro assets as immutable without Vary: Accept", () => {
+    const rules = buildVercelHeaderRules()
+    const astroIdx = rules.findIndex((rule) => rule.source === ASTRO_ASSET_SOURCE)
+    expect(astroIdx).toBeGreaterThan(rules.findIndex((rule) => rule.source === "/(.*)"))
+    expect(rules[astroIdx]?.headers).toEqual([
+      { key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL },
+    ])
   })
 })
 
@@ -176,12 +197,12 @@ describe("generate-preview-assets script", () => {
     expect(source).toContain(
       'magick "$tmp/portrait-sq.png" -resize 512x512! -strip PNG32:"$public/android-chrome-512x512.png"',
     )
-    expect(source).toContain("-resize 1200x630! -strip PNG32:\"$tmp/thumbnail.png\"")
+    expect(source).toContain('-resize 1200x630! -strip PNG32:"$tmp/thumbnail.png"')
   })
 
   it("writes lang, id, and scope from the heredoc so public-only fields cannot survive", () => {
     const source = script()
-    expect(source).toContain('cat > "$public/site.webmanifest" <<\'EOF\'')
+    expect(source).toContain("cat > \"$public/site.webmanifest\" <<'EOF'")
     const heredoc = source.slice(source.indexOf("<<'EOF'"), source.indexOf("\nEOF"))
     expect(heredoc).toContain('"lang": "en"')
     expect(heredoc).toContain('"id": "/"')

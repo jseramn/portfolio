@@ -1,28 +1,27 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { site } from "../config/site"
 import { signalHeroBootReady } from "../lib/bootLoader"
-import { canUseWebGL, prefersReducedMotion } from "../lib/webgl"
+import { getCapabilities } from "../lib/capabilities"
+import { ASCII_FALLBACK_SRC } from "../lib/heroAsciiFallback"
+import { scheduleAsciiStart, type AsciiStartHost } from "../lib/heroAsciiBudget"
 
-type Phase = "boot" | "ascii" | "photo"
+type Phase = "boot" | "ascii" | "static"
 
 type HeroAsciiBackgroundProps = {
   paintCanvasRef?: RefObject<HTMLCanvasElement | null>
 }
 
-export default function HeroAsciiBackground({
-  paintCanvasRef,
-}: HeroAsciiBackgroundProps) {
+export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgroundProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<Phase>("boot")
 
   useEffect(() => {
-    const webgl = canUseWebGL()
-    const reduced = prefersReducedMotion()
-    if (!webgl || reduced) {
-      setPhase("photo")
+    const { webgl, reducedMotion } = getCapabilities()
+    if (!webgl || reducedMotion) {
+      setPhase("static")
       return
     }
-    setPhase("ascii")
+    return scheduleAsciiStart(() => setPhase("ascii"), window as AsciiStartHost)
   }, [])
 
   useEffect(() => {
@@ -33,15 +32,13 @@ export default function HeroAsciiBackground({
     let cancelled = false
     let unmount: (() => void) | undefined
 
-    void import("../lib/heroAsciiRuntime").then(async ({ mountHeroAscii }) => {
+    void import("../lib/hero/ascii/mount").then(async ({ mountHeroAscii }) => {
       if (cancelled || !host.isConnected) return
       const dispose = await mountHeroAscii(
         host,
         {
           samplerWebm: site.asciiSamplerWebm,
           samplerMp4: site.asciiSamplerMp4,
-          fallbackWebm: site.videoSrcWebm,
-          fallbackMp4: site.videoSrcMp4,
         },
         paintCanvasRef?.current,
       )
@@ -59,16 +56,23 @@ export default function HeroAsciiBackground({
   }, [phase, paintCanvasRef])
 
   useEffect(() => {
-    if (phase === "photo") signalHeroBootReady()
+    if (phase === "static") signalHeroBootReady()
   }, [phase])
 
-  if (phase === "photo") {
+  if (phase === "static") {
     return (
       <div
         data-hero-boot-fallback
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black"
         aria-hidden
-      />
+      >
+        <img
+          src={ASCII_FALLBACK_SRC}
+          alt=""
+          className="hero-ascii-display h-full w-full object-cover object-center"
+          decoding="async"
+        />
+      </div>
     )
   }
 

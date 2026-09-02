@@ -64,7 +64,9 @@ describe("captureClient", () => {
       outcome: "send_failed",
     })
     const [, properties] = posthog.capture.mock.calls[0]
-    expect(JSON.stringify(properties)).not.toMatch(/Ada|ada@example.com|secret-phrase|BEGIN AGE|env_123|1\.2\.3\.4/)
+    expect(JSON.stringify(properties)).not.toMatch(
+      /Ada|ada@example.com|secret-phrase|BEGIN AGE|env_123|1\.2\.3\.4/,
+    )
   })
 
   it("sends only outcome on contact_submitted", () => {
