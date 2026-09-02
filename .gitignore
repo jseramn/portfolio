@@ -43,3 +43,8 @@ public/videobg__*
 .vercel
 .openspec
 /openspec
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
