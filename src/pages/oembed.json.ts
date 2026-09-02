@@ -6,7 +6,7 @@ export const prerender = false
 export const GET: APIRoute = ({ url }) => {
   const payload = resolveOEmbed(url.searchParams.get("url"))
   if (!payload) {
-    return new Response(null, { status: 404 })
+    return Response.json({ error: "url_required" }, { status: 400 })
   }
   return Response.json(payload)
 }
