@@ -36,9 +36,12 @@ export const GET: APIRoute = async () => {
         headers: noStoreHeaders,
       })
     }
-    return Response.json({ error: "unavailable" }, {
-      status: 503,
-      headers: noStoreHeaders,
-    })
+    return Response.json(
+      { error: "unavailable" },
+      {
+        status: 503,
+        headers: noStoreHeaders,
+      },
+    )
   }
 }

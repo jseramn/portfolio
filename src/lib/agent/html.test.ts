@@ -77,7 +77,8 @@ describe("built HTML overlay", () => {
     let html: string | null = null
     const live = await fetchIfUp("/")
     if (live?.ok) html = await live.text()
-    else if (existsSync(join(dist, "index.html"))) html = readFileSync(join(dist, "index.html"), "utf8")
+    else if (existsSync(join(dist, "index.html")))
+      html = readFileSync(join(dist, "index.html"), "utf8")
     if (!html) return
 
     const text = readableText(html)
@@ -139,7 +140,14 @@ describe("built HTML overlay", () => {
       html = readFileSync(join(dist, "404.html"), "utf8")
     }
     if (html) {
-      for (const href of ["/", "/llms.txt", "/sitemap-index.xml", "/about", "/contact", "/policy"]) {
+      for (const href of [
+        "/",
+        "/llms.txt",
+        "/sitemap-index.xml",
+        "/about",
+        "/contact",
+        "/policy",
+      ]) {
         expect(html).toContain(href)
       }
     }

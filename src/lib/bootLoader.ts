@@ -11,9 +11,7 @@ export type BootDismissInput = {
   pageshowPersisted: boolean
 }
 
-export function isHeroBootReady(root: {
-  querySelector: (selector: string) => unknown
-}): boolean {
+export function isHeroBootReady(root: { querySelector: (selector: string) => unknown }): boolean {
   return Boolean(
     root.querySelector(ASCII_PAINT_SELECTOR) || root.querySelector(BOOT_FALLBACK_SELECTOR),
   )

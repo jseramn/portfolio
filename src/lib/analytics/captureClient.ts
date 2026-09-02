@@ -67,10 +67,7 @@ function sanitizeProperties(
   return Object.keys(next).length > 0 ? next : undefined
 }
 
-export function captureClient(
-  event: AnalyticsEvent,
-  properties?: Record<string, unknown>,
-): void {
+export function captureClient(event: AnalyticsEvent, properties?: Record<string, unknown>): void {
   if (!projectKey()) return
   if (!isAnalyticsEvent(event)) return
 

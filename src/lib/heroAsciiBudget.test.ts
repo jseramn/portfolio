@@ -35,12 +35,8 @@ describe("hero ASCII loop budget", () => {
   it("rasters only when the 12fps sample window elapsed", () => {
     expect(ASCII_FPS).toBe(12)
     expect(SAMPLE_MS).toBeCloseTo(1000 / 12)
-    expect(
-      planAsciiFrame({ now: 90, lastSampleAt: 0, cameraDirty: false }),
-    ).toBe("raster")
-    expect(
-      planAsciiFrame({ now: 80, lastSampleAt: 0, cameraDirty: false }),
-    ).toBe("idle")
+    expect(planAsciiFrame({ now: 90, lastSampleAt: 0, cameraDirty: false })).toBe("raster")
+    expect(planAsciiFrame({ now: 80, lastSampleAt: 0, cameraDirty: false })).toBe("idle")
     expect(
       planAsciiFrame({
         now: 80,
@@ -52,24 +48,16 @@ describe("hero ASCII loop budget", () => {
   })
 
   it("applies camera only on dirty frames between samples", () => {
-    expect(
-      planAsciiFrame({ now: 40, lastSampleAt: 0, cameraDirty: true }),
-    ).toBe("camera")
-    expect(
-      planAsciiFrame({ now: 40, lastSampleAt: 0, cameraDirty: false }),
-    ).toBe("idle")
-    expect(
-      planAsciiFrame({ now: 90, lastSampleAt: 0, cameraDirty: true }),
-    ).toBe("raster")
+    expect(planAsciiFrame({ now: 40, lastSampleAt: 0, cameraDirty: true })).toBe("camera")
+    expect(planAsciiFrame({ now: 40, lastSampleAt: 0, cameraDirty: false })).toBe("idle")
+    expect(planAsciiFrame({ now: 90, lastSampleAt: 0, cameraDirty: true })).toBe("raster")
   })
 
   it("caps coarse and narrow viewports at 4000 cells without skipping a grid", () => {
     expect(cellBudget(1920, false)).toBe(MAX_CELLS)
     expect(cellBudget(1920, true)).toBe(COARSE_MAX_CELLS)
     expect(cellBudget(NARROW_VIEWPORT_PX - 1, false)).toBe(COARSE_MAX_CELLS)
-    expect(isPointerCoarse((() => ({ matches: true })) as unknown as typeof matchMedia)).toBe(
-      true,
-    )
+    expect(isPointerCoarse((() => ({ matches: true })) as unknown as typeof matchMedia)).toBe(true)
     expect(isPointerCoarse((() => ({ matches: false })) as unknown as typeof matchMedia)).toBe(
       false,
     )
@@ -97,21 +85,11 @@ describe("hero ASCII loop budget", () => {
   })
 
   it("does not start the loop until video has a frame and the tab is visible", () => {
-    expect(
-      shouldStartLoop({ alive: true, raf: 0, hidden: false, videoReady: true }),
-    ).toBe(true)
-    expect(
-      shouldStartLoop({ alive: true, raf: 0, hidden: false, videoReady: false }),
-    ).toBe(false)
-    expect(
-      shouldStartLoop({ alive: true, raf: 1, hidden: false, videoReady: true }),
-    ).toBe(false)
-    expect(
-      shouldStartLoop({ alive: true, raf: 0, hidden: true, videoReady: true }),
-    ).toBe(false)
-    expect(
-      shouldStartLoop({ alive: false, raf: 0, hidden: false, videoReady: true }),
-    ).toBe(false)
+    expect(shouldStartLoop({ alive: true, raf: 0, hidden: false, videoReady: true })).toBe(true)
+    expect(shouldStartLoop({ alive: true, raf: 0, hidden: false, videoReady: false })).toBe(false)
+    expect(shouldStartLoop({ alive: true, raf: 1, hidden: false, videoReady: true })).toBe(false)
+    expect(shouldStartLoop({ alive: true, raf: 0, hidden: true, videoReady: true })).toBe(false)
+    expect(shouldStartLoop({ alive: false, raf: 0, hidden: false, videoReady: true })).toBe(false)
   })
 
   it("yields the first raster and skips the next sample after a long pass", () => {
@@ -154,7 +132,9 @@ describe("hero ASCII runtime wiring", () => {
     expect(runtime).toContain("cellBudget")
     expect(runtime).toContain("startLoop")
     expect(runtime).toContain("shouldStartLoop")
-    expect(runtime).not.toMatch(/if\s*\(\s*!document\.hidden\s*\)\s*raf\s*=\s*requestAnimationFrame\(tick\)/)
+    expect(runtime).not.toMatch(
+      /if\s*\(\s*!document\.hidden\s*\)\s*raf\s*=\s*requestAnimationFrame\(tick\)/,
+    )
     expect(runtime).toMatch(/addEventListener\(\s*["']canplay["']/)
     expect(runtime).toContain("renderer.render")
     const passAt = runtime.indexOf("const runRasterPass")

@@ -49,12 +49,8 @@ describe("posthog.astro snippet", () => {
     expect(vercelAnalytics).toContain("/policy")
     expect(vercelAnalytics).toContain("/terms")
     expect(vercelAnalytics).toContain("/data-deletion")
-    expect(readFileSync(join(here, "captureClient.ts"), "utf8")).not.toMatch(
-      /@vercel\/analytics/,
-    )
-    expect(readFileSync(join(here, "productCapture.ts"), "utf8")).not.toMatch(
-      /@vercel\/analytics/,
-    )
+    expect(readFileSync(join(here, "captureClient.ts"), "utf8")).not.toMatch(/@vercel\/analytics/)
+    expect(readFileSync(join(here, "productCapture.ts"), "utf8")).not.toMatch(/@vercel\/analytics/)
     expect(middleware).not.toMatch(/posthog-node|captureNode|lib\/analytics/)
     expect(captureNodeSource).toContain('from "posthog-node"')
   })

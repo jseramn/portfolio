@@ -11,10 +11,15 @@ function read(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
 }
 
+function countGlassSurfaces(source: string): number {
+  return source.match(/<GlassSurface\b/g)?.length ?? 0
+}
+
 function presetBlock(glass: string, name: string): string {
   const match = glass.match(new RegExp(`\\b${name}: \\{[\\s\\S]*?\\n  \\},`))
   expect(match, `missing preset ${name}`).toBeTruthy()
-  return match![0]
+  if (!match) throw new Error(`missing preset ${name}`)
+  return match[0]
 }
 
 function expectCardOptics(block: string) {
@@ -41,8 +46,8 @@ describe("hero liquid-glass chrome wiring", () => {
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
-    expect(modal.match(/<GlassSurface /g)?.length).toBe(1)
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(modal)).toBe(1)
     for (const preset of ["bar", "pill", "dock", "button", "card"] as const) {
       expect(hero).toContain(`preset="${preset}"`)
     }
@@ -50,7 +55,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain('mode="standard"')
     expect(glass).not.toContain('mode="shader"')
     expect(glass).toContain("displacementScale={cfg.displacementScale}")
-    expect(hero).not.toContain("mode=\"shader\"")
+    expect(hero).not.toContain('mode="shader"')
   })
 
   it("wraps the marquee bar and hire button, not duplicated slider or loop children", () => {
@@ -200,8 +205,22 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(dock.sw).toBeCloseTo(226)
     expect(card.sh).toBeCloseTo(80)
     const occupied = { left: 700, top: 200, width: 500, height: 600 }
-    const dockGlyph = behindRect(1920, 1080, asciiCss, { left: 32, top: 96, width: 226, height: 42 }, 1, occupied)
-    const cardGlyph = behindRect(1920, 1080, asciiCss, { left: 1400, top: 900, width: 480, height: 80 }, 1, occupied)
+    const dockGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 32, top: 96, width: 226, height: 42 },
+      1,
+      occupied,
+    )
+    const cardGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 1400, top: 900, width: 480, height: 80 },
+      1,
+      occupied,
+    )
     expect(dockGlyph.sx).toBeGreaterThanOrEqual(occupied.left)
     expect(dockGlyph.sx + dockGlyph.sw).toBeLessThanOrEqual(occupied.left + occupied.width + 0.01)
     expect(cardGlyph.sx).toBeGreaterThan(dockGlyph.sx)
@@ -267,8 +286,8 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("setUseLiveGlass")
     expect(glass).toContain("isPointerCoarse()")
     expect(glass).toContain("function behindRect")
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
-    expect(read("components/ContactModal.tsx").match(/<GlassSurface /g)?.length).toBe(1)
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(read("components/ContactModal.tsx"))).toBe(1)
   })
 
   it("pauses the shared pump when the document is hidden or contact is open", () => {

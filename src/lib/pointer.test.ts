@@ -3,9 +3,7 @@ import { isPointerCoarse } from "./pointer"
 
 describe("isPointerCoarse", () => {
   it("reads the coarse pointer media query and fails closed", () => {
-    expect(isPointerCoarse((() => ({ matches: true })) as unknown as typeof matchMedia)).toBe(
-      true,
-    )
+    expect(isPointerCoarse((() => ({ matches: true })) as unknown as typeof matchMedia)).toBe(true)
     expect(isPointerCoarse((() => ({ matches: false })) as unknown as typeof matchMedia)).toBe(
       false,
     )

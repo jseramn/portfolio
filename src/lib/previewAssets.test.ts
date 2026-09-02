@@ -109,9 +109,7 @@ describe("preview asset crawler headers", () => {
     )
     expect(headers["Cross-Origin-Resource-Policy"]).toBe("cross-origin")
     expect(headers["Access-Control-Allow-Origin"]).toBe("*")
-    expect(headers["Cache-Control"]).toBe(
-      "public, max-age=86400, stale-while-revalidate=604800",
-    )
+    expect(headers["Cache-Control"]).toBe("public, max-age=86400, stale-while-revalidate=604800")
     expect(PREVIEW_ASSET_SOURCE).toContain("oembed.json")
     expect(PREVIEW_ASSET_SOURCE).not.toContain("ascii-poster.webp")
   })
@@ -176,12 +174,12 @@ describe("generate-preview-assets script", () => {
     expect(source).toContain(
       'magick "$tmp/portrait-sq.png" -resize 512x512! -strip PNG32:"$public/android-chrome-512x512.png"',
     )
-    expect(source).toContain("-resize 1200x630! -strip PNG32:\"$tmp/thumbnail.png\"")
+    expect(source).toContain('-resize 1200x630! -strip PNG32:"$tmp/thumbnail.png"')
   })
 
   it("writes lang, id, and scope from the heredoc so public-only fields cannot survive", () => {
     const source = script()
-    expect(source).toContain('cat > "$public/site.webmanifest" <<\'EOF\'')
+    expect(source).toContain("cat > \"$public/site.webmanifest\" <<'EOF'")
     const heredoc = source.slice(source.indexOf("<<'EOF'"), source.indexOf("\nEOF"))
     expect(heredoc).toContain('"lang": "en"')
     expect(heredoc).toContain('"id": "/"')

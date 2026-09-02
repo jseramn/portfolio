@@ -3,10 +3,7 @@ import { Resend } from "resend"
 import { site } from "../../config/site"
 import { captureNode } from "../../lib/analytics/captureNode"
 import type { ContactSubmittedOutcome } from "../../lib/analytics/events"
-import {
-  buildEncryptedEmailContent,
-  validateContactSubmission,
-} from "../../lib/contactEmail"
+import { buildEncryptedEmailContent, validateContactSubmission } from "../../lib/contactEmail"
 import {
   enforceContactRateLimit,
   getClientIp,

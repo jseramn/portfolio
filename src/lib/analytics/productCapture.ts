@@ -35,9 +35,7 @@ export function onContactDismissed(submittedSuccessfully: boolean): void {
   captureClient(ANALYTICS_EVENTS.contactClosed)
 }
 
-export function onContactSubmittedClient(
-  outcome: ContactSubmittedOutcome = "sent",
-): void {
+export function onContactSubmittedClient(outcome: ContactSubmittedOutcome = "sent"): void {
   captureClient(ANALYTICS_EVENTS.contactSubmitted, { outcome })
 }
 

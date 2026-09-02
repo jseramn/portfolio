@@ -14,12 +14,7 @@ import {
   stampSliceEnd,
   yieldToMain,
 } from "./heroAsciiBudget"
-import {
-  cellDestRect,
-  rgbaOffset,
-  shouldContinueStamp,
-  stampGlyphAlpha,
-} from "./heroAsciiStamp"
+import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "./heroAsciiStamp"
 import { signalHeroBootReady } from "./bootLoader"
 
 export type HeroAsciiMountOpts = {
@@ -105,16 +100,12 @@ function tryPlay(video: HTMLVideoElement) {
   void video.play().catch(() => {})
 }
 
-export function blitHeroPoster(
-  canvas: HTMLCanvasElement,
-  src: string,
-): Promise<boolean> {
+export function blitHeroPoster(canvas: HTMLCanvasElement, src: string): Promise<boolean> {
   return new Promise((resolve) => {
     const img = new Image()
     img.decoding = "async"
     img.onload = () => {
-      const host =
-        canvas.parentElement instanceof HTMLElement ? canvas.parentElement : null
+      const host = canvas.parentElement instanceof HTMLElement ? canvas.parentElement : null
       const width = host?.clientWidth || canvas.clientWidth || window.innerWidth
       const height = host?.clientHeight || canvas.clientHeight || window.innerHeight
       if (canvas.width !== width) canvas.width = width
@@ -198,7 +189,7 @@ export async function mountHeroAscii(
   }
   video.addEventListener("error", onVideoError)
 
-  let renderer: WebGLRenderer
+  let renderer: InstanceType<typeof WebGLRenderer>
   try {
     renderer = new WebGLRenderer({
       alpha: false,
@@ -301,9 +292,7 @@ export async function mountHeroAscii(
 
   const applySize = () => {
     const sizeHost =
-      displayCanvas.parentElement instanceof HTMLElement
-        ? displayCanvas.parentElement
-        : host
+      displayCanvas.parentElement instanceof HTMLElement ? displayCanvas.parentElement : host
     const width = sizeHost.clientWidth || host.clientWidth || window.innerWidth
     const height = sizeHost.clientHeight || host.clientHeight || window.innerHeight
     const aspect = width / Math.max(height, 1)
@@ -342,9 +331,7 @@ export async function mountHeroAscii(
         for (let i = 0; i < CHARSET.length; i++) {
           const glyph = CHARSET[i]
           if (glyph) atlasCtx.fillText(glyph, i * glyphAtlasW, 0)
-          glyphBits.push(
-            atlasCtx.getImageData(i * glyphAtlasW, 0, glyphAtlasW, glyphAtlasH).data,
-          )
+          glyphBits.push(atlasCtx.getImageData(i * glyphAtlasW, 0, glyphAtlasW, glyphAtlasH).data)
         }
       }
       displayPixels = new Uint8ClampedArray(width * height * 4)
@@ -361,12 +348,8 @@ export async function mountHeroAscii(
       return root ? root.matches(":hover") : true
     })()
     const inCenter =
-      hovering &&
-      Math.abs(mouseX) < CENTER_THRESHOLD &&
-      Math.abs(mouseY) < CENTER_THRESHOLD
-    const activeZoom = inCenter
-      ? Math.min(zoom + VIDEO_ZOOM.centerBonus, VIDEO_ZOOM.max)
-      : zoom
+      hovering && Math.abs(mouseX) < CENTER_THRESHOLD && Math.abs(mouseY) < CENTER_THRESHOLD
+    const activeZoom = inCenter ? Math.min(zoom + VIDEO_ZOOM.centerBonus, VIDEO_ZOOM.max) : zoom
     camera.zoom = activeZoom
     camera.updateProjectionMatrix()
 
@@ -504,8 +487,7 @@ export async function mountHeroAscii(
               Math.abs(luma - neighborLuma(x, y + 1)),
             )
           : 0
-        const rimStep =
-          maxDelta >= RIM_LUMA_DELTA * 2 ? 2 : maxDelta >= RIM_LUMA_DELTA ? 1 : 0
+        const rimStep = maxDelta >= RIM_LUMA_DELTA * 2 ? 2 : maxDelta >= RIM_LUMA_DELTA ? 1 : 0
         const idx = Math.min(CHARSET_LAST, baseIdx + rimStep)
         const glyph = CHARSET[idx]
         if (glyph === undefined || glyph === " ") continue
@@ -644,7 +626,8 @@ export async function mountHeroAscii(
   const onPointerDown = (event: PointerEvent) => {
     const target = event.target
     const onControl =
-      target instanceof Element && Boolean(target.closest("a,button,input,textarea,[role='dialog']"))
+      target instanceof Element &&
+      Boolean(target.closest("a,button,input,textarea,[role='dialog']"))
     dragZoom = event.pointerType !== "mouse" && !onControl
     lastDragY = event.clientY
     lastPointerAt = performance.now()
