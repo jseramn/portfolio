@@ -233,6 +233,19 @@ Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`); g
 | Language | `html lang="en"` (`Layout.astro:37`). Hero tagline is EN (`Hero.tsx:33`). Modal encryption copy is ES (`ContactModal.tsx:277–335`) | UI copy English. Spanish tagline (`site.ts:7`) is the **alternate string only** (markdown/agents), not a second locale. No `hreflang` without `/es` (D-12) |
 | Forced-colors | Not specified | Must not gate ship (openspec hero-on-video-contrast) |
 
+### Keyboard map
+
+| Order | Surface | Target | Keys / notes |
+|------|---------|--------|----------------|
+| 1 | Home chrome | Skip link | Proposed; not shipped on this branch |
+| 2 | HUD | Marquee links | Org and last-commit anchors in the ticker |
+| 3 | HUD | Now-playing / transport | Listen CTA or track title, then previous, mute, next, shuffle |
+| 4 | HUD | Socials | Profile and mailto icons. Secondary nav is Proposed |
+| 5 | HUD | Hire CTA | Enter opens the dialog. Tagline is not a link |
+| 6 | Dialog | Name | Autofocus after the 0.25 s panel transition |
+| 7 | Dialog | Email → Subject → Message → Turnstile → Encrypt and send → Close | Age/typage notes stay tabbable. Tab wraps inside `[role="dialog"]` |
+| 8 | Dialog | Escape, Close, Done | Closes and returns focus to the hire CTA |
+
 ## 6. Components and states
 
 Shared chrome states unless noted: **idle** bone ink + resting shadow; **hover** `--hero-ink-hover` + 300 ms glow (`Hero.tsx:36`); **focus** 2px `--hero-ink` outline (Proposed on all); **active** press; **disabled** `opacity-50` (modal submit); **loading** boot overlay / encrypting; **error** `text-vesper-pink` + `role="alert"`.

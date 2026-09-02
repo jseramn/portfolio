@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useId, useState, type FormEvent, type RefObject } from "react"
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type RefObject,
+} from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Check, Copy, ExternalLink, X } from "./icons"
 import { site } from "../config/site"
@@ -17,6 +25,7 @@ import {
   onContactOpened,
   onContactSubmittedClient,
 } from "../lib/analytics/productCapture"
+import { useFocusTrap } from "../lib/useFocusTrap"
 
 type ContactModalProps = {
   open: boolean
@@ -99,13 +108,18 @@ function CopyField({ label, value }: { label: string; value: string }) {
 }
 
 export function ContactModal({ open, onClose, contextRole, mouseContainer }: ContactModalProps) {
-  const titleId = useId()
+  const channelId = useId()
+  const noteId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<SuccessState | null>(null)
   const [fallback, setFallback] = useState<FallbackState | null>(null)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [turnstileKey, setTurnstileKey] = useState(0)
+
+  useFocusTrap({ active: open, containerRef: dialogRef, initialRef: nameRef })
 
   useEffect(() => {
     if (open) return
@@ -159,7 +173,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
 
     if (turnstileEnabled() && !turnstileToken) {
       onContactFailed("turnstile")
-      setError("Completa la verificación anti-bot antes de enviar.")
+      setError("Complete the anti-bot check before sending.")
       setBusy(false)
       return
     }
@@ -217,11 +231,11 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
       }
 
       if (code === "server_not_configured") {
-        setError("El envío automático no está configurado en este entorno.")
+        setError("Automatic sending is not configured in this environment.")
       } else if (code === "rate_limited") {
-        setError("Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+        setError("Too many attempts. Wait a moment and try again.")
       } else {
-        setError("No pudimos enviar el correo automáticamente. Usa el respaldo manual abajo.")
+        setError("We could not send the email automatically. Use the manual fallback below.")
       }
       setTurnstileKey((k) => k + 1)
     } finally {
@@ -245,6 +259,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
         >
           <button
             type="button"
+            tabIndex={-1}
             className="absolute inset-0 bg-black/75 backdrop-blur-[2px]"
             aria-label="Close contact form"
             onClick={handleDismiss}
@@ -255,9 +270,11 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
             className="relative z-10 w-full max-w-md"
           >
             <motion.div
+              ref={dialogRef}
               role="dialog"
               aria-modal="true"
-              aria-labelledby={titleId}
+              aria-labelledby={channelId}
+              aria-describedby={success ? undefined : noteId}
               className="relative z-10 max-h-[min(90vh,720px)] w-full max-w-md overflow-y-auto rounded-[15px] border border-vesper-accent/70 bg-black/25 px-6 py-8 shadow-[0_0_40px_rgba(0,240,255,0.15),inset_0_0_60px_rgba(0,240,255,0.03)]"
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -265,32 +282,30 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                type="button"
-                onClick={handleDismiss}
-                className="absolute right-4 top-4 text-vesper-accent/70 transition-colors hover:text-vesper-accent"
-                aria-label="Close"
+              <p
+                id={channelId}
+                className={
+                  success ? "sr-only" : "mb-2 font-mono text-xs tracking-wide text-vesper-accent/60"
+                }
               >
-                <X size={20} />
-              </button>
-
-              <p id={titleId} className="sr-only">
-                Contact {site.brand}
+                secure channel · {contextRole}
               </p>
-
               {success ? (
                 <div className="flex flex-col gap-5 pr-6">
                   <p className="font-mono text-xs tracking-wide text-vesper-accent/60">
                     sent · {success.envelopeId}
                   </p>
                   <p className="font-sans text-sm leading-relaxed text-vesper-accent/90">
-                    El correo cifrado ya fue enviado a {site.email}.{" "}
-                    <strong className="font-medium text-vesper-accent">Último paso:</strong> envíame
-                    la llave por DM (no va en el email).
+                    The encrypted email was sent to {site.email}.{" "}
+                    <strong className="font-medium text-vesper-accent">Last step:</strong> send me
+                    the key by DM (it is not in the email).
                   </p>
 
-                  <CopyField label="Envelope ID (inclúyelo en el DM)" value={success.envelopeId} />
-                  <CopyField label="Decryption key (solo por redes)" value={success.passphrase} />
+                  <CopyField
+                    label="Envelope ID (include it in the DM)"
+                    value={success.envelopeId}
+                  />
+                  <CopyField label="Decryption key (socials only)" value={success.passphrase} />
 
                   <p className="font-mono text-xs text-vesper-accent/70">
                     {keyDeliverySocials.map((s, i) => (
@@ -318,16 +333,16 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                 </div>
               ) : (
                 <>
-                  <p className="mb-2 font-mono text-xs tracking-wide text-vesper-accent/60">
-                    secure channel · {contextRole}
-                  </p>
-                  <p className="mb-5 font-mono text-[11px] leading-relaxed text-vesper-accent/50">
-                    Cifrado en tu navegador con{" "}
+                  <p
+                    id={noteId}
+                    className="mb-5 font-mono text-[11px] leading-relaxed text-vesper-accent/50"
+                  >
+                    Encrypted in your browser with{" "}
                     <a
                       href={ageRepo}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-vesper-accent/70 hover:text-vesper-accent"
+                      className="inline-flex min-h-11 items-center gap-0.5 text-vesper-accent/70 hover:text-vesper-accent"
                     >
                       age
                       <ExternalLink size={10} aria-hidden />
@@ -337,11 +352,12 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                       href={typageRepo}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-vesper-accent/70 hover:text-vesper-accent"
+                      className="inline-flex min-h-11 items-center text-vesper-accent/70 hover:text-vesper-accent"
                     >
                       typage
                     </a>
-                    ). El servidor solo reenvía el sobre cifrado.
+                    ). The server only relays the ciphertext. Send the decryption key via{" "}
+                    {keyDeliverySocials.map((s) => s.label).join(" or ")} DM.
                   </p>
 
                   <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
@@ -356,6 +372,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                     <label className="flex flex-col gap-1.5">
                       <span className="font-mono text-sm text-vesper-accent/90">Name</span>
                       <input
+                        ref={nameRef}
                         name="name"
                         type="text"
                         required
@@ -408,7 +425,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                     {fallback && (
                       <div className="flex flex-col gap-3 rounded border border-vesper-accent/30 bg-black/30 p-3">
                         <p className="font-mono text-[11px] text-vesper-accent/70">
-                          Respaldo manual
+                          Manual fallback
                         </p>
                         <CopyField label="Armored ciphertext" value={fallback.armored} />
                         <CopyField label="Decryption key" value={fallback.passphrase} />
@@ -426,13 +443,21 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                     <button
                       type="submit"
                       disabled={busy}
-                      className="mt-1 w-full border border-vesper-pink py-3 font-mono text-sm text-vesper-pink transition-all hover:bg-vesper-pink/10 hover:shadow-[0_0_24px_rgba(255,42,158,0.35)] disabled:opacity-50"
+                      className="mt-1 min-h-11 w-full border border-vesper-pink py-3 font-mono text-sm text-vesper-pink transition-all hover:bg-vesper-pink/10 hover:shadow-[0_0_24px_rgba(255,42,158,0.35)] disabled:opacity-50"
                     >
                       {busy ? "Encrypting & sending…" : "Encrypt and send"}
                     </button>
                   </form>
                 </>
               )}
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center text-vesper-accent/70 transition-colors hover:text-vesper-accent"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
             </motion.div>
           </GlassSurface>
         </motion.div>

@@ -128,11 +128,36 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
   await expect(page.locator("main")).toBeAttached()
   await expect(page.getByRole("heading", { level: 1 })).toBeAttached()
 
-  await page.getByRole("button", { name: /Open contact form/ }).click()
+  const hire = page.getByRole("button", { name: /Open contact form/ })
+  await hire.click()
   const dialog = page.locator('[role="dialog"][aria-modal="true"]')
   await expect(dialog).toBeVisible()
   await page.keyboard.press("Escape")
   await expect(dialog).toBeHidden()
+
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
+  for (let i = 0; i < 80; i++) {
+    if (await hire.evaluate((el) => el === document.activeElement)) break
+    await page.keyboard.press("Tab")
+  }
+  await expect(hire).toBeFocused()
+  await page.keyboard.press("Enter")
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toContainText("Encrypted in your browser")
+  await expect(dialog.locator('input[name="name"]')).toBeFocused({ timeout: 3_000 })
+  const closeBox = await dialog.getByRole("button", { name: "Close" }).boundingBox()
+  expect(closeBox?.width ?? 0).toBeGreaterThanOrEqual(44)
+  expect(closeBox?.height ?? 0).toBeGreaterThanOrEqual(44)
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press("Tab")
+    expect(
+      await page.evaluate(() =>
+        Boolean(document.querySelector('[role="dialog"]')?.contains(document.activeElement)),
+      ),
+    ).toBe(true)
+  }
+  await page.keyboard.press("Escape")
+  await expect(hire).toBeFocused()
 })
 
 test("home chrome: 44px tap targets and unclipped hire CTA", async ({ page }, testInfo) => {
