@@ -584,7 +584,7 @@ export default function Hero() {
                     onHireCtaClicked()
                     setContactOpen(true)
                   }}
-                  className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
+                  className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW}`}
                   aria-label={`Open contact form — current role: ${activeRole}`}
                 >
                   <span aria-hidden="true">

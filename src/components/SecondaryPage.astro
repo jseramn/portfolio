@@ -16,6 +16,8 @@ const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/"
 
 <Layout title={title} description={description} jsonLdPage={jsonLdPage}>
   <main
+    id="main"
+    tabindex="-1"
     class="min-h-screen bg-black text-vesper-accent pt-[max(4rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(4rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]"
   >
     <article class="mx-auto max-w-2xl break-words">
