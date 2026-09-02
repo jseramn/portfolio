@@ -2,7 +2,6 @@ import {
   MAX_CELLS,
   VIDEO_PRELOAD,
   cellBudget,
-  coverDestRect,
   pickGrid,
   planAsciiFrame,
   sampleMsForLoop,
@@ -22,7 +21,6 @@ import { applyHeroSamplerFailure } from "./heroAsciiSamplerFailure"
 export type HeroAsciiMountOpts = {
   samplerWebm: string
   samplerMp4: string
-  poster?: string
 }
 
 const VIDEO_ZOOM = {
@@ -99,32 +97,6 @@ function tryPlay(video: HTMLVideoElement) {
   void video.play().catch(() => {})
 }
 
-export function blitHeroPoster(canvas: HTMLCanvasElement, src: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.decoding = "async"
-    img.onload = () => {
-      const host = canvas.parentElement instanceof HTMLElement ? canvas.parentElement : null
-      const width = host?.clientWidth || canvas.clientWidth || window.innerWidth
-      const height = host?.clientHeight || canvas.clientHeight || window.innerHeight
-      if (canvas.width !== width) canvas.width = width
-      if (canvas.height !== height) canvas.height = height
-      const ctx = canvas.getContext("2d")
-      if (!ctx || img.naturalWidth < 1 || img.naturalHeight < 1) {
-        resolve(false)
-        return
-      }
-      const dest = coverDestRect(img.naturalWidth, img.naturalHeight, width, height)
-      ctx.fillStyle = "#000"
-      ctx.fillRect(0, 0, width, height)
-      ctx.drawImage(img, dest.dx, dest.dy, dest.dw, dest.dh)
-      resolve(true)
-    }
-    img.onerror = () => resolve(false)
-    img.src = src
-  })
-}
-
 export async function mountHeroAscii(
   host: HTMLElement,
   opts: HeroAsciiMountOpts,
@@ -136,9 +108,6 @@ export async function mountHeroAscii(
     displayCanvas.className = HERO_ASCII_DISPLAY_CLASS
     displayCanvas.setAttribute("aria-hidden", "true")
     host.appendChild(displayCanvas)
-  }
-  if (opts.poster) {
-    await blitHeroPoster(displayCanvas, opts.poster)
   }
   await yieldToMain()
   const {
@@ -176,7 +145,6 @@ export async function mountHeroAscii(
   video.style.cssText =
     "position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;clip-path:inset(50%)"
   fillSources(video, opts.samplerWebm, opts.samplerMp4)
-  if (opts.poster) video.preload = "metadata"
   host.appendChild(video)
 
   let renderer: InstanceType<typeof WebGLRenderer>

@@ -8,6 +8,8 @@ import {
   VIDEO_BG_ASSET_SOURCE,
   buildVercelHeaderRules,
 } from "../../scripts/sync-vercel-security-headers.mjs"
+import { site } from "../config/site"
+import { buildGraphJsonLd } from "./agent/jsonld"
 import { IMMUTABLE_ASSET_CACHE_CONTROL } from "./security/siteSecurityHeaders.mjs"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -94,9 +96,13 @@ describe("preview assets", () => {
     ]) {
       expect(layout).toContain(token)
     }
-    const jsonld = readFileSync(join(root, "src/lib/agent/jsonld.ts"), "utf8")
-    expect(jsonld).toContain("image: site.seo.ogImage")
-    expect(jsonld).toContain("logo: site.seo.appleTouchIcon")
+    const graph = buildGraphJsonLd([])
+    const person = graph["@graph"].find((node) => node["@type"] === "Person") as { image: string }
+    const org = graph["@graph"].find((node) => node["@type"] === "Organization") as {
+      logo: string
+    }
+    expect(person.image).toBe(site.seo.ogImage)
+    expect(org.logo).toBe(site.seo.appleTouchIcon)
   })
 })
 

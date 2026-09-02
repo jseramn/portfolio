@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { VIDEO_PRELOAD } from "./heroAsciiBudget"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const src = join(root, "src")
@@ -39,8 +40,9 @@ describe("site performance chrome load", () => {
     expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('import("three")')
   })
 
-  it("compresses HTML without flipping prerender", () => {
-    expect(read("astro.config.mjs")).toContain("compressHTML: true")
+  it("compresses HTML without flipping prerender", async () => {
+    const astro = await import("../../astro.config.mjs")
+    expect(astro.default.compressHTML).toBe(true)
     for (const page of ["index", "about", "contact", "404"]) {
       expect(readSrc(`pages/${page}.astro`)).toMatch(/export const prerender = false/)
       expect(readSrc(`pages/${page}.astro`)).not.toMatch(/prerender = true/)
@@ -92,7 +94,7 @@ describe("site performance chrome load", () => {
     expect(home).not.toContain("videoSrcWebm")
     expect(home).not.toContain("/videobg.webm")
     expect(home).not.toContain("/videobg.mp4")
-    expect(readSrc("lib/heroAsciiBudget.ts")).toContain('VIDEO_PRELOAD = "none"')
+    expect(VIDEO_PRELOAD).toBe("none")
     expect(readSrc("lib/heroAsciiRuntime.ts")).toContain("video.preload = VIDEO_PRELOAD")
     expect(layout).not.toContain('as="video"')
     expect(readSrc("pages/about.astro")).not.toContain("boot-loader")
@@ -130,9 +132,7 @@ describe("site performance chrome load", () => {
       expect(source).not.toContain("@react-three/postprocessing")
     }
     expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
-    expect(ascii).toContain("VIDEO_PRELOAD")
-    expect(ascii).toContain("blitHeroPoster")
-    expect(ascii).toContain('video.preload = "metadata"')
+    expect(ascii).toContain("video.preload = VIDEO_PRELOAD")
     expect(ascii).toContain("signalHeroBootReady")
     expect(asciiBg).toContain("data-hero-boot-fallback")
     expect(asciiBg).toContain("signalHeroBootReady")

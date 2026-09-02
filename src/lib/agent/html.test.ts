@@ -121,6 +121,8 @@ describe("built HTML overlay", () => {
   })
 
   it("about and contact are ≥500 readable characters", async () => {
+    expect(readableLength(agentCopy("about"))).toBeGreaterThanOrEqual(500)
+    expect(readableLength(agentCopy("contact"))).toBeGreaterThanOrEqual(500)
     for (const path of ["/about", "/contact"]) {
       const live = await fetchIfUp(path)
       let html: string | null = null
