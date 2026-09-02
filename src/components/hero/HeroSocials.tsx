@@ -40,8 +40,8 @@ export function HeroSocials({
       className="flex justify-center z-10 hud:absolute hud:left-8 hud:top-24 hud:bottom-auto hud:right-auto hud:translate-x-0 hud:justify-start short:shrink-0"
     >
       <GlassSurface preset="dock" mouseContainer={mouseContainer}>
-        <div className="flex flex-col items-center gap-1 short:flex-row short:items-center">
-          <div className="flex flex-row items-center gap-4 md:gap-5 short:hidden">
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-row items-center gap-4 md:gap-5 short:gap-2">
             {site.socials.map((social) => {
               const Icon = SOCIAL_ICONS[social.icon]
               if (!Icon) return null

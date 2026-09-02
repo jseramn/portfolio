@@ -173,6 +173,103 @@ function measureHudOverlap(page: Page) {
   })
 }
 
+type MarqueeClipReport = {
+  hasFadeAttr: boolean
+  hasMask: boolean
+  fontSize: number
+  firstChar: string
+  startsMidWord: boolean
+  firstTokenFullyInside: boolean
+}
+
+function measureMarqueeClip(page: Page) {
+  return page.locator("[data-hero-root]").evaluate((root): MarqueeClipReport => {
+    const track = [...root.querySelectorAll<HTMLElement>("[data-marquee-fade]")].sort(
+      (a, b) => a.getBoundingClientRect().width - b.getBoundingClientRect().width,
+    )[0]
+    const clipEl =
+      track ?? root.querySelector<HTMLElement>("[data-hud-region=marquee] .overflow-hidden")
+    if (!clipEl) {
+      return {
+        hasFadeAttr: false,
+        hasMask: false,
+        fontSize: 0,
+        firstChar: "",
+        startsMidWord: true,
+        firstTokenFullyInside: false,
+      }
+    }
+    const style = getComputedStyle(clipEl)
+    const mask = `${style.maskImage} ${style.getPropertyValue("-webkit-mask-image")}`
+    const hasMask = /gradient/i.test(mask)
+    const clip = clipEl.getBoundingClientRect()
+    const walker = document.createTreeWalker(clipEl, NodeFilter.SHOW_TEXT)
+    let firstChar = ""
+    let firstGlyph: DOMRect | null = null
+    let firstPrev = ""
+    let node: Node | null = walker.nextNode()
+    scan: while (node) {
+      const text = node.nodeValue ?? ""
+      for (let i = 0; i < text.length; i++) {
+        if (/\s/.test(text[i] ?? "")) continue
+        const range = document.createRange()
+        range.setStart(node, i)
+        range.setEnd(node, i + 1)
+        const glyph = range.getBoundingClientRect()
+        if (glyph.width < 0.5 || glyph.height < 0.5) continue
+        if (glyph.right <= clip.left + 0.5 || glyph.left >= clip.right - 0.5) continue
+        firstGlyph = glyph
+        firstChar = text[i] ?? ""
+        firstPrev = i > 0 ? (text[i - 1] ?? "") : ""
+        break scan
+      }
+      node = walker.nextNode()
+    }
+    const letter = /[\p{L}\p{N}]/u
+    const clippedOnLeft = Boolean(firstGlyph && firstGlyph.left < clip.left - 1)
+    const startsMidWord =
+      !hasMask &&
+      clippedOnLeft &&
+      Boolean(firstChar && letter.test(firstChar) && firstPrev && letter.test(firstPrev))
+    const firstTokenFullyInside = Boolean(
+      firstGlyph && firstGlyph.left >= clip.left - 0.5 && firstGlyph.right <= clip.right + 0.5,
+    )
+    const sample = clipEl.querySelector<HTMLElement>("span, a")
+    return {
+      hasFadeAttr: clipEl.hasAttribute("data-marquee-fade"),
+      hasMask,
+      fontSize: Number.parseFloat(getComputedStyle(sample ?? clipEl).fontSize),
+      firstChar,
+      startsMidWord,
+      firstTokenFullyInside,
+    }
+  })
+}
+
+async function assertSocialDockInViewport(page: Page) {
+  const ids = ["github", "x", "linkedin", "instagram", "email"] as const
+  const viewport = page.viewportSize()
+  expect(viewport, "viewport size").toBeTruthy()
+  for (const id of ids) {
+    const link = page.locator(`[data-hud-region=socials] a[aria-label="${id}"]`)
+    await expect(link, id).toBeVisible()
+    const box = await link.boundingBox()
+    expect(box, id).toBeTruthy()
+    expect(box?.width ?? 0, id).toBeGreaterThanOrEqual(44)
+    expect(box?.height ?? 0, id).toBeGreaterThanOrEqual(44)
+    expect(box?.x ?? -2, id).toBeGreaterThanOrEqual(-1)
+    expect(box?.y ?? -2, id).toBeGreaterThanOrEqual(-1)
+    expect((box?.x ?? 0) + (box?.width ?? 0), id).toBeLessThanOrEqual((viewport?.width ?? 0) + 1)
+    expect((box?.y ?? 0) + (box?.height ?? 0), id).toBeLessThanOrEqual((viewport?.height ?? 0) + 1)
+  }
+  const about = page.locator("[data-hero-root]").getByRole("link", { name: "about", exact: true })
+  const contact = page
+    .locator("[data-hero-root]")
+    .getByRole("link", { name: "contact", exact: true })
+  await expect(about).toBeVisible()
+  await expect(contact).toBeVisible()
+}
+
 async function assertHudRegions(page: Page) {
   await expect
     .poll(async () => (await measureHudOverlap(page)).names.length, { timeout: 8_000 })
@@ -305,6 +402,30 @@ test("home chrome: hud regions do not overlap or overflow", async ({ page }, tes
     await page.evaluate(() => document.fonts.ready)
     await assertHudRegions(page)
   }
+})
+
+test("home chrome: 360 marquee does not hard-clip a mid-word glyph", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await openHome(page)
+
+  await expect
+    .poll(async () => (await measureMarqueeClip(page)).hasFadeAttr, { timeout: 8_000 })
+    .toBe(true)
+
+  const report = await measureMarqueeClip(page)
+  expect(report.hasMask, JSON.stringify(report)).toBe(true)
+  expect(report.fontSize, JSON.stringify(report)).toBeGreaterThanOrEqual(14)
+  expect(report.startsMidWord, JSON.stringify(report)).toBe(false)
+  expect(report.hasMask || report.firstTokenFullyInside, JSON.stringify(report)).toBe(true)
+})
+
+test("home chrome: short landscape keeps the social icon dock on-canvas", async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 })
+  await openHome(page)
+  await assertSocialDockInViewport(page)
+  await assertHudRegions(page)
+  await expect(page.getByRole("button", { name: "Hire / Contact" })).toBeVisible()
+  await expect(page.getByRole("link", { name: "Open Tinity" })).toBeVisible()
 })
 
 async function assertHomeIdentity(page: Page) {

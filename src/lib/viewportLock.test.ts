@@ -86,4 +86,25 @@ describe("homepage viewport lock", () => {
       expect(hero).toContain(`data-hud-region="${region}"`)
     }
   })
+
+  it("keeps the social icon dock on short viewports and fades marquee clip edges", () => {
+    const socials = readFileSync(join(src, "components/hero/HeroSocials.tsx"), "utf8")
+    expect(socials).toContain("site.socials.map")
+    expect(socials).not.toMatch(/short:hidden/)
+
+    const slider = readFileSync(join(src, "components/heroMotionStatic.tsx"), "utf8")
+    expect(slider).toContain("data-marquee-fade")
+    expect(slider).toContain("MARQUEE_TRACK")
+
+    const live = readFileSync(join(src, "components/InfiniteSlider.tsx"), "utf8")
+    expect(live).toContain("data-marquee-fade")
+    expect(live).toContain("MARQUEE_TRACK")
+
+    const chrome = readFileSync(join(src, "components/hero/chrome.ts"), "utf8")
+    expect(chrome).toContain("marquee-edge-fade")
+
+    const css = readFileSync(join(root, "src/styles/globals.css"), "utf8")
+    expect(css).toContain(".marquee-edge-fade")
+    expect(css).toMatch(/mask-image/)
+  })
 })

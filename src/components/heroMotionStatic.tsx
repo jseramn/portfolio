@@ -1,5 +1,6 @@
 import { Children, cloneElement, isValidElement, lazy, Suspense, type ReactNode } from "react"
 import { getCapabilities } from "../lib/capabilities"
+import { MARQUEE_TRACK } from "./hero/chrome"
 
 const LazyTextLoop = lazy(() => import("./TextLoop").then((mod) => ({ default: mod.TextLoop })))
 const LazySlider = lazy(() =>
@@ -46,7 +47,8 @@ export function InfiniteSliderStatic({
 }) {
   return (
     <div
-      className={`overflow-hidden ${className ?? ""}`}
+      className={`${MARQUEE_TRACK} ${className ?? ""}`}
+      data-marquee-fade=""
       {...(frozen ? { "data-marquee-static": "" } : { "data-marquee-pending": "" })}
     >
       <div className="flex w-max" style={{ gap: `${gap}px`, flexDirection: "row" }}>

@@ -1,5 +1,6 @@
 import { useMotionValue, animate, motion, useReducedMotion } from "motion/react"
 import { useState, useEffect } from "react"
+import { MARQUEE_TRACK } from "./hero/chrome"
 import { useElementWidth } from "../lib/useElementWidth"
 
 type InfiniteSliderProps = {
@@ -80,7 +81,11 @@ export function InfiniteSlider({
 
   if (freeze) {
     return (
-      <div className={`overflow-hidden ${className ?? ""}`} data-marquee-static="">
+      <div
+        className={`${MARQUEE_TRACK} ${className ?? ""}`}
+        data-marquee-static=""
+        data-marquee-fade=""
+      >
         <div className="flex max-w-full flex-wrap" style={{ gap: `${gap}px` }}>
           {children}
         </div>
@@ -102,7 +107,7 @@ export function InfiniteSlider({
     : {}
 
   return (
-    <div className={`overflow-hidden ${className ?? ""}`}>
+    <div className={`${MARQUEE_TRACK} ${className ?? ""}`} data-marquee-fade="">
       <motion.div
         className="flex w-max"
         style={{
