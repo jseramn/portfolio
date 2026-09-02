@@ -37,8 +37,6 @@ export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgro
         {
           samplerWebm: site.asciiSamplerWebm,
           samplerMp4: site.asciiSamplerMp4,
-          fallbackWebm: site.videoSrcWebm,
-          fallbackMp4: site.videoSrcMp4,
         },
         paintCanvasRef?.current,
       )

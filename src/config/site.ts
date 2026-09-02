@@ -68,8 +68,6 @@ export const site = {
       { "@type": "Organization" as const, name: "Presencia Pyme" },
     ],
   },
-  videoSrcWebm: "/videobg.webm",
-  videoSrcMp4: "/videobg.mp4",
   asciiSamplerWebm: "/videobg-480.webm",
   asciiSamplerMp4: "/videobg-480.mp4",
   contactCrypto: {
