@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { API_NO_STORE, CDN_SWR_CACHE } from "./agent/apiCacheHeaders"
 
 const { fetchGitHubStats } = vi.hoisted(() => ({
   fetchGitHubStats: vi.fn(),
@@ -23,15 +24,14 @@ async function loadGET() {
   return GET
 }
 
+function expectCdnSwr(response: Response) {
+  expect(response.headers.get("Cache-Control")).toBe(CDN_SWR_CACHE)
+  expect(response.headers.get("Vercel-CDN-Cache-Control")).toBe(CDN_SWR_CACHE)
+}
+
 function expectNoStore(response: Response) {
-  expect(response.headers.get("Cache-Control")).toBe("private, no-store")
-  expect(response.headers.get("Vercel-CDN-Cache-Control")).toBe("private, no-store")
-  const joined = [
-    response.headers.get("Cache-Control") ?? "",
-    response.headers.get("Vercel-CDN-Cache-Control") ?? "",
-  ].join(" ")
-  expect(joined).not.toMatch(/public/)
-  expect(joined).not.toMatch(/s-maxage/)
+  expect(response.headers.get("Cache-Control")).toBe(API_NO_STORE)
+  expect(response.headers.get("Vercel-CDN-Cache-Control")).toBe(API_NO_STORE)
 }
 
 describe("GET /api/github-stats", () => {
@@ -46,12 +46,12 @@ describe("GET /api/github-stats", () => {
     vi.useRealTimers()
   })
 
-  it("sets both no-store headers on a fresh fetch", async () => {
+  it("sets CDN SWR headers on a fresh fetch", async () => {
     fetchGitHubStats.mockResolvedValue(SAMPLE)
     const GET = await loadGET()
     const response = await GET({} as never)
     expect(response.status).toBe(200)
-    expectNoStore(response)
+    expectCdnSwr(response)
     expect(fetchGitHubStats).toHaveBeenCalledOnce()
   })
 
@@ -60,12 +60,12 @@ describe("GET /api/github-stats", () => {
     const GET = await loadGET()
     const first = await GET({} as never)
     const second = await GET({} as never)
-    expectNoStore(first)
-    expectNoStore(second)
+    expectCdnSwr(first)
+    expectCdnSwr(second)
     expect(fetchGitHubStats).toHaveBeenCalledOnce()
   })
 
-  it("returns stale JSON with no-store when fetch fails after CACHE_MS", async () => {
+  it("returns stale JSON with CDN SWR when fetch fails after CACHE_MS", async () => {
     fetchGitHubStats.mockResolvedValueOnce(SAMPLE)
     const GET = await loadGET()
     await GET({} as never)
@@ -73,7 +73,7 @@ describe("GET /api/github-stats", () => {
     fetchGitHubStats.mockRejectedValueOnce(new Error("upstream"))
     const stale = await GET({} as never)
     expect(stale.status).toBe(200)
-    expectNoStore(stale)
+    expectCdnSwr(stale)
     await expect(stale.json()).resolves.toEqual(SAMPLE)
     expect(fetchGitHubStats).toHaveBeenCalledTimes(2)
   })

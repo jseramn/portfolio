@@ -3,10 +3,12 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import {
+  ASTRO_ASSET_SOURCE,
   PREVIEW_ASSET_SOURCE,
   VIDEO_BG_ASSET_SOURCE,
   buildVercelHeaderRules,
 } from "../../scripts/sync-vercel-security-headers.mjs"
+import { IMMUTABLE_ASSET_CACHE_CONTROL } from "./security/siteSecurityHeaders.mjs"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const publicDir = join(root, "public")
@@ -124,6 +126,15 @@ describe("preview asset crawler headers", () => {
     )
     expect(VIDEO_BG_ASSET_SOURCE).toBe("/videobg(.*)")
     expect(headers["Cache-Control"]).toBe("public, max-age=31536000, immutable")
+  })
+
+  it("caches hashed /_astro assets as immutable without Vary: Accept", () => {
+    const rules = buildVercelHeaderRules()
+    const astroIdx = rules.findIndex((rule) => rule.source === ASTRO_ASSET_SOURCE)
+    expect(astroIdx).toBeGreaterThan(rules.findIndex((rule) => rule.source === "/(.*)"))
+    expect(rules[astroIdx]?.headers).toEqual([
+      { key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL },
+    ])
   })
 })
 
