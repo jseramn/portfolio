@@ -1,4 +1,6 @@
-export const ASCII_FPS = 12
+import { ASCII_FPS } from "./capabilities"
+
+export { ASCII_FPS }
 export const SAMPLE_MS = 1000 / ASCII_FPS
 export const MAX_CELLS = 12_000
 export const COARSE_MAX_CELLS = 4_000
@@ -11,8 +13,6 @@ export const ASCII_WARMUP_SAMPLE_MS = 1_000
 export const STAMP_SLICE_MS = 8
 
 export type AsciiFramePlan = "raster" | "camera" | "idle"
-
-export { isPointerCoarse } from "./pointer"
 
 export function cellBudget(cssWidth: number, pointerCoarse: boolean): number {
   if (pointerCoarse || cssWidth < NARROW_VIEWPORT_PX) return COARSE_MAX_CELLS

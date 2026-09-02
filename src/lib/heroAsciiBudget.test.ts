@@ -13,7 +13,6 @@ import {
   VIDEO_PRELOAD,
   cellBudget,
   coverDestRect,
-  isPointerCoarse,
   pickGrid,
   planAsciiFrame,
   sampleMsForLoop,
@@ -34,7 +33,7 @@ function readSrc(rel: string): string {
 describe("hero ASCII loop budget", () => {
   it("rasters only when the 12fps sample window elapsed", () => {
     expect(ASCII_FPS).toBe(12)
-    expect(SAMPLE_MS).toBeCloseTo(1000 / 12)
+    expect(SAMPLE_MS).toBeCloseTo(1000 / ASCII_FPS)
     expect(planAsciiFrame({ now: 90, lastSampleAt: 0, cameraDirty: false })).toBe("raster")
     expect(planAsciiFrame({ now: 80, lastSampleAt: 0, cameraDirty: false })).toBe("idle")
     expect(
@@ -57,10 +56,6 @@ describe("hero ASCII loop budget", () => {
     expect(cellBudget(1920, false)).toBe(MAX_CELLS)
     expect(cellBudget(1920, true)).toBe(COARSE_MAX_CELLS)
     expect(cellBudget(NARROW_VIEWPORT_PX - 1, false)).toBe(COARSE_MAX_CELLS)
-    expect(isPointerCoarse((() => ({ matches: true })) as unknown as typeof matchMedia)).toBe(true)
-    expect(isPointerCoarse((() => ({ matches: false })) as unknown as typeof matchMedia)).toBe(
-      false,
-    )
 
     const mobile = pickGrid(390, 844, cellBudget(390, true))
     expect(mobile.cols).toBeGreaterThan(0)
