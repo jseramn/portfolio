@@ -68,7 +68,7 @@ describe("GET /oembed.json", () => {
   it("stays dynamic and does not flip home, about, contact, or 404 to prerender true", () => {
     const oembed = readFileSync(join(root, "src/pages/oembed.json.ts"), "utf8")
     expect(oembed).toMatch(/export const prerender = false/)
-    for (const rel of ["src/pages/index.astro", "src/pages/about.astro", "src/pages/contact.astro", "src/pages/404.astro"]) {
+    for (const rel of ["src/pages/index.astro", "src/pages/about.astro", "src/pages/contact.astro", "src/pages/404.astro", "src/pages/tinity/index.astro"]) {
       const source = readFileSync(join(root, rel), "utf8")
       expect(source).toMatch(/export const prerender = false/)
       expect(source).not.toMatch(/export const prerender = true/)

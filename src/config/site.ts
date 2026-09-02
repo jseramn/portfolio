@@ -32,6 +32,13 @@ export const site = {
     { label: "co-founder @ Mallanet.org", href: "https://mallanet.org" },
     { label: "co-founder @ Presencia Pyme" },
   ] as const,
+  tinity: {
+    name: "Tinity",
+    path: "/tinity",
+    repo: "https://github.com/jseramn/tinity",
+    description:
+      "Tinity is an agentic systems engineering framework for a harness-of-harnesses infrastructure for AI testing and evaluation. Friend to all harnesses. Layer 8 will be agent-based.",
+  },
   tracks: [
     { id: "7iDtrh0K4Vg", start: 0, title: "Qual é seu desejo? — Tz da Coronel" },
     { id: "0iJsBi3D7wA", start: 0, title: "CAMARO — Big Soto" },

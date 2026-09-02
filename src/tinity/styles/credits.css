@@ -1,0 +1,105 @@
+.credits {
+  position: fixed;
+  left: 16px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 3;
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--text-muted);
+  opacity: 0.88;
+  transition: opacity 180ms var(--ease), color 180ms var(--ease);
+}
+
+.credits:hover,
+.credits:focus-within {
+  opacity: 1;
+}
+
+.credits-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  transition: color 180ms var(--ease);
+}
+
+.credits-item + .credits-item::before {
+  content: "·";
+  margin-inline: 0.45em;
+  color: var(--text-dim);
+}
+
+.credits-item:hover {
+  color: var(--text);
+}
+
+.credits-item:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+.credits-short,
+.credits-short.credits-chip {
+  display: none;
+}
+
+.credits-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.credits-vercel-glyph {
+  display: block;
+  width: 8px;
+  height: 7px;
+  flex-shrink: 0;
+}
+
+.credits-canvasui-mark {
+  display: block;
+  width: 13px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .credits {
+    left: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    background: rgba(5, 5, 5, 0.6);
+    padding: 6px 10px;
+    border-radius: var(--radius-control);
+  }
+
+  .credits-item:not([data-mobile="true"]) {
+    display: none;
+  }
+
+  .credits-short,
+  .credits-short.credits-chip {
+    display: inline-flex;
+  }
+
+  .credits-item:has(.credits-short) .credits-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credits,
+  .credits-item {
+    transition: none;
+  }
+}

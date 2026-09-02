@@ -40,7 +40,7 @@ describe("site performance chrome load", () => {
 
   it("compresses HTML without flipping prerender", () => {
     expect(read("astro.config.mjs")).toContain("compressHTML: true")
-    for (const page of ["index", "about", "contact", "404"]) {
+    for (const page of ["index", "about", "contact", "404", "tinity/index"]) {
       expect(readSrc(`pages/${page}.astro`)).toMatch(/export const prerender = false/)
       expect(readSrc(`pages/${page}.astro`)).not.toMatch(/prerender = true/)
     }
@@ -91,6 +91,7 @@ describe("site performance chrome load", () => {
     expect(layout).not.toContain('as="video"')
     expect(readSrc("pages/about.astro")).not.toContain("boot-loader")
     expect(readSrc("pages/contact.astro")).not.toContain("boot-loader")
+    expect(readSrc("pages/tinity/index.astro")).not.toContain("boot-loader")
   })
 
   it("defers YouTube and ContactModal; ASCII stays lazy without an idle gate", () => {

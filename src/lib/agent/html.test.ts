@@ -157,6 +157,7 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("/")
     expect(llms).toContain("/about")
     expect(llms).toContain("/contact")
+    expect(llms).toContain("/tinity")
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")

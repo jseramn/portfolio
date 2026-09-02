@@ -527,6 +527,7 @@ export default function Hero() {
         </GlassSurface>
       </div>
       <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
+        <div className="flex flex-col gap-3 self-start md:flex-row md:items-end md:gap-4">
         <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
         <button
           type="button"
@@ -553,6 +554,18 @@ export default function Hero() {
           </span>
         </button>
         </GlassSurface>
+        <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
+        <a
+          href={site.tinity.path}
+          className={`hero-on-video font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
+          aria-label="Open Tinity"
+        >
+          <span className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] hover:decoration-[var(--hero-ink)]/50">
+            tinity
+          </span>
+        </a>
+        </GlassSurface>
+        </div>
         <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
         <p
           className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}

@@ -10,6 +10,7 @@ const home = readFileSync(join(here, "../pages/index.astro"), "utf8")
 const about = readFileSync(join(here, "../pages/about.astro"), "utf8")
 const contact = readFileSync(join(here, "../pages/contact.astro"), "utf8")
 const notFound = readFileSync(join(here, "../pages/404.astro"), "utf8")
+const tinity = readFileSync(join(here, "../pages/tinity/index.astro"), "utf8")
 
 describe("legal copy names PostHog", () => {
   it("discloses cookieless PostHog on the privacy policy", () => {
@@ -28,8 +29,8 @@ describe("legal copy names PostHog", () => {
 })
 
 describe("SSR routes stay dynamic", () => {
-  it("keeps prerender false on home, about, contact, and 404", () => {
-    for (const source of [home, about, contact, notFound]) {
+  it("keeps prerender false on home, about, contact, 404, and tinity", () => {
+    for (const source of [home, about, contact, notFound, tinity]) {
       expect(source).toMatch(/export const prerender = false/)
     }
   })

@@ -36,16 +36,17 @@ function expectButtonOptics(block: string) {
 }
 
 describe("hero liquid-glass chrome wiring", () => {
-  it("mounts exactly six panes with locked presets and no shader mode", () => {
+  it("mounts six hero panes with locked presets and no shader mode", () => {
     const hero = read("components/Hero.tsx")
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
+    expect(hero.match(/<GlassSurface /g)?.length).toBe(6)
     expect(modal.match(/<GlassSurface /g)?.length).toBe(1)
     for (const preset of ["bar", "pill", "dock", "button", "card"] as const) {
       expect(hero).toContain(`preset="${preset}"`)
     }
+    expect(hero.match(/preset="button"/g)?.length).toBe(2)
     expect(modal).toContain('preset="modal"')
     expect(glass).toContain('mode="standard"')
     expect(glass).not.toContain('mode="shader"')
@@ -267,7 +268,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("setUseLiveGlass")
     expect(glass).toContain("isPointerCoarse()")
     expect(glass).toContain("function behindRect")
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
+    expect(hero.match(/<GlassSurface /g)?.length).toBe(6)
     expect(read("components/ContactModal.tsx").match(/<GlassSurface /g)?.length).toBe(1)
   })
 

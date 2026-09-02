@@ -33,7 +33,7 @@ const HOME_SECTIONS: readonly AgentSection[] = [
     h2: "Who it is for",
     body: [
       `It is for people and teams who want to reach him about ${site.roles.join(", ")} work.`,
-      `Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step.`,
+      `Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /tinity, /llms.txt, and /sitemap-index.xml for the next step.`,
       `Source and human docs live in the public GitHub repository linked from llms.txt.`,
     ].join(" "),
   },
@@ -50,6 +50,7 @@ const HOME_SECTIONS: readonly AgentSection[] = [
     body: [
       `jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog.`,
       `There is no /projects, /docs, or /services catalog on this domain.`,
+      `Tinity is a single public experiment at /tinity, not a product catalog.`,
       `There is no app download, no waitlist, and no self-serve billing.`,
       `The visible homepage is a live ASCII portrait of ${site.name} on a black terminal layout; this article remains the readable source for agents.`,
       `The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact.`,
