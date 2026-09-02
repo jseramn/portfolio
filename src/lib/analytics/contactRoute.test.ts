@@ -163,16 +163,12 @@ describe("POST /api/contact analytics wiring", () => {
 })
 
 describe("product capture source wiring", () => {
-  it("mounts cookieless PostHog plus Vercel Analytics and wires Hero, modal, and contact API", async () => {
+  it("mounts cookieless PostHog and wires Hero, modal, and contact API", async () => {
     const { readFileSync } = await import("node:fs")
     const { dirname, join } = await import("node:path")
     const { fileURLToPath } = await import("node:url")
     const here = dirname(fileURLToPath(import.meta.url))
     const layout = readFileSync(join(here, "../../layouts/Layout.astro"), "utf8")
-    const vercelAnalytics = readFileSync(
-      join(here, "../../components/VercelAnalytics.astro"),
-      "utf8",
-    )
     const hero = readFileSync(join(here, "../../components/Hero.tsx"), "utf8")
     const modal = readFileSync(join(here, "../../components/ContactModal.tsx"), "utf8")
     const contact = readFileSync(join(here, "../../pages/api/contact.ts"), "utf8")
@@ -181,11 +177,11 @@ describe("product capture source wiring", () => {
     const productCapture = readFileSync(join(here, "productCapture.ts"), "utf8")
 
     expect(layout).toMatch(/posthog\.astro/)
-    expect(layout).toMatch(/VercelAnalytics\.astro/)
-    expect(vercelAnalytics).toContain("<Analytics />")
-    expect(vercelAnalytics).toMatch(/@vercel\/analytics\/astro/)
-    expect(captureClient).not.toMatch(/@vercel\/analytics/)
-    expect(productCapture).not.toMatch(/@vercel\/analytics/)
+    expect(layout).not.toMatch(/VercelAnalytics/)
+    expect(layout).not.toMatch(/SpeedInsights/)
+    expect(layout).not.toMatch(/@vercel\//)
+    expect(captureClient).not.toMatch(/@vercel\//)
+    expect(productCapture).not.toMatch(/@vercel\//)
     expect(hero).toContain("onHireCtaClicked")
     expect(hero).toContain("onOutboundSocial")
     expect(hero).toContain("onOutboundOrg")

@@ -34,23 +34,13 @@ describe("posthog.astro snippet", () => {
     expect(snippet).not.toContain("requestIdleCallback")
   })
 
-  it("is mounted in Layout next to cookieless PostHog; product events stay off Vercel; posthog-node stays off Edge middleware", () => {
+  it("is mounted in Layout; product events stay on PostHog; posthog-node stays off middleware", () => {
     expect(layout).toMatch(/posthog\.astro/)
-    expect(layout).toMatch(/VercelAnalytics\.astro/)
-    expect(layout).not.toMatch(/from ["']@vercel\/analytics/)
-    const vercelAnalytics = readFileSync(
-      join(here, "../../components/VercelAnalytics.astro"),
-      "utf8",
-    )
-    expect(vercelAnalytics).toMatch(/from ["']@vercel\/analytics\/astro["']/)
-    expect(vercelAnalytics).toContain("<Analytics />")
-    expect(vercelAnalytics).toContain("localhost")
-    expect(vercelAnalytics).toContain("127.0.0.1")
-    expect(vercelAnalytics).toContain("/policy")
-    expect(vercelAnalytics).toContain("/terms")
-    expect(vercelAnalytics).toContain("/data-deletion")
-    expect(readFileSync(join(here, "captureClient.ts"), "utf8")).not.toMatch(/@vercel\/analytics/)
-    expect(readFileSync(join(here, "productCapture.ts"), "utf8")).not.toMatch(/@vercel\/analytics/)
+    expect(layout).not.toMatch(/VercelAnalytics/)
+    expect(layout).not.toMatch(/SpeedInsights/)
+    expect(layout).not.toMatch(/@vercel\//)
+    expect(readFileSync(join(here, "captureClient.ts"), "utf8")).not.toMatch(/@vercel\//)
+    expect(readFileSync(join(here, "productCapture.ts"), "utf8")).not.toMatch(/@vercel\//)
     expect(middleware).not.toMatch(/posthog-node|captureNode|lib\/analytics/)
     expect(captureNodeSource).toContain('from "posthog-node"')
   })

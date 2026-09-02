@@ -22,8 +22,6 @@
     "@astrojs/vercel": "^8.2.11",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
     "age-encryption": "^0.3.0",
     "astro": "^5",
     "liquid-glass-react": "1.1.1",
