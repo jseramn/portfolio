@@ -229,9 +229,22 @@ Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`); g
 | Boot live region | `role="status" aria-live="polite"` (`index.astro:21–24`) | Keep; dismiss sets `aria-hidden` (`bootLoader.ts:30–37`) |
 | Now-playing | Playing title is a YouTube `<a>`; idle is a `<button>` | Name the control; **Proposed:** `aria-live` when track changes |
 | Hire naming | Visible roles `aria-hidden`; button `aria-label="Open contact form — current role: …"` (`Hero.tsx:538–540`) | Keep an accessible name that says hire/contact, not only the looping title |
-| Modal keyboard | Escape dismisses (`ContactModal.tsx:134–136`). **No** focus trap, **no** autofocus, `document.activeElement` stays `BODY` (C-report) | Trap focus, autofocus first field, return focus to hire, Close ≥44×44 |
-| Language | `html lang="en"` (`Layout.astro:37`). Hero tagline is EN (`Hero.tsx:33`). Modal encryption copy is ES (`ContactModal.tsx:277–335`) | UI copy English. Spanish tagline (`site.ts:7`) is the **alternate string only** (markdown/agents), not a second locale. No `hreflang` without `/es` (D-12) |
+| Modal keyboard | Escape dismisses. Focus trap on `[role="dialog"]`, Name autofocus after open, Close ≥44×44 (48 CSS px under live glass), return focus to hire | Shipped: trap, Name autofocus, return focus to hire, Close ≥44×44 |
+| Language | `html lang="en"` (`Layout.astro:37`). Hero tagline is EN (`Hero.tsx:33`). Modal encryption note is English (`ContactModal.tsx`, “Encrypted in your browser”) | UI copy English. Spanish tagline (`site.ts:7`) is the **alternate string only** (markdown/agents), not a second locale. No `hreflang` without `/es` (D-12) |
 | Forced-colors | Not specified | Must not gate ship (openspec hero-on-video-contrast) |
+
+### Keyboard map
+
+| Order | Surface | Target | Keys / notes |
+|------|---------|--------|----------------|
+| 1 | Home chrome | Skip link | Proposed; not shipped on this branch |
+| 2 | HUD | Marquee links | Org and last-commit anchors in the ticker |
+| 3 | HUD | Now-playing / transport | Listen CTA or track title, then previous, mute, next, shuffle |
+| 4 | HUD | Socials | Profile and mailto icons. Secondary nav is Proposed |
+| 5 | HUD | Hire CTA | Enter opens the dialog. Tagline is not a link |
+| 6 | Dialog | Name | Autofocus after the 0.25 s panel transition |
+| 7 | Dialog | Email → Subject → Message → Turnstile → Encrypt and send → Close | Age/typage notes stay tabbable. Tab wraps inside `[role="dialog"]` |
+| 8 | Dialog | Escape, Close, Done | Closes and returns focus to the hire CTA |
 
 ## 6. Components and states
 
@@ -271,12 +284,12 @@ Purpose: age-encrypt then POST `/api/contact` (production POST is **404 HTML**, 
 
 | State | Behaviour |
 |-------|-----------|
-| Idle | EN field labels; ES encryption blurb (C-report i18n mix). **Proposed:** English (or one language) |
+| Idle | EN field labels; English encryption note (typage + ciphertext relay + X/Instagram DM). Close ≥44×44 |
 | Busy | `Encrypting & sending…`, fields disabled |
 | Success | Envelope ID + passphrase copy; DM key via X/Instagram (`site.ts:79–82`) |
 | Error | Generic pink alert; Turnstile remounts (`ContactModal.tsx:220`) |
 | Fallback | Armored ciphertext + mailto if send fails after encrypt (`ContactModal.tsx:202–211`) |
-| Keyboard | Escape works; **Proposed:** trap, autofocus name, return focus to hire, Close ≥44×44 |
+| Keyboard | Trap Tab inside the dialog; Name autofocus; Escape / Close / Done return focus to hire; Close ≥44×44 |
 
 ### LegalDocument
 
