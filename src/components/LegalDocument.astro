@@ -1,17 +1,19 @@
 ---
 import SecondaryPage from "./SecondaryPage.astro"
+import type { JsonLdPageKind } from "../lib/agent/jsonld"
 
 interface Props {
   title: string
   description: string
   heading: string
   updated: string
+  jsonLdPage?: JsonLdPageKind
 }
 
-const { title, description, heading, updated } = Astro.props
+const { title, description, heading, updated, jsonLdPage } = Astro.props
 ---
 
-<SecondaryPage title={title} description={description}>
+<SecondaryPage title={title} description={description} jsonLdPage={jsonLdPage}>
   <h1 class="mb-2 font-sans text-3xl font-semibold tracking-tight text-vesper-accent">
     {heading}
   </h1>
