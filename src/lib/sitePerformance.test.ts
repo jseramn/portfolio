@@ -170,11 +170,10 @@ describe("site performance chrome load", () => {
   })
 
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
-    const glass = readSrc("components/GlassSurface.tsx")
     const ascii = readAsciiRuntime()
     const hero = readHeroIsland()
     const asciiBg = readSrc("components/HeroAsciiBackground.tsx")
-    for (const source of [glass, ascii, hero, asciiBg]) {
+    for (const source of [ascii, hero, asciiBg]) {
       expect(source).not.toContain("127.0.0.1:7586/ingest")
       expect(source).not.toContain("@react-three/fiber")
       expect(source).not.toContain("@react-three/postprocessing")

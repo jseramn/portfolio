@@ -103,6 +103,18 @@ export function InfiniteSlider({
           setIsTransitioning(true)
           setCurrentSpeed(speed)
         },
+        onFocusCapture: () => {
+          setIsTransitioning(true)
+          setCurrentSpeed(speedOnHover)
+        },
+        onBlurCapture: () => {
+          setIsTransitioning(true)
+          setCurrentSpeed(speed)
+        },
+        onPointerDown: () => {
+          setIsTransitioning(true)
+          setCurrentSpeed(speedOnHover)
+        },
       }
     : {}
 

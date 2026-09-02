@@ -10,13 +10,12 @@ function read(rel: string): string {
 }
 
 describe("ContactModal presentational split", () => {
-  it("keeps the public ContactModal export and one modal GlassSurface in the shell", () => {
+  it("keeps the public ContactModal export without a glass wrap", () => {
     const shell = read("components/ContactModal.tsx")
     expect(shell).toContain("export function ContactModal")
     expect(shell).toContain('from "./contact/')
-    expect(shell.match(/<GlassSurface\b/g)?.length).toBe(1)
-    expect(shell).toContain('preset="modal"')
-    expect(shell).toContain("mouseContainer={mouseContainer}")
+    expect(shell).not.toContain("GlassSurface")
+    expect(shell).not.toContain("mouseContainer")
     expect(shell).toContain("data-contact-modal-open")
     expect(shell).toContain("onContactOpened")
     expect(shell).toContain("onContactDismissed")

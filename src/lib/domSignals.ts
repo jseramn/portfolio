@@ -4,7 +4,6 @@ export const HERO_ASCII_DISPLAY_CLASS = "hero-ascii-display"
 export const HERO_ASCII_CANVAS_SELECTOR = `${HERO_ROOT_SELECTOR} > .${HERO_ASCII_DISPLAY_CLASS}`
 export const ASCII_PAINT_ATTR = "data-ascii-paint"
 export const ASCII_PAINT_SELECTOR = `canvas.${HERO_ASCII_DISPLAY_CLASS}[${ASCII_PAINT_ATTR}]`
-export const GLASS_GEN_ATTR = "data-glass-gen"
 export const CONTACT_MODAL_OPEN_ATTR = "data-contact-modal-open"
 export const CONTACT_MODAL_OPEN_SELECTOR = `[${CONTACT_MODAL_OPEN_ATTR}]`
 export const ARIA_MODAL_ATTR = "aria-modal"
@@ -13,11 +12,6 @@ export const BOOT_FALLBACK_ATTR = "data-hero-boot-fallback"
 export const BOOT_FALLBACK_SELECTOR = `[${BOOT_FALLBACK_ATTR}]`
 
 type QueryRoot = { querySelector: (selector: string) => unknown }
-type GlassEl = {
-  width: number
-  height: number
-  dataset?: { glassGen?: string; glassBox?: string }
-}
 
 export function getHeroRoot(doc: QueryRoot): HTMLElement | null {
   return (doc.querySelector(HERO_ROOT_SELECTOR) as HTMLElement | null) ?? null
@@ -31,16 +25,4 @@ export function isUiBlockingOverlayOpen(doc: QueryRoot): boolean {
   return Boolean(
     doc.querySelector(CONTACT_MODAL_OPEN_SELECTOR) || doc.querySelector(DIALOG_MODAL_SELECTOR),
   )
-}
-
-export function readGlassGen(el: GlassEl | null | undefined): string {
-  return el?.dataset?.glassGen ?? ""
-}
-
-export function readGlassBox(el: GlassEl | null | undefined): string {
-  return el?.dataset?.glassBox ?? ""
-}
-
-export function isAsciiReadyForGlass(el: GlassEl | null | undefined): boolean {
-  return Boolean(el && readGlassGen(el) && el.width >= 2 && el.height >= 2)
 }

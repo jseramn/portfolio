@@ -24,7 +24,6 @@
     "@upstash/redis": "^1.38.0",
     "age-encryption": "^0.3.0",
     "astro": "^5",
-    "liquid-glass-react": "1.1.1",
     "motion": "^12.33.0",
     "posthog-node": "^5.50.0",
     "react": "^19",

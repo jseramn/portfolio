@@ -1,5 +1,4 @@
 import { isPointerCoarse } from "./pointer"
-import { chromiumRuntimeHint, shouldUseLiquidGlass } from "./shouldUseLiquidGlass"
 
 export const ASCII_FPS = 12
 
@@ -17,7 +16,6 @@ export type Capabilities = {
   reducedMotion: boolean
   webgl: boolean
   chromiumRuntime: boolean
-  liveGlass: boolean
 }
 
 const SSR: Capabilities = {
@@ -26,7 +24,6 @@ const SSR: Capabilities = {
   reducedMotion: false,
   webgl: false,
   chromiumRuntime: false,
-  liveGlass: false,
 }
 
 let cached: Omit<Capabilities, "webgl"> | undefined
@@ -39,6 +36,16 @@ function matches(mq: typeof globalThis.matchMedia | undefined, query: string): b
   } catch {
     return false
   }
+}
+
+export function chromiumRuntimeHint(
+  userAgent: string,
+  chromeObject: boolean,
+  brands: readonly string[] = [],
+): boolean {
+  if (/CriOS/.test(userAgent)) return false
+  if (chromeObject) return true
+  return brands.some((brand) => /Chromium|Google Chrome|Microsoft Edge|Opera/.test(brand))
 }
 
 export function probeWebGL(probe?: () => boolean): boolean {
@@ -69,7 +76,6 @@ export function detectCapabilities(env: CapabilityEnv): Capabilities {
     pointerCoarse,
     reducedMotion,
     chromiumRuntime,
-    liveGlass: shouldUseLiquidGlass(env.userAgent, reducedMotion, chromiumRuntime, pointerCoarse),
     webgl: env.webglProbe ? env.webglProbe() : false,
   }
 }

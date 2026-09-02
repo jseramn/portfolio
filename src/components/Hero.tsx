@@ -6,7 +6,6 @@ import { HeroMarquee } from "./hero/HeroMarquee"
 import { HeroMusic } from "./hero/HeroMusic"
 import { HeroSocials } from "./hero/HeroSocials"
 import { HeroTagline } from "./hero/HeroTagline"
-import { useHeroPointer } from "./hero/useHeroPointer"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
 
@@ -19,7 +18,6 @@ export default function Hero() {
   const activeRole = site.roles[roleIndex] ?? site.roles[0]
 
   useEffect(() => scheduleHeroMotionChrome(() => setMotionChrome(true)), [])
-  useHeroPointer(heroRootRef)
 
   return (
     <>
@@ -48,23 +46,22 @@ export default function Hero() {
           className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-[2]"
           aria-hidden
         />
-        <HeroMarquee mouseContainer={heroRootRef} motionChrome={motionChrome} />
+        <HeroMarquee motionChrome={motionChrome} />
         <div className="relative z-10 mt-auto flex min-h-0 flex-1 flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] hud:contents short:mt-auto short:flex-none short:flex-row short:flex-nowrap short:items-end short:gap-2">
-          <HeroMusic mouseContainer={heroRootRef} />
+          <HeroMusic />
           <div
             className="relative z-[1] min-h-0 flex-1 pointer-events-none hud:hidden short:hidden"
             aria-hidden
           />
-          <HeroSocials mouseContainer={heroRootRef} />
+          <HeroSocials />
           <div className="relative z-10 flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
             <HeroHire
-              mouseContainer={heroRootRef}
               motionChrome={motionChrome}
               contactOpen={contactOpen}
               onOpenContact={() => setContactOpen(true)}
               onRoleIndexChange={setRoleIndex}
             />
-            <HeroTagline mouseContainer={heroRootRef} />
+            <HeroTagline />
           </div>
         </div>
         <div className="absolute w-0 h-0 overflow-hidden">
@@ -74,7 +71,6 @@ export default function Hero() {
           open={contactOpen}
           onClose={() => setContactOpen(false)}
           contextRole={activeRole}
-          mouseContainer={heroRootRef}
         />
       </div>
     </>

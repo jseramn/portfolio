@@ -16,7 +16,7 @@ function makeSession(rows: number): HeroAsciiSession {
   const cells = cols * rows
   const width = 8
   const height = rows * 2
-  const dataset: { asciiPaint?: string; glassGen?: string; glassBox?: string } = {}
+  const dataset: { asciiPaint?: string } = {}
   return {
     alive: true,
     asciiSample: { width: cols, height: rows },

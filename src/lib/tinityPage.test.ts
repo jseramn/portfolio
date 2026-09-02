@@ -43,6 +43,16 @@ describe("Tinity subpage", () => {
     expect(layout).toMatch(/tinity = false/)
   })
 
+  it("uses Geist on /tinity without liquid glass", () => {
+    const tokens = readSrc("tinity/styles/tokens.css")
+    const credits = readSrc("tinity/styles/credits.css")
+    expect(tokens).toContain('"Geist", "Geist Sans"')
+    expect(tokens).toContain('"Geist Mono"')
+    expect(tokens).not.toMatch(/backdrop-filter/)
+    expect(credits).toMatch(/letter-spacing:\s*0\.08em/)
+    expect(credits).not.toMatch(/backdrop-filter/)
+  })
+
   it("exposes a homepage Tinity control without restyling hire", () => {
     const hero = readHeroIsland()
     expect(hero).toContain("href={site.tinity.path}")

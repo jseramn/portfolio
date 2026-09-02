@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { site } from "../../config/site"
 import {
   MUSIC_API_TIMEOUT_MS,
@@ -12,16 +12,11 @@ import {
   type YtWindow,
 } from "../../lib/music/state"
 import { Shuffle, SkipBack, SkipForward, Volume2, VolumeX } from "../icons"
-import { GlassSurface } from "../GlassSurface"
 import { GLOW, TAP_TARGET } from "./chrome"
 
 const YT_TRACKS = site.tracks
 
-export function HeroMusic({
-  mouseContainer,
-}: {
-  mouseContainer: RefObject<HTMLDivElement | null>
-}) {
+export function HeroMusic() {
   const [musicStatus, setMusicStatus] = useState<MusicStatus>("idle")
   const [musicMuted, setMusicMuted] = useState(true)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
@@ -211,12 +206,8 @@ export function HeroMusic({
       data-music-status={musicStatus}
       className="relative z-10 hud:absolute hud:inset-x-auto hud:right-8 hud:top-24 short:shrink-0"
     >
-      <GlassSurface
-        preset="pill"
-        mouseContainer={mouseContainer}
-        className="w-full hud:ml-auto hud:w-fit short:w-auto"
-      >
-        <div className="font-mono text-xs md:text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0 short:flex-nowrap short:px-0">
+      <div className="w-full hud:ml-auto hud:w-fit short:w-auto">
+        <div className="font-mono text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0 short:flex-nowrap short:px-0">
           {musicStatus === "playing" ? (
             <a
               href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
@@ -294,7 +285,7 @@ export function HeroMusic({
             </button>
           </div>
         </div>
-      </GlassSurface>
+      </div>
     </div>
   )
 }

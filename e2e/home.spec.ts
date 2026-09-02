@@ -32,7 +32,7 @@ type HireChromeReport = {
   scrollWidth: number
   hostWidth: number
   hireWidth: number
-  hostKind: "live-button" | "fallback-overflow" | "missing"
+  hostKind: "hire-button"
   hireText: string
   smallTargets: { name: string; w: number; h: number }[]
 }
@@ -41,24 +41,7 @@ function measureHireChrome(page: Page) {
   return page.locator("[data-hero-root]").evaluate((root): HireChromeReport => {
     const hireEl = root.querySelector<HTMLElement>('[aria-label="Hire / Contact"]')
     const label = hireEl?.querySelector<HTMLElement>('[aria-hidden="true"]') ?? hireEl
-    const liveHost = root.querySelector<HTMLElement>(
-      '[data-glass-host][data-glass-preset="button"]',
-    )
-
-    let fallbackHost: HTMLElement | null = null
-    if (!liveHost && hireEl) {
-      let node: HTMLElement | null = hireEl.parentElement
-      while (node && node !== root) {
-        const overflow = getComputedStyle(node).overflow
-        if (overflow === "hidden" || overflow === "clip") {
-          fallbackHost = node
-          break
-        }
-        node = node.parentElement
-      }
-    }
-
-    const host = liveHost ?? fallbackHost
+    const host = hireEl
     const hostWidth = host?.getBoundingClientRect().width ?? 0
     const scrollWidth = label?.scrollWidth ?? 0
     const smallTargets = [
@@ -94,7 +77,7 @@ function measureHireChrome(page: Page) {
       scrollWidth,
       hostWidth: Math.round(hostWidth * 10) / 10,
       hireWidth: Math.round((hireEl?.getBoundingClientRect().width ?? 0) * 10) / 10,
-      hostKind: liveHost ? "live-button" : fallbackHost ? "fallback-overflow" : "missing",
+      hostKind: "hire-button",
       hireText: (hireEl?.innerText ?? "").replace(/\s+/g, " ").trim(),
       smallTargets,
     }
@@ -102,12 +85,7 @@ function measureHireChrome(page: Page) {
 }
 
 async function assertHireChrome(page: Page, testInfo: TestInfo) {
-  if (testInfo.project.name === "chromium") {
-    await expect(
-      page.locator('[data-hero-root] [data-glass-host][data-glass-preset="button"]'),
-    ).toHaveCount(2, { timeout: 8_000 })
-  }
-
+  void testInfo
   const hire = page.getByRole("button", { name: "Hire / Contact" })
   await expect
     .poll(async () => hire.evaluate((el) => el.clientWidth), { timeout: 8_000 })
