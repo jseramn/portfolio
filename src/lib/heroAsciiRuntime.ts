@@ -198,7 +198,7 @@ export async function mountHeroAscii(
   }
   video.addEventListener("error", onVideoError)
 
-  let renderer: WebGLRenderer
+  let renderer: InstanceType<typeof WebGLRenderer>
   try {
     renderer = new WebGLRenderer({
       alpha: false,
