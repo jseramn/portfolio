@@ -1,0 +1,405 @@
+:root {
+  --accent: #1fdb12;
+  --accent-hover: #18c20c;
+  --accent-active: #14a80a;
+  --on-accent: #061008;
+  --accent-wash-dark: rgba(31, 219, 18, 0.1);
+  --accent-ring: rgba(31, 219, 18, 0.45);
+  --accent-line: #1fdb12;
+  --bg: #050505;
+  --bg-alt: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #171717;
+  --text: #f5f5f5;
+  --text-muted: #a3a3a3;
+  --text-dim: #737373;
+  --border: #262626;
+  --border-strong: #3f3f3f;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --inverse: #fafafa;
+  --on-inverse: #0a0a0a;
+  --danger: #ee0000;
+  --radius: 8px;
+  --radius-control: 6px;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+html[data-tinity],
+body,
+html[data-tinity] body,
+#root {
+  margin: 0;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+button {
+  font-family: inherit;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--bg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.stage-slot {
+  position: absolute;
+  inset: 0;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  gap: 0;
+  pointer-events: none;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+
+.cube {
+  position: absolute;
+  --cube-thickness: calc(0.11 * var(--cell-css));
+  transition: left 480ms var(--ease), top 480ms var(--ease);
+}
+
+.cube.is-dragging {
+  transition: none;
+  z-index: 4;
+  cursor: grabbing;
+  transform: translate(var(--drag-x, 0px), var(--drag-y, 0px));
+}
+
+.cube.is-dragging .cube-lift,
+.cube--number.is-flipped.is-dragging .cube-lift {
+  transform: translateZ(calc(0.5 * var(--cell-css)));
+}
+
+.cube-tumble {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+}
+
+.cube-lift {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 220ms var(--ease);
+}
+
+.cube.cube--occupancy {
+  transform-style: flat;
+}
+
+.cube--number {
+  transform-style: flat;
+}
+
+.cube--number.is-flipped {
+  perspective: 560px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+@media (pointer: fine) {
+  .cube--number.is-flipped {
+    cursor: grab;
+  }
+}
+
+.cube-inner {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  transform: rotate3d(var(--flip-x, 0), var(--flip-y, -1), 0, 0deg);
+}
+
+.cube.is-flipped .cube-inner {
+  transform: rotate3d(var(--flip-x, 0), var(--flip-y, -1), 0, 180deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cube.is-flipped .cube-inner {
+    transition: transform 720ms linear;
+  }
+
+  .cube--number.is-flipped .cube-tumble {
+    animation: cube-tumble 720ms linear;
+  }
+
+  .cube--number.is-flipped .cube-spine {
+    animation: cube-spine-pipe 720ms linear;
+  }
+
+  .cube--cta.is-armed {
+    animation: cta-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube.is-flipped .cube-inner {
+    transition: none;
+  }
+
+  .cube--number.is-flipped .cube-tumble {
+    animation: none;
+  }
+
+  .cube--number.is-flipped .cube-spine {
+    animation: none;
+  }
+}
+
+@keyframes cube-tumble {
+  0%,
+  100% {
+    transform: translateZ(0)
+      rotate3d(var(--flip-y, 0), var(--flip-x, 0), 0, 0deg);
+  }
+
+  50% {
+    transform: translateZ(calc(0.08 * var(--cell-css)))
+      rotate3d(var(--flip-y, 0), var(--flip-x, 0), 0, calc(var(--flip-tilt, 0) * 12deg));
+  }
+}
+
+@keyframes cube-spine-pipe {
+  0%,
+  100% {
+    opacity: 0;
+    background: var(--hairline);
+  }
+
+  50% {
+    opacity: 1;
+    background: var(--accent);
+  }
+}
+
+.cube-face {
+  position: absolute;
+  inset: calc(0.03 * var(--cell-css));
+  backface-visibility: hidden;
+  background: transparent;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cube--number .cube-face--front {
+  transform: none;
+}
+
+.cube--number.is-flipped .cube-face--front {
+  transform: translateZ(var(--cube-thickness));
+  background: rgba(38, 38, 38, 0.4);
+}
+
+.cube-spine {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: var(--hairline);
+  visibility: hidden;
+  opacity: 0;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) rotate(var(--flip-twist, 0deg))
+    rotate3d(var(--flip-x, 0), var(--flip-y, -1), 0, 90deg);
+}
+
+.cube-face--back {
+  transform: rotateY(180deg);
+  background: rgba(5, 5, 5, 0.35);
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.cube--number .cube-face--back {
+  transform: rotate3d(var(--flip-x, 0), var(--flip-y, -1), 0, 180deg)
+    translateZ(var(--cube-thickness));
+  background: transparent;
+  color: var(--text);
+  flex-direction: column;
+}
+
+.cube-mark-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.cube--number:not(.is-flipped) .cube-mark-link {
+  pointer-events: none;
+}
+
+.cube-mark {
+  width: calc(0.50 * var(--cell-css));
+  height: calc(0.50 * var(--cell-css));
+  display: block;
+  flex-shrink: 0;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+.cube--number.is-flipped .cube-face--back {
+  background: rgba(31, 219, 18, 0.16);
+  box-shadow: 0 0 0 1px var(--accent-ring), 0 0 8px var(--accent-ring);
+}
+
+.cube--number.is-flipped:hover {
+  z-index: 3;
+}
+
+.cube--number.is-flipped:hover .cube-lift,
+.cube--number.is-flipped:focus-within .cube-lift {
+  transform: translateZ(calc(0.35 * var(--cell-css)));
+}
+
+.cube--number.is-flipped:hover .cube-face--back {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--accent-ring),
+    0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+.cube-label {
+  position: absolute;
+  bottom: calc(0.08 * var(--cell-css));
+  left: 0;
+  right: 0;
+  z-index: 1;
+  font: 500 clamp(8px, calc(0.11 * var(--cell-css)), 12px) / 1 var(--font-mono);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease);
+}
+
+.cube--number.is-flipped:hover .cube-label,
+.cube--number.is-flipped:focus-within .cube-label {
+  opacity: 1;
+}
+
+.cube--number:not(.is-flipped) .cube-face--back {
+  visibility: hidden;
+}
+
+.cube--cta {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: calc(0.03 * var(--cell-css));
+  border: none;
+  background: rgba(31, 219, 18, 0.1);
+  box-shadow: 0 0 0 1px var(--accent-ring),
+    inset 0 0 0 1px rgba(31, 219, 18, 0.12);
+  color: var(--accent);
+  font: 500 clamp(9px, calc(0.115 * var(--cell-css)), 12px) / 1 var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  perspective: 560px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+.cube--cta .cube-lift {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cube--cta:hover .cube-lift,
+.cube--cta:focus-within .cube-lift {
+  transform: translateZ(calc(0.35 * var(--cell-css)));
+}
+
+.cube--cta:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--accent-ring);
+  }
+
+  50% {
+    box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--accent-ring);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube {
+    transition: none;
+  }
+
+  .cube-lift {
+    transition: none;
+    transform: none;
+  }
+
+  .cube--number.is-flipped:hover .cube-lift,
+  .cube--number.is-flipped:focus-within .cube-lift,
+  .cube--cta:hover .cube-lift,
+  .cube--cta:focus-within .cube-lift {
+    transform: none;
+  }
+
+  .cube--cta.is-armed {
+    animation: none;
+  }
+
+  .cube-label {
+    transition: none;
+  }
+}

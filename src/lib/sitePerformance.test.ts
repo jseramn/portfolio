@@ -108,6 +108,7 @@ describe("site performance chrome load", () => {
     expect(layout).not.toContain('as="video"')
     expect(readSrc("pages/about.astro")).not.toContain("boot-loader")
     expect(readSrc("pages/contact.astro")).not.toContain("boot-loader")
+    expect(readSrc("pages/tinity/index.astro")).not.toContain("boot-loader")
   })
 
   it("defers YouTube and ContactModal; ASCII stays lazy outside the Hero chrome file", () => {

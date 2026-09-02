@@ -48,6 +48,7 @@ const homePrefetchRules =
   class:list={["bg-black", lockClass]}
   aria-busy={bootPending ? "true" : undefined}
   data-boot-pending={bootPending ? "" : undefined}
+  data-tinity={tinity ? "" : undefined}
 >
   <head>
     <meta charset="UTF-8" />
@@ -83,7 +84,7 @@ const homePrefetchRules =
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content={tinity ? "#1fdb12" : "#000000"} />
     <meta name="color-scheme" content="dark" />
 
     <meta property="og:type" content="website" />
@@ -91,7 +92,7 @@ const homePrefetchRules =
     <meta property="og:locale:alternate" content="es_CO" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={site.tagline.en} />
+    <meta property="og:description" content={tinity ? description : site.tagline.en} />
     <meta property="og:site_name" content={site.brand} />
     <meta property="og:image" content={site.seo.ogImage} />
     <meta property="og:image:alt" content={site.seo.ogImageAlt} />
@@ -102,7 +103,7 @@ const homePrefetchRules =
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonical} />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={site.tagline.en} />
+    <meta name="twitter:description" content={tinity ? description : site.tagline.en} />
     <meta name="twitter:site" content={site.seo.twitter} />
     <meta name="twitter:creator" content={site.seo.twitter} />
     <meta name="twitter:image" content={site.seo.ogImage} />

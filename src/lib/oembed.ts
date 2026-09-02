@@ -5,6 +5,7 @@ export const OEMBED_PATHS = [
   "/",
   "/about",
   "/contact",
+  "/tinity",
   "/policy",
   "/terms",
   "/data-deletion",
