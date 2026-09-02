@@ -33,6 +33,12 @@ const canonical = pathname === "/" ? site.url : `${site.url}${pathname}`
 const jsonLdPage = jsonLdPageProp ?? jsonLdPageKindFromPath(pathname) ?? "generic"
 const sameAs = jsonLdSameAs()
 const jsonLd = JSON.stringify(buildGraphJsonLd(sameAs, { kind: jsonLdPage, canonical }))
+const homePrefetchRules =
+  pathname === "/"
+    ? JSON.stringify({
+        prefetch: [{ source: "list", urls: ["/about", "/contact"], eagerness: "moderate" }],
+      })
+    : null
 
 ---
 
@@ -105,6 +111,9 @@ const jsonLd = JSON.stringify(buildGraphJsonLd(sameAs, { kind: jsonLdPage, canon
     <PostHog />
 
     <script type="application/ld+json" set:html={jsonLd} />
+    {homePrefetchRules && (
+      <script is:inline type="speculationrules" set:html={homePrefetchRules} />
+    )}
   </head>
   <body class:list={["font-sans bg-black text-vesper-accent antialiased", lockClass]}>
     <a class="skip-link" href="#main">Skip to content</a>

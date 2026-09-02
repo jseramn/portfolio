@@ -173,6 +173,18 @@ describe("built HTML overlay", () => {
     expect((layout.match(/rel="describedby"/g) ?? []).length).toBe(1)
   })
 
+  it("home HTML prefetches about and contact via speculation rules", async () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    expect(layout).toContain('type="speculationrules"')
+    expect(layout).toMatch(/urls:\s*\["\/about",\s*"\/contact"\]/)
+    expect(layout).toContain('pathname === "/"')
+    expect(layout).not.toMatch(/"\/api\//)
+    const home = await fetchIfUp("/")
+    if (home?.ok) expect(await home.text()).toContain('type="speculationrules"')
+    const about = await fetchIfUp("/about")
+    if (about?.ok) expect(await about.text()).not.toContain('type="speculationrules"')
+  })
+
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
     const llms = readFileSync(join(root, "public/llms.txt"), "utf8")
     expect(llms.toLowerCase()).toMatch(/tech lead/)
