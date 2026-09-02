@@ -338,12 +338,12 @@ Is Agentic already **100/100** (D-report, 2026-09-02). Remaining work is off-sco
 | `Vary` | `Accept, Accept-Encoding` on negotiated responses | Keep. Do not attach `Vary: Accept` to hashed `/_astro` (B-05) |
 | `llms.txt` | Prose H2s, not v2 file lists (D-04) | v2 outline below |
 | `llms-full.txt` | 404 (D-07) | Build-time concatenation of page markdown, under 50 kB |
-| Discovery | oEmbed `rel=alternate` only (`Layout.astro:63–67`) | Add `rel=describedby` → `/llms.txt` and `rel=alternate` `type="text/markdown"` on the canonical URL (negotiation, not `.md` twins; tests ban twins) |
+| Discovery | oEmbed `rel=alternate` only (`Layout.astro:63–67`) | Add `rel=describedby` → `/llms.txt` and `rel=alternate` `type="text/markdown"` on the canonical URL (negotiation, not page `.md` twins; tests ban twins). Public `/design.md` is the binding contract itself, not a twin of an HTML page. |
 | JSON-LD | Same ProfilePage graph on every Layout page (`jsonld.ts:8–62`) | ProfilePage **only** on `/`. WebPage elsewhere. Add `ContactAction` `mailto:contacto@jseramn.tech`, `givenName`/`familyName`, `knowsLanguage: ["en","es"]` (D-05) |
 | `application/ld+json` | 406 | Produce ld+json = in-page graph. Do **not** add generic JSON to `PRODUCES` |
 | `security.txt` | 404 (D-02) | `/.well-known/security.txt`: `Contact: mailto:contacto@jseramn.tech`, `Expires:` ≤1 year, `Preferred-Languages: en, es`, `Canonical: https://www.jseramn.tech/.well-known/security.txt`, `Policy: https://jseramn.tech/policy`. No invented PGP |
 | robots | `Allow: /`, `Disallow: /api/` (`public/robots.txt`) | **Policy A:** allow all cooperating crawlers. Never `Disallow: /` on `User-agent: *`. Never block Googlebot |
-| CORS agent files | ACAO apex origin + CORP same-site (D-06) | `*` + CORP `cross-origin` on `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/.well-known/security.txt` |
+| CORS agent files | ACAO apex origin + CORP same-site (D-06) | `*` + CORP `cross-origin` on `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/design.md`, `/.well-known/security.txt` |
 | oEmbed | `type: rich` iframe (`oembed.ts:56–63`) vs CSP `frame-ancestors 'none'` (D-09) | Type consistent with CSP (`photo`/`link` + thumbnail, or `rich` only where framing is allowed) |
 | Agent contact | mailto in llms.txt; form POST invalid payload is JSON 400 | **mailto for agents.** Do not list `/api/contact` in llms.txt until a real send is proven. Do not skip Turnstile |
 
@@ -376,6 +376,7 @@ Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over
 - [oEmbed](https://jseramn.tech/oembed.json)
 - [Sitemap](https://jseramn.tech/sitemap-index.xml)
 - [Source](https://github.com/jseramn/portfolio)
+- [Design system](https://jseramn.tech/design.md)
 ```
 
 ### Do not ship
@@ -457,6 +458,7 @@ curl -sSI -H 'Accept: application/json' https://www.jseramn.tech/
 curl -sSI -H 'Accept: application/ld+json' https://www.jseramn.tech/
 # discovery
 curl -sSI https://www.jseramn.tech/llms.txt
+curl -sSI https://www.jseramn.tech/design.md
 curl -sSI https://www.jseramn.tech/.well-known/security.txt
 curl -sS https://www.jseramn.tech/robots.txt
 ```

@@ -104,7 +104,7 @@ export const ASTRO_ASSET_SOURCE = "/_astro/(.*)"
 export const IMMUTABLE_ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable"
 export const CDN_SWR_CACHE_CONTROL = "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
 export const GITHUB_STATS_API_SOURCE = "/api/github-stats"
-export const AGENT_FILES_SOURCE = "/(llms.txt|llms-full.txt|robots.txt)"
+export const AGENT_FILES_SOURCE = "/(llms.txt|llms-full.txt|robots.txt|design.md)"
 export const WELL_KNOWN_SOURCE = "/.well-known/(.*)"
 export const AGENT_FILE_CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400"
 

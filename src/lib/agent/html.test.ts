@@ -187,7 +187,10 @@ describe("built HTML overlay", () => {
       }
     }
     if (existsSync(dist)) {
-      expect(walk(dist).filter((file) => file.endsWith(".md"))).toEqual([])
+      const mdFiles = walk(dist)
+        .filter((file) => file.endsWith(".md"))
+        .map((file) => file.slice(dist.length + 1).replaceAll("\\", "/"))
+      expect(mdFiles.every((file) => file === "design.md")).toBe(true)
     }
   })
 
@@ -255,6 +258,7 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("Accept: text/markdown")
     expect(llms).toContain("Prefer email over any JSON API")
     expect(llms).toContain("/.well-known/security.txt")
+    expect(llms).toContain("https://jseramn.tech/design.md")
     expect(llms).not.toMatch(/^- \*\*/m)
     const fileList = llms.match(/^- \[[^\]]+\]\([^)]+\)/gm) ?? []
     expect(fileList.length).toBeGreaterThanOrEqual(6)

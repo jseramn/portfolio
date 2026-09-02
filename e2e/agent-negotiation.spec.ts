@@ -48,6 +48,15 @@ test("GET /policy with Accept: text/markdown returns markdown", async ({ request
   expect(body).toContain("[jseramn.tech](https://jseramn.tech)")
 })
 
+test("GET /design.md returns the design-system markdown", async ({ request }) => {
+  const res = await request.get("/design.md")
+  expect(res.status()).toBe(200)
+  expect(res.headers()["content-type"] ?? "").toMatch(/^text\/markdown/)
+  const body = await res.text()
+  expect(body.startsWith("# jseramn.tech design system")).toBe(true)
+  expect(body).toContain("Vesper terminal")
+})
+
 test("GET legal routes negotiate markdown and keep HTML", async ({ request }) => {
   for (const page of LEGAL_MARKDOWN) {
     const md = await request.get(page.path, { headers: { Accept: "text/markdown" } })
