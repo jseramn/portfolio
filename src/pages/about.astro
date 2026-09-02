@@ -2,9 +2,11 @@
 export const prerender = false
 import LegalDocument from "../components/LegalDocument.astro"
 import { agentCopy } from "../lib/agent/copy"
+import { linkifySegments } from "../lib/agent/linkify"
 import { site } from "../config/site"
 
 const copy = agentCopy("about")
+const segments = linkifySegments(copy.body)
 ---
 
 <LegalDocument
@@ -13,5 +15,11 @@ const copy = agentCopy("about")
   heading={copy.h1}
   updated="August 21, 2026"
 >
-  <p>{copy.body}</p>
+  <p>
+    {
+      segments.map((segment) =>
+        segment.kind === "link" ? <a href={segment.href}>{segment.text}</a> : segment.text,
+      )
+    }
+  </p>
 </LegalDocument>

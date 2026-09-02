@@ -1,4 +1,5 @@
 import { agentCopy, type AgentPage } from "./copy"
+import { linkifyMarkdown } from "./linkify"
 
 export const RECOVERY_PATHS = [
   "/",
@@ -23,7 +24,7 @@ export function toMarkdown(page: AgentPage): string {
     const blocks = copy.sections.flatMap((section) => [`## ${section.h2}`, "", section.body, ""])
     return [`# ${copy.h1}`, "", ...blocks].join("\n")
   }
-  return [`# ${copy.h1}`, "", copy.body, ""].join("\n")
+  return [`# ${copy.h1}`, "", linkifyMarkdown(copy.body), ""].join("\n")
 }
 
 export function notFoundMarkdown(): string {

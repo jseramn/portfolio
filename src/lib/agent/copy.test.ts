@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { agentCopy, readableLength } from "./copy"
+import { linkedHrefs } from "./linkify"
+import { toMarkdown } from "./markdown"
 
 describe("agentCopy", () => {
   it("home copy is ≥800 chars with four H2 sections, portfolio plus contact, no product pricing", () => {
@@ -29,6 +31,27 @@ describe("agentCopy", () => {
       expect(`${copy.h1} ${copy.body}`).toContain("contacto@jseramn.tech")
       expect(`${copy.h1} ${copy.body}`.toLowerCase()).not.toMatch(/telephone/)
       expect(`${copy.h1} ${copy.body}`.toLowerCase()).not.toMatch(/postal address/)
+    }
+  })
+
+  it("about and contact HTML and markdown expose the same URLs", () => {
+    for (const page of ["about", "contact"] as const) {
+      const { body } = agentCopy(page)
+      const htmlHrefs = [...linkedHrefs(body)].sort()
+      const md = toMarkdown(page)
+      const mdHrefs = [
+        ...new Set([...md.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1])),
+      ].sort()
+      expect(htmlHrefs.length).toBeGreaterThan(0)
+      expect(mdHrefs).toEqual(htmlHrefs)
+      expect(htmlHrefs).toContain("mailto:contacto@jseramn.tech")
+      expect(htmlHrefs.some((href) => href.startsWith("https://"))).toBe(true)
+      expect(
+        md
+          .replace(/^# [^\n]+\n+/, "")
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+          .trim(),
+      ).toBe(body)
     }
   })
 })
