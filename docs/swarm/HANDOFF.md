@@ -1,5 +1,16 @@
 # Cloud orchestrator handoff — jseramn.tech sanitation swarm
 
+## Current (2026-09-02)
+
+Production is **`90f76f3`** (#57). Measure: [`docs/swarm/measure/prod-r4b-report.md`](measure/prod-r4b-report.md). Do **not** promote; www already serves this SHA.
+
+- Home chrome: **6 hero `GlassSurface` + 1 modal** (Tinity extra wrap). ASCII is **WebGL2** (U11); Three is gone.
+- Boot overlay dismisses after first finished raster (`finishStamp`) + min 600ms (`installBootLoader`, #53).
+- Contact invalid POST: **JSON 400**. Real send UNVERIFIED. Is Agentic 100 UNVERIFIED.
+- Remaining FAIL: transfer ≤350 KB (prod-r4b median ~518 KB, videobg-480 Range). Do not start a transfer/video, Three, Motion, or LH unit from this file.
+
+Historical U07 / wave text below is frozen context, not the live queue.
+
 **The local Cursor chat that ran this swarm STOPPED on 2026-09-02 ~02:18 America/Bogota.** You are the replacement: a **cloud orchestrator**. Do not wait for that chat. Do not edit product code yourself. Spawn **Grok 4.6 extra-high** workers (never Fast, never Auto, never Composer, never grok-4.5).
 
 This file is the source of truth for remaining work. Briefs live in `docs/swarm/prompts/`. Wave 3 numbers live in `docs/swarm/measure/`.
