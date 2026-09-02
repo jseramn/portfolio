@@ -46,6 +46,12 @@ export function signalHeroBootReady(target?: EventTarget | null): void {
   dest.dispatchEvent(new Event(BOOT_READY_EVENT))
 }
 
+export function takeFirstAsciiPaint(dataset: { asciiPaint?: string }): boolean {
+  if (dataset.asciiPaint === "1") return false
+  dataset.asciiPaint = "1"
+  return true
+}
+
 export function createBootLoaderSession(opts: { hide: () => void }): {
   dismiss: () => void
   onReady: () => void

@@ -10,6 +10,7 @@ import {
   isHeroBootReady,
   shouldDismissBootLoader,
   signalHeroBootReady,
+  takeFirstAsciiPaint,
   wipeAnimationEnabled,
 } from "./bootLoader"
 
@@ -74,6 +75,13 @@ describe("boot loader dismiss", () => {
     const session = createBootLoaderSession({ hide })
     session.onPageshow(false)
     expect(hide).not.toHaveBeenCalled()
+  })
+
+  it("signals boot only on the first ASCII paint mark", () => {
+    const dataset: { asciiPaint?: string } = {}
+    expect(takeFirstAsciiPaint(dataset)).toBe(true)
+    expect(dataset.asciiPaint).toBe("1")
+    expect(takeFirstAsciiPaint(dataset)).toBe(false)
   })
 
   it("signals ready on an EventTarget", () => {

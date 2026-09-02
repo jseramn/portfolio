@@ -14,7 +14,7 @@ import {
   yieldToMain,
 } from "./heroAsciiBudget"
 import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "./heroAsciiStamp"
-import { signalHeroBootReady } from "./bootLoader"
+import { signalHeroBootReady, takeFirstAsciiPaint } from "./bootLoader"
 import { getCapabilities } from "./capabilities"
 import { HERO_ASCII_DISPLAY_CLASS, getHeroRoot, isUiBlockingOverlayOpen } from "./domSignals"
 import { applyHeroSamplerFailure } from "./heroAsciiSamplerFailure"
@@ -529,9 +529,7 @@ export async function mountHeroAscii(
       displayCanvas.dataset.glassBox = `${stampMinGX * cellW},${stampMinGY * cellH},${(stampMaxGX - stampMinGX + 1) * cellW},${(stampMaxGY - stampMinGY + 1) * cellH}`
     }
     displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
-    const firstPaint = displayCanvas.dataset.asciiPaint !== "1"
-    displayCanvas.dataset.asciiPaint = "1"
-    if (firstPaint) signalHeroBootReady()
+    if (takeFirstAsciiPaint(displayCanvas.dataset)) signalHeroBootReady()
     stampCursor = -1
     rastersCompleted += 1
     rasterBusy = false
@@ -560,6 +558,7 @@ export async function mountHeroAscii(
     lastRasterMs = performance.now() - started
     skipNextSample = shouldSkipSample(lastRasterMs)
     if (displayCtx) displayCtx.putImageData(displayImage, 0, 0)
+    if (takeFirstAsciiPaint(displayCanvas.dataset)) signalHeroBootReady()
     if (shouldContinueStamp(stampCursor, rows)) {
       rasterBusy = true
       return

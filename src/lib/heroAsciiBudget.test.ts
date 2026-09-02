@@ -121,7 +121,7 @@ describe("hero ASCII runtime wiring", () => {
     expect(runtime).not.toMatch(/preload\s*=\s*["']auto["']/)
     expect(runtime).toContain("blitHeroPoster")
     expect(runtime).toContain("coverDestRect")
-    expect(runtime).toContain("dataset.asciiPaint")
+    expect(runtime).toContain("takeFirstAsciiPaint")
     expect(runtime).toContain('video.preload = "metadata"')
     expect(runtime).toContain("planAsciiFrame")
     expect(runtime).toContain("cellBudget")
