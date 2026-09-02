@@ -216,7 +216,8 @@ describe("hero ASCII runtime wiring", () => {
       /if\s*\(\s*!document\.hidden\s*\)\s*raf\s*=\s*requestAnimationFrame\(tick\)/,
     )
     expect(runtime).toMatch(/addEventListener\(\s*["']canplay["']/)
-    expect(runtime).toContain("renderer.render")
+    expect(runtime).not.toContain("renderer.render")
+    expect(runtime).toContain("sampler.draw")
     expect(runtime).toContain("runRasterPass")
     expect(runtime).toContain("captureGlPixels")
     expect(runtime).toContain("readPixels")

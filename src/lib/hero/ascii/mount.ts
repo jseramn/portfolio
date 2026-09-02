@@ -5,16 +5,9 @@ import { HERO_ASCII_DISPLAY_CLASS, getHeroRoot, isUiBlockingOverlayOpen } from "
 import { applyHeroSamplerFailure } from "../../heroAsciiSamplerFailure"
 import { createGlyphBuffers, rebuildGlyphAtlas, clamp } from "./glyphs"
 import { createLoopState, onVisibility, startLoop, stopLoop } from "./loop"
-import {
-  VIDEO_ZOOM,
-  createAsciiScene,
-  disposeAsciiScene,
-  resizeAsciiView,
-  SAMPLE_COLS,
-  SAMPLE_ROWS,
-} from "./scene"
+import { VIDEO_ZOOM, createAsciiCamera, disposeAsciiScene, resizeAsciiView } from "./scene"
+import { createAsciiSampler } from "./gl"
 import type { HeroAsciiMountOpts, HeroAsciiSession } from "./session"
-import { loadThree } from "./three"
 import { bindSamplerReady, createSamplerVideo, disposeSamplerVideo, tryPlay } from "./video"
 
 export type { HeroAsciiMountOpts }
@@ -98,22 +91,16 @@ export async function mountHeroAscii(
     host.appendChild(displayCanvas)
   }
   await yieldToMain()
-  const three = await loadThree()
+  const sampler = createAsciiSampler()
   await yieldToMain()
-
-  const video = createSamplerVideo(host, opts)
-  const bundle = createAsciiScene(three, video)
-  if (!bundle) {
-    video.pause()
-    video.remove()
+  if (!sampler) {
     signalHeroBootReady()
     return () => {}
   }
+
+  const video = createSamplerVideo(host, opts)
   await yieldToMain()
 
-  const sample = document.createElement("canvas")
-  sample.width = SAMPLE_COLS
-  sample.height = SAMPLE_ROWS
   const asciiSample = document.createElement("canvas")
   const displayCtx =
     displayCanvas.getContext("2d", { alpha: true, desynchronized: true }) ??
@@ -126,9 +113,8 @@ export async function mountHeroAscii(
     displayCanvas,
     displayCtx,
     video,
-    ...bundle,
-    sample,
-    sampleCtx: sample.getContext("2d", { willReadFrequently: true }),
+    sampler,
+    camera: createAsciiCamera(),
     asciiSample,
     asciiCtx: asciiSample.getContext("2d", { willReadFrequently: true }),
     ...createGlyphBuffers(),
