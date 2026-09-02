@@ -25,6 +25,17 @@ function countGlassSurfaces(source: string): number {
   return source.match(/<GlassSurface\b/g)?.length ?? 0
 }
 
+function readHeroIsland(): string {
+  const heroDir = join(src, "components/hero")
+  const files = readdirSync(heroDir)
+    .filter((name) => /\.(ts|tsx)$/.test(name) && !name.includes(".test."))
+    .sort()
+  return [
+    read("components/Hero.tsx"),
+    ...files.map((name) => read(`components/hero/${name}`)),
+  ].join("\n")
+}
+
 function presetBlock(glass: string, name: string): string {
   const match = glass.match(new RegExp(`\\b${name}: \\{[\\s\\S]*?\\n  \\},`))
   expect(match, `missing preset ${name}`).toBeTruthy()
@@ -52,7 +63,7 @@ function expectButtonOptics(block: string) {
 
 describe("hero liquid-glass chrome wiring", () => {
   it("mounts six hero panes with locked presets and no shader mode", () => {
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
@@ -70,7 +81,7 @@ describe("hero liquid-glass chrome wiring", () => {
   })
 
   it("wraps the marquee bar and hire button, not duplicated slider or loop children", () => {
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     const barIdx = hero.indexOf('preset="bar"')
     const sliderIdx = hero.indexOf("<HeroMotionSlider")
     const barClose = hero.indexOf("</GlassSurface>", barIdx)
@@ -86,18 +97,21 @@ describe("hero liquid-glass chrome wiring", () => {
   })
 
   it("keeps ContactModal inside the hero root and shares mouseContainer", () => {
-    const hero = read("components/Hero.tsx")
-    const rootOpen = hero.indexOf("data-hero-root")
-    const rootClose = hero.lastIndexOf("</div>")
-    const modalIdx = hero.indexOf("<ContactModal")
-    const asciiPaint = hero.indexOf("hero-ascii-display")
+    const shell = read("components/Hero.tsx")
+    const hire = read("components/hero/HeroHire.tsx")
+    const rootOpen = shell.indexOf("data-hero-root")
+    const rootClose = shell.lastIndexOf("</div>")
+    const modalLayer = shell.indexOf("<HeroContactLayer")
+    const asciiPaint = shell.indexOf("hero-ascii-display")
     expect(rootOpen).toBeGreaterThan(-1)
-    expect(modalIdx).toBeGreaterThan(rootOpen)
-    expect(modalIdx).toBeLessThan(rootClose)
+    expect(modalLayer).toBeGreaterThan(rootOpen)
+    expect(modalLayer).toBeLessThan(rootClose)
     expect(asciiPaint).toBeGreaterThan(rootOpen)
     expect(asciiPaint).toBeLessThan(rootClose)
-    expect(hero).toContain("z-[1]")
-    expect(hero).toContain("mouseContainer={heroRootRef}")
+    expect(hire).toContain("<ContactModal")
+    expect(hire).toContain('import("../ContactModal")')
+    expect(shell).toContain("z-[1]")
+    expect(shell).toContain("mouseContainer={heroRootRef}")
     expect(read("components/ContactModal.tsx")).toContain("mouseContainer={mouseContainer}")
   })
 
@@ -141,7 +155,7 @@ describe("hero liquid-glass chrome wiring", () => {
   it("uses family-split fallback frost without retinting bone ink or dropping scrims", () => {
     const css = read("styles/globals.css")
     const glass = read("components/GlassSurface.tsx")
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     const modal = read("components/ContactModal.tsx")
     expect(css).toContain(".glass-fallback")
     expect(css).toContain(".glass-fallback-card")
@@ -170,7 +184,7 @@ describe("hero liquid-glass chrome wiring", () => {
   it("keeps host transform locked", () => {
     const css = read("styles/globals.css")
     const glass = read("components/GlassSurface.tsx")
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     expect(css).toContain("[data-glass-host]")
     expect(css).toContain("transform: none !important")
     expect(hero).toContain("is-settling")
@@ -260,7 +274,7 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("hosts live panes so library centering cannot shift docked chrome", () => {
     const glass = read("components/GlassSurface.tsx")
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     expect(glass).toContain('data-glass-host=""')
     expect(glass).toContain("data-glass-preset={preset}")
     expect(glass).toContain("min-w-0 w-full overflow-hidden")
@@ -298,7 +312,7 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("idle-gates the live engine and keeps wrap hosts plus behindRect", () => {
     const glass = read("components/GlassSurface.tsx")
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     expect(glass).toContain("requestIdleCallback")
     expect(glass).toContain("timeout: 2000")
     expect(glass).toContain("setUseLiveGlass")
@@ -321,7 +335,7 @@ describe("hero liquid-glass chrome wiring", () => {
   it("strips glass debug ingest and debug attributes", () => {
     const glass = read("components/GlassSurface.tsx")
     const ascii = readAsciiRuntime()
-    const hero = read("components/Hero.tsx")
+    const hero = readHeroIsland()
     const asciiBg = read("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {
       expect(source).not.toContain("127.0.0.1:7586/ingest")

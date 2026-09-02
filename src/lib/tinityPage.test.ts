@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -8,6 +8,19 @@ const src = join(root, "src")
 
 function readSrc(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
+}
+
+function readHeroIsland(): string {
+  const heroDir = join(src, "components/hero")
+  const files = existsSync(heroDir)
+    ? readdirSync(heroDir)
+        .filter((name) => /\.(ts|tsx)$/.test(name) && !name.includes(".test."))
+        .sort()
+    : []
+  return [
+    readSrc("components/Hero.tsx"),
+    ...files.map((name) => readSrc(`components/hero/${name}`)),
+  ].join("\n")
 }
 
 describe("Tinity subpage", () => {
@@ -31,7 +44,7 @@ describe("Tinity subpage", () => {
   })
 
   it("exposes a homepage Tinity control without restyling hire", () => {
-    const hero = readSrc("components/Hero.tsx")
+    const hero = readHeroIsland()
     expect(hero).toContain("href={site.tinity.path}")
     expect(hero).toContain('aria-label="Open Tinity"')
     expect(hero).toContain("onHireCtaClicked")

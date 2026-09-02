@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -13,6 +13,19 @@ function read(rel: string): string {
 
 function readSrc(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
+}
+
+function readHeroIsland(): string {
+  const heroDir = join(src, "components/hero")
+  const files = existsSync(heroDir)
+    ? readdirSync(heroDir)
+        .filter((name) => /\.(ts|tsx)$/.test(name) && !name.includes(".test."))
+        .sort()
+    : []
+  return [
+    readSrc("components/Hero.tsx"),
+    ...files.map((name) => readSrc(`components/hero/${name}`)),
+  ].join("\n")
 }
 
 function readAsciiRuntime(): string {
@@ -60,7 +73,7 @@ describe("site performance chrome load", () => {
 
   it("keeps one Hero client:load island and a stable hover-only tagline", () => {
     const home = readSrc("pages/index.astro")
-    const hero = readSrc("components/Hero.tsx")
+    const hero = readHeroIsland()
     expect(home.match(/<Hero client:load \/>/g)?.length).toBe(1)
     expect(home).not.toContain("client:idle")
     expect(hero).toContain("useScramble(DESC)")
@@ -115,10 +128,10 @@ describe("site performance chrome load", () => {
   })
 
   it("defers YouTube, ContactModal, and Motion chrome; ASCII stays lazy outside the Hero chrome file", () => {
-    const hero = readSrc("components/Hero.tsx")
+    const hero = readHeroIsland()
     const motionChrome = readSrc("components/heroMotionStatic.tsx")
     expect(hero).not.toMatch(/import \{ ContactModal \}/)
-    expect(hero).toContain('import("./ContactModal")')
+    expect(hero).toMatch(/import\(["']\.\.?\/ContactModal["']\)/)
     expect(hero).not.toMatch(/import \{ TextLoop \}/)
     expect(hero).not.toMatch(/import \{ InfiniteSlider \}/)
     expect(hero).not.toContain("motion/react")
@@ -143,7 +156,7 @@ describe("site performance chrome load", () => {
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
     const glass = readSrc("components/GlassSurface.tsx")
     const ascii = readAsciiRuntime()
-    const hero = readSrc("components/Hero.tsx")
+    const hero = readHeroIsland()
     const asciiBg = readSrc("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {
       expect(source).not.toContain("127.0.0.1:7586/ingest")

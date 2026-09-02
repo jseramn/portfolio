@@ -164,12 +164,21 @@ describe("POST /api/contact analytics wiring", () => {
 
 describe("product capture source wiring", () => {
   it("mounts cookieless PostHog and wires Hero, modal, and contact API", async () => {
-    const { readFileSync } = await import("node:fs")
+    const { readdirSync, readFileSync, existsSync } = await import("node:fs")
     const { dirname, join } = await import("node:path")
     const { fileURLToPath } = await import("node:url")
     const here = dirname(fileURLToPath(import.meta.url))
     const layout = readFileSync(join(here, "../../layouts/Layout.astro"), "utf8")
-    const hero = readFileSync(join(here, "../../components/Hero.tsx"), "utf8")
+    const heroDir = join(here, "../../components/hero")
+    const hero = [
+      readFileSync(join(here, "../../components/Hero.tsx"), "utf8"),
+      ...(existsSync(heroDir)
+        ? readdirSync(heroDir)
+            .filter((name) => /\.(ts|tsx)$/.test(name) && !name.includes(".test."))
+            .sort()
+            .map((name) => readFileSync(join(heroDir, name), "utf8"))
+        : []),
+    ].join("\n")
     const modal = readFileSync(join(here, "../../components/ContactModal.tsx"), "utf8")
     const contact = readFileSync(join(here, "../../pages/api/contact.ts"), "utf8")
     const middleware = readFileSync(join(here, "../../middleware.ts"), "utf8")
