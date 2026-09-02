@@ -43,7 +43,7 @@ describe("site performance chrome load", () => {
   it("compresses HTML without flipping prerender", async () => {
     const astro = await import("../../astro.config.mjs")
     expect(astro.default.compressHTML).toBe(true)
-    for (const page of ["index", "about", "contact", "404"]) {
+    for (const page of ["index", "about", "contact", "404", "policy", "terms", "data-deletion"]) {
       expect(readSrc(`pages/${page}.astro`)).toMatch(/export const prerender = false/)
       expect(readSrc(`pages/${page}.astro`)).not.toMatch(/prerender = true/)
     }

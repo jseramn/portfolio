@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { agentCopy, readableLength } from "./copy"
+import { LEGAL_PAGE_IDS, legalDocument } from "./legalCopy"
 import { linkedHrefs } from "./linkify"
 import { toMarkdown } from "./markdown"
 
@@ -52,6 +53,18 @@ describe("agentCopy", () => {
           .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
           .trim(),
       ).toBe(body)
+    }
+  })
+
+  it("legal pages expose headings, links, and lastUpdated in markdown", () => {
+    for (const id of LEGAL_PAGE_IDS) {
+      const doc = legalDocument(id)
+      const md = toMarkdown(id)
+      expect(md).toContain(`# ${doc.heading}`)
+      expect(md).toContain(`Last updated: ${doc.lastUpdated}`)
+      expect(md).toMatch(/^## /m)
+      expect(md).toContain("[jseramn.tech](https://jseramn.tech)")
+      expect(md).toContain("[contacto@jseramn.tech](mailto:contacto@jseramn.tech)")
     }
   })
 })

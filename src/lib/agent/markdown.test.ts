@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { ACCEPT_VARY, negotiate } from "./accept"
 import { agentCopy } from "./copy"
+import { LEGAL_PAGE_IDS, legalDocument, legalMarkdownHrefs } from "./legalCopy"
 import { linkedHrefs } from "./linkify"
-import { notFoundMarkdown, toMarkdown } from "./markdown"
+import { notFoundMarkdown, pageFromPath, toMarkdown } from "./markdown"
 
 describe("markdown negotiation bodies", () => {
   it("emits markdown with charset contract via Content-Type helper values", () => {
@@ -31,6 +32,26 @@ describe("markdown negotiation bodies", () => {
         ...new Set([...md.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1])),
       ].sort()
       expect(hrefs).toEqual([...linkedHrefs(agentCopy(page).body)].sort())
+      expect(md).toContain("[contacto@jseramn.tech](mailto:contacto@jseramn.tech)")
+    }
+  })
+
+  it("maps legal routes and renders headings, links, and lastUpdated", () => {
+    expect(pageFromPath("/policy")).toBe("policy")
+    expect(pageFromPath("/terms/")).toBe("terms")
+    expect(pageFromPath("/data-deletion")).toBe("dataDeletion")
+    expect(pageFromPath("/privacy")).toBeNull()
+    for (const id of LEGAL_PAGE_IDS) {
+      const doc = legalDocument(id)
+      const md = toMarkdown(id)
+      expect(md).toContain(`# ${doc.heading}`)
+      expect(md).toContain(`Last updated: ${doc.lastUpdated}`)
+      expect(md).toMatch(/^## /m)
+      const hrefs = [
+        ...new Set([...md.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1])),
+      ].sort()
+      expect(hrefs).toEqual([...legalMarkdownHrefs(doc)].sort())
+      expect(md).toContain("[jseramn.tech](https://jseramn.tech)")
       expect(md).toContain("[contacto@jseramn.tech](mailto:contacto@jseramn.tech)")
     }
   })

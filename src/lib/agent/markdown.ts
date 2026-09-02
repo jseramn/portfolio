@@ -1,5 +1,13 @@
 import { agentCopy, type AgentPage } from "./copy"
+import {
+  legalDocument,
+  legalDocumentFromPath,
+  legalToMarkdown,
+  type LegalPageId,
+} from "./legalCopy"
 import { linkifyMarkdown } from "./linkify"
+
+export type MarkdownPage = AgentPage | LegalPageId
 
 export const RECOVERY_PATHS = [
   "/",
@@ -10,15 +18,19 @@ export const RECOVERY_PATHS = [
   "/policy",
 ] as const
 
-export function pageFromPath(pathname: string): AgentPage | null {
+export function pageFromPath(pathname: string): MarkdownPage | null {
   const path = (pathname.split("?")[0] || "/").replace(/\/+$/, "") || "/"
   if (path === "/") return "home"
   if (path === "/about") return "about"
   if (path === "/contact") return "contact"
-  return null
+  const legal = legalDocumentFromPath(path)
+  return legal?.id ?? null
 }
 
-export function toMarkdown(page: AgentPage): string {
+export function toMarkdown(page: MarkdownPage): string {
+  if (page === "policy" || page === "terms" || page === "dataDeletion") {
+    return legalToMarkdown(legalDocument(page))
+  }
   const copy = agentCopy(page)
   if (copy.sections?.length) {
     const blocks = copy.sections.flatMap((section) => [`## ${section.h2}`, "", section.body, ""])
