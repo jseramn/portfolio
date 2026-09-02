@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@vercel/analytics': '-'
-  '@vercel/speed-insights': '-'
-  next: '-'
-
 importers:
 
   .:
@@ -24,7 +19,7 @@ importers:
         version: 6.0.2(astro@5.18.2(@types/node@24.13.3)(@upstash/redis@1.38.0)(@vercel/functions@3.7.6)(jiti@1.21.7)(lightningcss@1.33.0)(rollup@4.57.1)(supports-color@7.2.0)(typescript@5.9.3)(yaml@2.8.2))(tailwindcss@3.4.19(yaml@2.8.2))
       '@astrojs/vercel':
         specifier: ^8.2.11
-        version: 8.2.11(astro@5.18.2(@types/node@24.13.3)(@upstash/redis@1.38.0)(@vercel/functions@3.7.6)(jiti@1.21.7)(lightningcss@1.33.0)(rollup@4.57.1)(supports-color@7.2.0)(typescript@5.9.3)(yaml@2.8.2))(rollup@4.57.1)(supports-color@7.2.0)
+        version: 8.2.11(astro@5.18.2(@types/node@24.13.3)(@upstash/redis@1.38.0)(@vercel/functions@3.7.6)(jiti@1.21.7)(lightningcss@1.33.0)(rollup@4.57.1)(supports-color@7.2.0)(typescript@5.9.3)(yaml@2.8.2))(react@19.2.4)(rollup@4.57.1)(supports-color@7.2.0)
       '@upstash/ratelimit':
         specifier: ^2.0.8
         version: 2.0.8(@upstash/redis@1.38.0)
@@ -1400,6 +1395,32 @@ packages:
 
   '@upstash/redis@1.38.0':
     resolution: {integrity: sha512-wu+dZBptlLy0+MCUEoHmzrY/TnmgDey3+c7EbIGwrLqAvkP8yi5MWZHYGIFtAygmL4Bkz2TdFu+eU0vFPncIcg==}
+
+  '@vercel/analytics@1.6.1':
+    resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vercel/cli-config@0.2.1':
     resolution: {integrity: sha512-RhfyXmRLHdbnry8RJqHDc+5rGxMZ0bu+fpysZjtv3bE+BubpuwxTancHOKiH5zKQREsdwFVr3mOI2kOvxlOyxA==}
@@ -3746,9 +3767,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@8.2.11(astro@5.18.2(@types/node@24.13.3)(@upstash/redis@1.38.0)(@vercel/functions@3.7.6)(jiti@1.21.7)(lightningcss@1.33.0)(rollup@4.57.1)(supports-color@7.2.0)(typescript@5.9.3)(yaml@2.8.2))(rollup@4.57.1)(supports-color@7.2.0)':
+  '@astrojs/vercel@8.2.11(astro@5.18.2(@types/node@24.13.3)(@upstash/redis@1.38.0)(@vercel/functions@3.7.6)(jiti@1.21.7)(lightningcss@1.33.0)(rollup@4.57.1)(supports-color@7.2.0)(typescript@5.9.3)(yaml@2.8.2))(react@19.2.4)(rollup@4.57.1)(supports-color@7.2.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.7.4
+      '@vercel/analytics': 1.6.1(react@19.2.4)
       '@vercel/functions': 2.2.13
       '@vercel/nft': 0.30.3(rollup@4.57.1)(supports-color@7.2.0)
       '@vercel/routing-utils': 5.3.3
@@ -3757,9 +3779,16 @@ snapshots:
       tinyglobby: 0.2.17
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-web-identity'
+      - '@remix-run/react'
+      - '@sveltejs/kit'
       - encoding
+      - next
+      - react
       - rollup
       - supports-color
+      - svelte
+      - vue
+      - vue-router
 
   '@astrojs/yaml2ts@0.2.4':
     dependencies:
@@ -4636,6 +4665,10 @@ snapshots:
   '@upstash/redis@1.38.0':
     dependencies:
       uncrypto: 0.1.3
+
+  '@vercel/analytics@1.6.1(react@19.2.4)':
+    optionalDependencies:
+      react: 19.2.4
 
   '@vercel/cli-config@0.2.1':
     dependencies:
