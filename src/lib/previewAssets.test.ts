@@ -51,6 +51,11 @@ describe("preview assets", () => {
     expect(readFileSync(fallback, "utf8")).toContain('preserveAspectRatio="xMidYMid slice"')
   })
 
+  it("keeps ASCII sampler files under the home transfer budget", () => {
+    expect(statSync(join(publicDir, "videobg-480.webm")).size).toBeLessThanOrEqual(140_000)
+    expect(statSync(join(publicDir, "videobg-480.mp4")).size).toBeLessThanOrEqual(180_000)
+  })
+
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {
     const ico = readFileSync(join(publicDir, "favicon.ico"))
     expect(ico.readUInt16LE(0)).toBe(0)
