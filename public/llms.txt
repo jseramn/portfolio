@@ -25,3 +25,4 @@ Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over
 - [Sitemap](https://jseramn.tech/sitemap-index.xml): crawlers
 - [Source](https://github.com/jseramn/portfolio): public repository
 - [security.txt](https://www.jseramn.tech/.well-known/security.txt): RFC 9116 vulnerability disclosure
+- [Full markdown corpus](https://jseramn.tech/llms-full.txt): concatenated markdown for /, /about, and /contact

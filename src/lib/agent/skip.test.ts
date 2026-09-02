@@ -13,6 +13,7 @@ describe("skipNegotiate", () => {
 
   it("skips llms.txt and dotted well-known paths so static files are not rewritten", () => {
     expect(skipNegotiate("/llms.txt")).toBe(true)
+    expect(skipNegotiate("/llms-full.txt")).toBe(true)
     expect(skipNegotiate("/.well-known/security.txt")).toBe(true)
     expect(skipNegotiate("/security.txt")).toBe(true)
   })
@@ -47,6 +48,7 @@ describe("shouldNegotiateAccept", () => {
   it("still skips APIs and static files when SSR", () => {
     expect(shouldNegotiateAccept("/api/contact", false)).toBe(false)
     expect(shouldNegotiateAccept("/llms.txt", false)).toBe(false)
+    expect(shouldNegotiateAccept("/llms-full.txt", false)).toBe(false)
     expect(shouldNegotiateAccept("/.well-known/security.txt", false)).toBe(false)
   })
 })

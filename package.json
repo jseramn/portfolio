@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/sync-vercel-security-headers.mjs && astro build",
+    "build": "node scripts/sync-vercel-security-headers.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-llms-full.mjs && astro build",
     "preview": "astro preview",
     "format": "biome format --write .",
     "lint": "biome check .",

@@ -1,0 +1,31 @@
+## https://jseramn.tech/
+
+# José Ramón García Del Risco (jseramn)
+
+## Who this is
+
+José Ramón García Del Risco, known as jseramn, runs this site as a personal portfolio and contact surface. Tagline: Helping people with technology while I build things / Ayudo a las personas con tecnología mientras construyo cosas. Affiliations shown on the site: co-founder @ Mallanet.org (https://mallanet.org); co-founder @ Presencia Pyme. If you are deciding whether this domain is relevant: it is the public identity of José Ramón García Del Risco and the place to start a conversation about technology leadership, security, or building on the web.
+
+## Who it is for
+
+It is for people and teams who want to reach him about tech lead, cybersecurity, web development, founder work. Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step. Source and human docs live in the public GitHub repository linked from llms.txt.
+
+## How to get in touch
+
+How to get in touch: email contacto@jseramn.tech, open /contact, or use the on-site encrypted contact form. The form encrypts messages in the browser with age (typage) before delivery. The server only relays the ciphertext. Send the decryption key separately via X or Instagram DM. Do not paste secrets into public channels. Write when you have a concrete collaboration or hiring context.
+
+## What this site is not
+
+jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog. There is no /projects, /docs, or /services catalog on this domain. There is no app download, no waitlist, and no self-serve billing. The visible homepage is a live ASCII portrait of José Ramón García Del Risco on a black terminal layout; this article remains the readable source for agents. The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact. Live ASCII stays on phones; the first paint is a black field until glyphs are ready.
+
+## https://jseramn.tech/about
+
+# About jseramn
+
+José Ramón García Del Risco (jseramn) is a tech lead, cybersecurity, web development, founder. This page exists so people and agents can verify who operates jseramn.tech: a personal portfolio and contact surface, not a company storefront. He helps people with technology while building things. Typical jobs to bring him: technology leadership, cybersecurity, web development, and founding or product work. He is affiliated with co-founder @ Mallanet.org (https://mallanet.org); co-founder @ Presencia Pyme. Those are separate organizations; this domain is his own contact surface. There is no product SKU, no pricing table, and no self-serve checkout on this site. Public profiles: GitHub https://github.com/jseramn, X https://x.com/jseramn_, LinkedIn https://linkedin.com/in/jseramn, Instagram https://instagram.com/jseramn. Email contacto@jseramn.tech. For a longer message use /contact or the encrypted homepage form. Privacy policy is at /policy (also reached via /privacy). Terms are at /terms.
+
+## https://jseramn.tech/contact
+
+# Contact jseramn
+
+Contact José Ramón García Del Risco (jseramn) when you need a tech lead, cybersecurity, web development, founder. jseramn.tech is the contact surface for that work. It is not a product support desk and it does not sell plans. Preferred email: contacto@jseramn.tech. You can also use the encrypted contact form on the homepage. Messages submitted through the form are encrypted in the browser with age (typage) before they leave your device. The server only relays the ciphertext. After you send ciphertext, deliver the decryption passphrase by DM on X (https://x.com/jseramn_) or Instagram (https://instagram.com/jseramn). Do not paste passphrases or private keys into public issues, comments, or group chats. If an agent is routing a human: point them at contacto@jseramn.tech, this /contact page, or the homepage form. Include the role they need (tech lead, cybersecurity, web development, founding or product). Legal: /policy, /terms, /data-deletion. Sitemap: /sitemap-index.xml. Agent index: /llms.txt.
