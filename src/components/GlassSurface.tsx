@@ -183,11 +183,12 @@ export function GlassSurface({
   }, [useLiveGlass, stretch, mouseContainer, cfg.elasticity])
 
   useEffect(() => {
+    if (!useLiveGlass) return
     const host = hostRef.current
     const dest = refractionRef.current
     if (!host || !dest) return
-    return attachGlassRefraction(host, dest, frostPx, useLiveGlass)
-  }, [useLiveGlass, preset, frostPx])
+    return attachGlassRefraction(host, dest, frostPx, true)
+  }, [useLiveGlass, frostPx])
 
   const familyClass = CARD_FAMILY.has(preset) ? "glass-fallback-card" : "glass-fallback-button"
   const shellClassName = ["glass-fallback", familyClass, className].filter(Boolean).join(" ")
@@ -206,7 +207,6 @@ export function GlassSurface({
   if (!useLiveGlass) {
     return (
       <div ref={hostRef} className={shellClassName} style={shellStyle}>
-        <canvas ref={refractionRef} className="glass-refraction" aria-hidden />
         {children}
       </div>
     )

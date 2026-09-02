@@ -8,6 +8,8 @@ export function attachGlassRefraction(
   frostPx: number,
   useLiveGlass: boolean,
 ): () => void {
+  if (!useLiveGlass) return () => {}
+
   let cancelled = false
   let boot = 0
   let tries = 0
@@ -72,20 +74,15 @@ export function attachGlassRefraction(
   }
 
   const unregister = registerGlassJob(paint)
-  let ro: ResizeObserver | undefined
-  if (useLiveGlass) {
-    boot = requestAnimationFrame(waitForFilter)
-    ro = new ResizeObserver(() => {
-      if (!cancelled) bindFilter()
-    })
-    ro.observe(host)
-  } else {
-    host.style.setProperty("--glass-frost", `${frostPx}px`)
-  }
+  boot = requestAnimationFrame(waitForFilter)
+  const ro = new ResizeObserver(() => {
+    if (!cancelled) bindFilter()
+  })
+  ro.observe(host)
   return () => {
     cancelled = true
     cancelAnimationFrame(boot)
     unregister()
-    ro?.disconnect()
+    ro.disconnect()
   }
 }
