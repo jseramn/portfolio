@@ -1,4 +1,4 @@
-import { useMotionValue, animate, motion } from "motion/react"
+import { useMotionValue, animate, motion, useReducedMotion } from "motion/react"
 import { useState, useEffect } from "react"
 import { useElementWidth } from "../lib/useElementWidth"
 
@@ -26,8 +26,10 @@ export function InfiniteSlider({
   const translation = useMotionValue(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [key, setKey] = useState(0)
+  const freeze = Boolean(useReducedMotion())
 
   useEffect(() => {
+    if (freeze) return
     let controls: ReturnType<typeof animate> | undefined
     const size = direction === "horizontal" ? width : height
     const contentSize = size + gap
@@ -63,7 +65,28 @@ export function InfiniteSlider({
     }
 
     return controls?.stop
-  }, [key, translation, currentSpeed, width, height, gap, isTransitioning, direction, reverse])
+  }, [
+    key,
+    translation,
+    currentSpeed,
+    width,
+    height,
+    gap,
+    isTransitioning,
+    direction,
+    reverse,
+    freeze,
+  ])
+
+  if (freeze) {
+    return (
+      <div className={`overflow-hidden ${className ?? ""}`} data-marquee-static="">
+        <div className="flex max-w-full flex-wrap" style={{ gap: `${gap}px` }}>
+          {children}
+        </div>
+      </div>
+    )
+  }
 
   const hoverProps = speedOnHover
     ? {

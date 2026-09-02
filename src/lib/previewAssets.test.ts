@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -45,6 +45,10 @@ describe("preview assets", () => {
     expect(existsSync(join(publicDir, "videobg-480.mp4"))).toBe(true)
     expect(existsSync(join(publicDir, "videobg.webm"))).toBe(false)
     expect(existsSync(join(publicDir, "videobg.mp4"))).toBe(false)
+    const fallback = join(publicDir, "ascii-fallback.svg")
+    expect(existsSync(fallback)).toBe(true)
+    expect(statSync(fallback).size).toBeLessThanOrEqual(30_000)
+    expect(readFileSync(fallback, "utf8")).toContain('preserveAspectRatio="xMidYMid slice"')
   })
 
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {

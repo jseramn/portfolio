@@ -22,18 +22,28 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: /reduced-motion\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "mobile",
+      testIgnore: /reduced-motion\.spec\.ts/,
       use: { ...devices["Pixel 7"] },
     },
     {
       name: "landscape-phone",
+      testIgnore: /reduced-motion\.spec\.ts/,
       use: {
         ...devices["iPhone 14"],
         browserName: "chromium",
         viewport: { width: 844, height: 390 },
+      },
+    },
+    {
+      name: "reduced-motion",
+      testMatch: /reduced-motion\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
       },
     },
   ],
