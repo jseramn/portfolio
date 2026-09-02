@@ -127,7 +127,7 @@ Sizes in use: music 16–18 px (`Hero.tsx:487–496`), socials 24 / md 26 (`Hero
 
 ## 3. Layout and responsive rules
 
-Home is a locked HUD over a full-viewport ASCII field. Chrome breakpoint today is **width-only `md:` (768px)** (`Hero.tsx:394`), not UA and not `pointer: coarse` (C-report). That is why 844×390 uses the desktop four-corner HUD and TextLoop fragments overlap (`/tmp/swarm/ui/home-844x390.png`).
+Home is a locked HUD over a full-viewport ASCII field. Four-corner chrome uses the `hud:` variant: **`(min-width: 768px) and (min-height: 700px)`**. Compact chrome uses `short:`: **`height < 500px`, or width ≥ 768px with height < 700px**. Width-only `md:` remains for type scale, not HUD placement. 844×390 previously used the desktop four-corner HUD and TextLoop fragments overlapped (`/tmp/swarm/ui/home-844x390.png`).
 
 ### Regions
 
@@ -184,6 +184,8 @@ Home is a locked HUD over a full-viewport ASCII field. Chrome breakpoint today i
 ```
 
 **(d) Ultra-wide** — same HUD as (c). Do not stretch chrome with the viewport. Tagline stays `md:max-w-md` (`Hero.tsx:558`). ASCII remains `inset: 0`.
+
+**(e) Width ≥ 768 and 500 ≤ height < 700** — same compact chrome as (b), never four-corner. The four-corner HUD requires both `min-width: 768px` and `min-height: 700px` (`hud:`). This closes the gap left unspecified in R-U00-02.
 
 ### Rules
 

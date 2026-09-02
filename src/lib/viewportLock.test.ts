@@ -40,4 +40,23 @@ describe("homepage viewport lock", () => {
     expect(css).toContain("height: 100dvh")
     expect(css).toContain("max-height: 100dvh")
   })
+
+  it("gates four-corner HUD on width and height, not width alone", () => {
+    const hero = readFileSync(join(root, "src/components/Hero.tsx"), "utf8")
+    const tw = readFileSync(join(root, "tailwind.config.ts"), "utf8")
+    expect(tw).toContain("(min-width: 768px) and (min-height: 700px)")
+    expect(tw).toContain("(max-height: 499px)")
+    expect(tw).toContain("(min-width: 768px) and (max-height: 699px)")
+    expect(hero).toContain("hud:block")
+    expect(hero).toContain("hud:contents")
+    expect(hero).toContain("md:shrink-0")
+    expect(hero).toContain("h-dvh")
+    expect(hero).toContain("max-h-dvh")
+    expect(hero).toContain("env(safe-area-inset-top)")
+    expect(hero).toContain("env(safe-area-inset-bottom)")
+    expect(hero).not.toMatch(/overflow-hidden md:block"/)
+    for (const region of ["marquee", "now-playing", "socials", "roles", "tagline"]) {
+      expect(hero).toContain(`data-hud-region="${region}"`)
+    }
+  })
 })

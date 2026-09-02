@@ -255,7 +255,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(hero).toContain("env(safe-area-inset-top)")
     expect(hero).toContain("env(safe-area-inset-bottom)")
     expect(hero).toContain("self-start")
-    expect(hero).toContain("md:contents")
+    expect(hero).toContain("hud:contents")
     expect(hero).not.toContain("bottom-[max(11.25rem")
     expect(hero.match(/preset="dock"/g)?.length).toBe(1)
     expect(hero).toContain("pointermove")
@@ -267,7 +267,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(read("lib/heroAsciiRuntime.ts")).toContain("pointermove")
     expect(hero).toContain('preset="pill"')
     expect(hero).toContain(
-      "font-mono text-xs md:text-sm flex flex-wrap items-center justify-center md:justify-end gap-2 px-4 md:px-0",
+      "font-mono text-xs md:text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0",
     )
   })
 
