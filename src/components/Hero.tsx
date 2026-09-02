@@ -394,15 +394,15 @@ export default function Hero() {
           aria-hidden
         />
         <div
-          className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
+          className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-[2]"
           aria-hidden
         />
         <div
-          className="hero-scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 z-0"
+          className="hero-scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 z-[2]"
           aria-hidden
         />
         <div
-          className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
+          className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-[2]"
           aria-hidden
         />
         <div
@@ -463,7 +463,7 @@ export default function Hero() {
         <div className="relative z-10 mt-auto flex min-h-0 flex-1 flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] hud:contents short:mt-auto short:flex-none short:flex-row short:flex-nowrap short:items-end short:gap-2">
           <div
             data-hud-region="now-playing"
-            className="hud:absolute hud:inset-x-auto hud:right-8 hud:top-24 short:shrink-0"
+            className="relative z-10 hud:absolute hud:inset-x-auto hud:right-8 hud:top-24 short:shrink-0"
           >
             <GlassSurface
               preset="pill"
@@ -571,7 +571,7 @@ export default function Hero() {
               </div>
             </GlassSurface>
           </div>
-          <div className="flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
+          <div className="relative z-10 flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
             <div data-hud-region="roles">
               <GlassSurface
                 preset="button"

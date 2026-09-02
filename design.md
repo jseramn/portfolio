@@ -83,8 +83,8 @@ Hover glow duration 300 ms (`Hero.tsx:36`). Letter-spacing: `tracking-tight` on 
 | Marquee slider gap | `32` px; speed `50` / hover `20` | `Hero.tsx:416` |
 | Social gap | `gap-4 md:gap-5` | `Hero.tsx:507` |
 | Scrollbar | 8×8, thumb `#00f0ff33` / hover `#00f0ff66`, radius 2 | `globals.css:49–65` |
-| Fallback frost card | `blur(4px) saturate(1)` | `globals.css:241–244` |
-| Fallback frost button | `blur(7px) saturate(1)` | `globals.css:246–249` |
+| Fallback frost card | `blur(4px) saturate(1)` plus `rgba(0,0,0,0.72)` `::after` veil | `globals.css` `.glass-fallback-card` |
+| Fallback frost button | `blur(7px) saturate(1)` plus the same `::after` veil | `globals.css` `.glass-fallback-button` |
 | Live frost CSS var | `--glass-frost = 4 + blurAmount * 32` (card family 4px, button family 7.2px) | `GlassSurface.tsx:269` |
 | Refraction filter | `blur(var(--glass-frost, 4px)) brightness(2.6) contrast(1.45)` | `globals.css:233,309` |
 | Glass settle | 220 ms, ease `1 - (1 - t)^3` | `Hero.tsx:307–308` |
@@ -118,7 +118,7 @@ Sizes in use: music 16–18 px (`Hero.tsx:487–496`), socials 24 / md 26 (`Hero
 |-------|-----------|--------|--------|
 | ASCII host | `0` | `globals.css:114` | Keep below chrome |
 | Glyph canvas | `1` | `globals.css:151`, `Hero.tsx:399` | Keep |
-| Zone scrims | `z-0` (under canvas) | `Hero.tsx:403–411` | **Defect C-04.** **Proposed:** scrims above canvas, below chrome |
+| Zone scrims | `2` | `Hero.tsx` (`z-[2]`), `globals.css` `.hero-scrim-*` | Above canvas, below HUD. `pointer-events: none`. Not sampled by glass (`data-glass-gen` is the ASCII canvas only). |
 | HUD chrome | `z-10` | `Hero.tsx:394,414,504` | Keep |
 | Contact overlay | `z-50` | `ContactModal.tsx:232` | Keep |
 | Boot loader | `9999` | `globals.css:342` | Home only |
@@ -223,7 +223,7 @@ Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`); g
 
 | Rule | Current | Required / Proposed |
 |------|---------|---------------------|
-| Text contrast on glyphs | Bone on black **16.53:1**; bone on white glyphs **1.27:1** (C-04) | Scrims **above** ASCII canvas and **below** chrome. Do not change scrim colours or ink |
+| Text contrast on glyphs | Zone scrims at `z-index: 2` (above canvas `1`, below HUD `10`). Fallback card/button frost adds a `rgba(0,0,0,0.72)` veil so bone ink stays ≥4.5:1 over white glyphs. Ink and scrim colours unchanged. | Do not retint `--hero-ink*` or scrim colours |
 | Legal “Last updated” | `#007880` on `#000` **3.99:1**, 12 px (B-12) | ≥4.5:1 |
 | Focus-visible | Hire CTA only: 2px outline, offset 4, `--hero-ink` (`Hero.tsx:537`) | Same token on every interactive chrome control |
 | Skip link | Absent | **Proposed:** skip to `#main` / first chrome landmark |

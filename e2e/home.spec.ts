@@ -243,6 +243,53 @@ test("home chrome: 44px tap targets and unclipped hire CTA", async ({ page }, te
   await assertHireChrome(page, testInfo)
 })
 
+test("home chrome: zone scrims sit above the glyph canvas", async ({ page }) => {
+  await openHome(page)
+
+  async function measureStacking() {
+    return page.locator("[data-hero-root]").evaluate((root) => {
+      const usedZ = (el: Element) => {
+        let node: Element | null = el
+        while (node && node !== root.parentElement) {
+          const n = Number.parseFloat(getComputedStyle(node).zIndex)
+          if (Number.isFinite(n)) return n
+          node = node.parentElement
+        }
+        return Number.NaN
+      }
+      const canvas = root.querySelector("canvas.hero-ascii-display")
+      const canvasZ = canvas ? usedZ(canvas) : Number.NaN
+      const scrims = [
+        ...root.querySelectorAll(".hero-scrim-top, .hero-scrim-bottom, .hero-scrim-social"),
+      ].map((el) => ({
+        z: usedZ(el),
+        pointerEvents: getComputedStyle(el).pointerEvents,
+        canvasZ,
+      }))
+      const hud = [...root.querySelectorAll("[data-hud-region]")].map((el) => ({
+        z: usedZ(el),
+      }))
+      return { scrims, hud }
+    })
+  }
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 1920, height: 1080 },
+  ] as const) {
+    await page.setViewportSize(viewport)
+    await page.evaluate(() => document.fonts.ready)
+    const stacking = await measureStacking()
+    expect(stacking.scrims).toHaveLength(3)
+    for (const row of stacking.scrims) {
+      expect(row.z).toBeGreaterThan(row.canvasZ)
+      expect(row.pointerEvents).toBe("none")
+    }
+    const scrimZ = stacking.scrims[0]?.z ?? Number.NaN
+    for (const row of stacking.hud) expect(row.z).toBeGreaterThan(scrimZ)
+  }
+})
+
 test("home chrome: hud regions do not overlap or overflow", async ({ page }, testInfo) => {
   await openHome(page)
   await assertHudRegions(page)
