@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
-import { TextLoop } from "./TextLoop"
 import { Shuffle, SkipBack, SkipForward, SOCIAL_ICONS, Volume2, VolumeX } from "./icons"
-import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
+import { HeroMotionRoles, HeroMotionSlider } from "./heroMotionStatic"
 import { site } from "../config/site"
 import { onHireCtaClicked, onOutboundOrg, onOutboundSocial } from "../lib/analytics/productCapture"
 import { getCapabilities } from "../lib/capabilities"
+import { scheduleHeroMotionChrome } from "../lib/heroMotionSchedule"
 import {
   MUSIC_API_TIMEOUT_MS,
   YT_STATE_PLAYING,
@@ -125,6 +125,7 @@ export default function Hero() {
   const [musicMuted, setMusicMuted] = useState(true)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
   const [contactOpen, setContactOpen] = useState(false)
+  const [motionChrome, setMotionChrome] = useState(false)
   const [roleIndex, setRoleIndex] = useState(0)
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<YtPlayer | null>(null)
@@ -158,6 +159,8 @@ export default function Hero() {
       }
     }
   }, [])
+
+  useEffect(() => scheduleHeroMotionChrome(() => setMotionChrome(true)), [])
 
   const ensureYtPlayer = useCallback(
     (index: number) => {
@@ -527,7 +530,7 @@ export default function Hero() {
             mouseContainer={heroRootRef}
             className="w-full min-w-0 hud:flex-1 short:flex-1"
           >
-            <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
+            <HeroMotionSlider ready={motionChrome}>
               <span className={MARQUEE_TYPE}>
                 Hi, I am {site.name} — {site.locationLine}
               </span>
@@ -574,7 +577,7 @@ export default function Hero() {
                 </a>
               )}
               {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
-            </InfiniteSlider>
+            </HeroMotionSlider>
           </GlassSurface>
         </div>
         <div className="relative z-10 mt-auto flex min-h-0 flex-1 flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] hud:contents short:mt-auto short:flex-none short:flex-row short:flex-nowrap short:items-end short:gap-2">
@@ -720,43 +723,59 @@ export default function Hero() {
           </div>
           <div className="relative z-10 flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
             <div data-hud-region="roles">
-              <GlassSurface
-                preset="button"
-                mouseContainer={heroRootRef}
-                className="self-start w-max max-w-full md:shrink-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onHireCtaClicked()
-                    setContactOpen(true)
-                  }}
-                  className={`hero-on-video group inline-flex min-h-11 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW}`}
-                  aria-label="Hire / Contact"
+              <div className="flex flex-col gap-3 self-start hud:flex-row hud:items-end hud:gap-4">
+                <GlassSurface
+                  preset="button"
+                  mouseContainer={heroRootRef}
+                  className="self-start w-max max-w-full md:shrink-0"
                 >
-                  <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
-                  <span
-                    aria-hidden="true"
-                    className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onHireCtaClicked()
+                      setContactOpen(true)
+                    }}
+                    className={`hero-on-video group inline-flex min-h-11 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW}`}
+                    aria-label="Hire / Contact"
                   >
-                    <TextLoop
-                      interval={2.5}
-                      transition={{ duration: 0.4 }}
-                      onIndexChange={setRoleIndex}
-                      paused={contactOpen}
+                    <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
+                    <span
+                      aria-hidden="true"
+                      className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
                     >
-                      {PROFESSIONS.map((p) => (
-                        <span
-                          key={p}
-                          className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </TextLoop>
-                  </span>
-                </button>
-              </GlassSurface>
+                      <HeroMotionRoles
+                        ready={motionChrome}
+                        onIndexChange={setRoleIndex}
+                        paused={contactOpen}
+                      >
+                        {PROFESSIONS.map((p) => (
+                          <span
+                            key={p}
+                            className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </HeroMotionRoles>
+                    </span>
+                  </button>
+                </GlassSurface>
+                <GlassSurface
+                  preset="button"
+                  mouseContainer={heroRootRef}
+                  className="self-start w-max max-w-full md:shrink-0"
+                >
+                  <a
+                    href={site.tinity.path}
+                    className={`hero-on-video ${TAP_TARGET} font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer ${GLOW} ${CHROME_FOCUS}`}
+                    aria-label="Open Tinity"
+                  >
+                    <span className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] hover:decoration-[var(--hero-ink)]/50">
+                      tinity
+                    </span>
+                  </a>
+                </GlassSurface>
+              </div>
             </div>
             <div data-hud-region="tagline" className="min-w-0 short:w-full">
               <GlassSurface

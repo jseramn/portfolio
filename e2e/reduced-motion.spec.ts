@@ -1,6 +1,18 @@
 import { expect, test, type Page } from "@playwright/test"
 
 async function openReducedHome(page: Page) {
+  await page.addInitScript(() => {
+    const state = window as typeof window & { __heroCls: number }
+    state.__heroCls = 0
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number }
+        if (!shift.hadRecentInput) state.__heroCls += shift.value ?? 0
+      }
+    })
+    observer.observe({ type: "layout-shift", buffered: true })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
   await page.emulateMedia({ reducedMotion: "reduce" })
   expect((await page.goto("/"))?.ok()).toBe(true)
   const boot = page.locator("#boot-loader")
@@ -27,8 +39,18 @@ test("reduced-motion shows a monochrome ASCII fallback and stops chrome motion",
   expect(body).toContain("<tspan")
   expect(body).not.toMatch(/fill="#(?!000|fff)[0-9a-fA-F]{3,8}"/)
 
-  await expect(page.locator("[data-hud-region=marquee] [data-marquee-static]")).toBeVisible()
-  const motion = await page.locator("[data-hud-region=marquee]").evaluate((root) => {
+  const marquee = page.locator("[data-hud-region=marquee]")
+  await expect(
+    marquee.locator("[data-marquee-pending], [data-marquee-static]").first(),
+  ).toBeVisible()
+  const height = await marquee.evaluate((el) => el.getBoundingClientRect().height)
+  await expect(marquee.locator("[data-marquee-static]")).toBeVisible()
+  await expect(marquee.locator(".flex.w-max")).toBeVisible()
+  await expect(marquee.locator(".flex-wrap")).toHaveCount(0)
+  expect(await marquee.evaluate((el) => el.getBoundingClientRect().height)).toBe(height)
+  const cls = await page.evaluate(() => (window as typeof window & { __heroCls: number }).__heroCls)
+  expect(cls).toBeLessThan(0.01)
+  const motion = await marquee.evaluate((root) => {
     const styles = [...root.querySelectorAll<HTMLElement>("*")].map((el) => getComputedStyle(el))
     return {
       running: styles.filter(

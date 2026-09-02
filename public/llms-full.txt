@@ -8,7 +8,7 @@ José Ramón García Del Risco, known as jseramn, runs this site as a personal p
 
 ## Who it is for
 
-It is for people and teams who want to reach him about tech lead, cybersecurity, web development, founder work. Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /llms.txt, and /sitemap-index.xml for the next step. Source and human docs live in the public GitHub repository linked from llms.txt.
+It is for people and teams who want to reach him about tech lead, cybersecurity, web development, founder work. Agents should treat this homepage as identity and contact routing, then follow /about, /contact, /tinity, /llms.txt, and /sitemap-index.xml for the next step. Source and human docs live in the public GitHub repository linked from llms.txt.
 
 ## How to get in touch
 
@@ -16,7 +16,7 @@ How to get in touch: email contacto@jseramn.tech, open /contact, or use the on-s
 
 ## What this site is not
 
-jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog. There is no /projects, /docs, or /services catalog on this domain. There is no app download, no waitlist, and no self-serve billing. The visible homepage is a live ASCII portrait of José Ramón García Del Risco on a black terminal layout; this article remains the readable source for agents. The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact. Live ASCII stays on phones; the first paint is a black field until glyphs are ready.
+jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog. There is no /projects, /docs, or /services catalog on this domain. Tinity is a single public experiment at /tinity, not a product catalog. There is no app download, no waitlist, and no self-serve billing. The visible homepage is a live ASCII portrait of José Ramón García Del Risco on a black terminal layout; this article remains the readable source for agents. The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact. Live ASCII stays on phones; the first paint is a black field until glyphs are ready.
 
 ## https://jseramn.tech/about
 

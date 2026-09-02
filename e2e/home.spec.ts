@@ -105,7 +105,7 @@ async function assertHireChrome(page: Page, testInfo: TestInfo) {
   if (testInfo.project.name === "chromium") {
     await expect(
       page.locator('[data-hero-root] [data-glass-host][data-glass-preset="button"]'),
-    ).toHaveCount(1, { timeout: 8_000 })
+    ).toHaveCount(2, { timeout: 8_000 })
   }
 
   const hire = page.getByRole("button", { name: "Hire / Contact" })
@@ -325,6 +325,42 @@ async function assertHomeIdentity(page: Page) {
   await expect(hire).toContainText(/hire/i)
   await expect(hire).not.toHaveAttribute("aria-live")
 }
+
+test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async ({ page }) => {
+  await page.addInitScript(() => {
+    const state = window as typeof window & { __heroCls: number }
+    state.__heroCls = 0
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number }
+        if (!shift.hadRecentInput) state.__heroCls += shift.value ?? 0
+      }
+    })
+    observer.observe({ type: "layout-shift", buffered: true })
+  })
+  await openHome(page)
+  const marqueeRegion = page.locator("[data-hud-region=marquee]")
+  const marquee = marqueeRegion.locator(".flex.w-max").first()
+  const firstHeight = await marqueeRegion.evaluate((el) => el.getBoundingClientRect().height)
+  const firstTransform = await marquee.evaluate((el) => getComputedStyle(el).transform)
+  await expect
+    .poll(async () => marquee.evaluate((el) => getComputedStyle(el).transform), { timeout: 5_000 })
+    .not.toBe(firstTransform)
+
+  const visibleRole = page.locator(
+    "[data-hud-region=roles] [data-text-loop] > div:not([aria-hidden])",
+  )
+  const firstRole = ((await visibleRole.innerText()) ?? "").replace(/\s+/g, " ").trim()
+  await expect
+    .poll(async () => ((await visibleRole.innerText()) ?? "").replace(/\s+/g, " ").trim(), {
+      timeout: 5_000,
+    })
+    .not.toBe(firstRole)
+
+  const cls = await page.evaluate(() => (window as typeof window & { __heroCls: number }).__heroCls)
+  expect(cls).toBeLessThan(0.01)
+  expect(await marqueeRegion.evaluate((el) => el.getBoundingClientRect().height)).toBe(firstHeight)
+})
 
 test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {
   await openHome(page)
