@@ -19,6 +19,17 @@ export function applyGitHubStatsCacheHeaders(headers: Headers, status: number): 
   headers.set("Vercel-CDN-Cache-Control", value)
 }
 
+export const DESCRIBEDBY_LINK = '</llms.txt>; rel="describedby"'
+
+export function applyDescribedbyLinkHeader(
+  headers: Headers,
+  status: number,
+  negotiated: boolean,
+): void {
+  if (!negotiated || status !== 200) return
+  headers.append("Link", DESCRIBEDBY_LINK)
+}
+
 export function applyNegotiatedResponseHeaders(headers: Headers, vary: boolean): void {
   if (vary) {
     headers.set("Vary", ACCEPT_VARY)

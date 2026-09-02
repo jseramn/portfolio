@@ -97,6 +97,10 @@ describe("built HTML overlay", () => {
     expect(html).toContain('property="og:image:type"')
     expect(html).toContain('property="og:type"')
     expect(html).toContain('rel="canonical"')
+    expect(html).toContain('rel="describedby"')
+    expect(html).toContain('href="/llms.txt"')
+    expect(html).toContain('type="text/markdown"')
+    expect((html.match(/rel="describedby"/g) ?? []).length).toBe(1)
     expect(html).toContain('rel="apple-touch-icon"')
     expect(html).toContain('rel="manifest"')
     expect(html).toContain('name="theme-color"')
@@ -156,6 +160,15 @@ describe("built HTML overlay", () => {
     }
   })
 
+  it("Layout advertises llms.txt describedby and markdown alternate at the canonical URL", () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    expect(layout).toContain('rel="describedby"')
+    expect(layout).toContain('href="/llms.txt"')
+    expect(layout).toContain('type="text/markdown"')
+    expect(layout).toContain("href={canonical}")
+    expect((layout.match(/rel="describedby"/g) ?? []).length).toBe(1)
+  })
+
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
     const llms = readFileSync(join(root, "public/llms.txt"), "utf8")
     expect(llms.toLowerCase()).toMatch(/tech lead/)
@@ -168,8 +181,16 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")
-    expect(llms).toContain("linkedin.com")
     expect(llms).toContain("https://jseramn.tech/oembed.json")
+    expect(llms).toMatch(/^## Pages$/m)
+    expect(llms).toMatch(/^## Legal$/m)
+    expect(llms).toMatch(/^## Optional$/m)
+    expect(llms).toContain("Accept: text/markdown")
+    expect(llms).toContain("Prefer email over any JSON API")
+    expect(llms).toContain("/.well-known/security.txt")
+    expect(llms).not.toMatch(/^- \*\*/m)
+    const fileList = llms.match(/^- \[[^\]]+\]\([^)]+\)/gm) ?? []
+    expect(fileList.length).toBeGreaterThanOrEqual(6)
 
     const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8")) as {
       redirects: { source: string; destination: string; permanent: boolean }[]
