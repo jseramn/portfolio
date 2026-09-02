@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
-import { TextLoop } from "./TextLoop"
 import { Shuffle, SkipBack, SkipForward, SOCIAL_ICONS, Volume2, VolumeX } from "./icons"
-import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
+import { HeroMotionRoles, HeroMotionSlider } from "./heroMotionStatic"
 import { site } from "../config/site"
 import { onHireCtaClicked, onOutboundOrg, onOutboundSocial } from "../lib/analytics/productCapture"
 import { getCapabilities } from "../lib/capabilities"
+import { scheduleHeroMotionChrome } from "../lib/heroMotionSchedule"
 import {
   MUSIC_API_TIMEOUT_MS,
   YT_STATE_PLAYING,
@@ -125,6 +125,7 @@ export default function Hero() {
   const [musicMuted, setMusicMuted] = useState(true)
   const [trackIndex, setTrackIndex] = useState(() => Math.floor(Math.random() * YT_TRACKS.length))
   const [contactOpen, setContactOpen] = useState(false)
+  const [motionChrome, setMotionChrome] = useState(false)
   const [roleIndex, setRoleIndex] = useState(0)
   const activeRole = PROFESSIONS[roleIndex] ?? PROFESSIONS[0]
   const playerRef = useRef<YtPlayer | null>(null)
@@ -158,6 +159,8 @@ export default function Hero() {
       }
     }
   }, [])
+
+  useEffect(() => scheduleHeroMotionChrome(() => setMotionChrome(true)), [])
 
   const ensureYtPlayer = useCallback(
     (index: number) => {
@@ -527,7 +530,7 @@ export default function Hero() {
             mouseContainer={heroRootRef}
             className="w-full min-w-0 hud:flex-1 short:flex-1"
           >
-            <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
+            <HeroMotionSlider ready={motionChrome}>
               <span className={MARQUEE_TYPE}>
                 Hi, I am {site.name} — {site.locationLine}
               </span>
@@ -574,7 +577,7 @@ export default function Hero() {
                 </a>
               )}
               {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
-            </InfiniteSlider>
+            </HeroMotionSlider>
           </GlassSurface>
         </div>
         <div className="relative z-10 mt-auto flex min-h-0 flex-1 flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] hud:contents short:mt-auto short:flex-none short:flex-row short:flex-nowrap short:items-end short:gap-2">
@@ -739,9 +742,8 @@ export default function Hero() {
                     aria-hidden="true"
                     className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
                   >
-                    <TextLoop
-                      interval={2.5}
-                      transition={{ duration: 0.4 }}
+                    <HeroMotionRoles
+                      ready={motionChrome}
                       onIndexChange={setRoleIndex}
                       paused={contactOpen}
                     >
@@ -753,7 +755,7 @@ export default function Hero() {
                           {p}
                         </span>
                       ))}
-                    </TextLoop>
+                    </HeroMotionRoles>
                   </span>
                 </button>
               </GlassSurface>

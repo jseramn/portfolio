@@ -326,6 +326,39 @@ async function assertHomeIdentity(page: Page) {
   await expect(hire).not.toHaveAttribute("aria-live")
 }
 
+test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async ({ page }) => {
+  await openHome(page)
+  const marquee = page.locator("[data-hud-region=marquee] .flex.w-max").first()
+  const firstTransform = await marquee.evaluate((el) => getComputedStyle(el).transform)
+  await expect
+    .poll(async () => marquee.evaluate((el) => getComputedStyle(el).transform), { timeout: 5_000 })
+    .not.toBe(firstTransform)
+
+  const visibleRole = page.locator(
+    "[data-hud-region=roles] [data-text-loop] > div:not([aria-hidden])",
+  )
+  const firstRole = ((await visibleRole.innerText()) ?? "").replace(/\s+/g, " ").trim()
+  await expect
+    .poll(async () => ((await visibleRole.innerText()) ?? "").replace(/\s+/g, " ").trim(), {
+      timeout: 5_000,
+    })
+    .not.toBe(firstRole)
+
+  const cls = await page.evaluate(() => {
+    let total = 0
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number }
+        if (!shift.hadRecentInput) total += shift.value ?? 0
+      }
+    })
+    observer.observe({ type: "layout-shift", buffered: true })
+    observer.disconnect()
+    return total
+  })
+  expect(cls).toBeLessThan(0.01)
+})
+
 test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {
   await openHome(page)
   await assertHomeIdentity(page)

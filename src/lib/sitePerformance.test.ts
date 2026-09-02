@@ -114,10 +114,16 @@ describe("site performance chrome load", () => {
     expect(readSrc("pages/tinity/index.astro")).not.toContain("boot-loader")
   })
 
-  it("defers YouTube and ContactModal; ASCII stays lazy outside the Hero chrome file", () => {
+  it("defers YouTube, ContactModal, and Motion chrome; ASCII stays lazy outside the Hero chrome file", () => {
     const hero = readSrc("components/Hero.tsx")
+    const motionChrome = readSrc("components/heroMotionStatic.tsx")
     expect(hero).not.toMatch(/import \{ ContactModal \}/)
     expect(hero).toContain('import("./ContactModal")')
+    expect(hero).not.toMatch(/import \{ TextLoop \}/)
+    expect(hero).not.toMatch(/import \{ InfiniteSlider \}/)
+    expect(hero).not.toContain("motion/react")
+    expect(motionChrome).toContain('import("./TextLoop")')
+    expect(motionChrome).toContain('import("./InfiniteSlider")')
     expect(hero).toContain("ensureYtPlayer")
     const ensureAt = hero.indexOf("const ensureYtPlayer")
     const firstApi = hero.indexOf("iframe_api")

@@ -72,14 +72,14 @@ describe("hero liquid-glass chrome wiring", () => {
   it("wraps the marquee bar and hire button, not duplicated slider or loop children", () => {
     const hero = read("components/Hero.tsx")
     const barIdx = hero.indexOf('preset="bar"')
-    const sliderIdx = hero.indexOf("<InfiniteSlider")
+    const sliderIdx = hero.indexOf("<HeroMotionSlider")
     const barClose = hero.indexOf("</GlassSurface>", barIdx)
     expect(barIdx).toBeGreaterThan(-1)
     expect(sliderIdx).toBeGreaterThan(barIdx)
     expect(sliderIdx).toBeLessThan(barClose)
 
     const buttonIdx = hero.indexOf('preset="button"')
-    const loopIdx = hero.indexOf("<TextLoop")
+    const loopIdx = hero.indexOf("<HeroMotionRoles")
     const buttonClose = hero.indexOf("</GlassSurface>", buttonIdx)
     expect(loopIdx).toBeGreaterThan(buttonIdx)
     expect(loopIdx).toBeLessThan(buttonClose)

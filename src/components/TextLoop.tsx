@@ -47,7 +47,10 @@ export function TextLoop({
   }
 
   return (
-    <div className={`relative inline-grid justify-items-start overflow-hidden ${className ?? ""}`}>
+    <div
+      className={`relative inline-grid justify-items-start overflow-hidden ${className ?? ""}`}
+      data-text-loop=""
+    >
       {items.map((item) =>
         isValidElement(item) ? (
           <div
