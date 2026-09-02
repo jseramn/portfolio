@@ -63,7 +63,7 @@ src/
     api/contact.ts        # Resend relay (ciphertext only)
 public/
   llms.txt                # Machine-readable site & profile summary
-  videobg.webm, videobg.mp4, thumbnail.png, favicons, site.webmanifest
+  videobg-480.webm, videobg-480.mp4, thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot

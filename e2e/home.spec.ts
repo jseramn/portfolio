@@ -8,6 +8,8 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
 
   const html = await page.content()
   expect(html).not.toMatch(/rel=["']preload["'][^>]*as=["']video["']/)
+  expect(html).not.toContain("/videobg.webm")
+  expect(html).not.toContain("/videobg.mp4")
 
   const boot = page.locator("#boot-loader")
   await expect(boot).toBeAttached()

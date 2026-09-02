@@ -41,6 +41,8 @@ describe("preview assets", () => {
     }
     expect(existsSync(join(publicDir, "videobg-480.webm"))).toBe(true)
     expect(existsSync(join(publicDir, "videobg-480.mp4"))).toBe(true)
+    expect(existsSync(join(publicDir, "videobg.webm"))).toBe(false)
+    expect(existsSync(join(publicDir, "videobg.mp4"))).toBe(false)
   })
 
   it("ships a multi-size ICO, SVG mark, and web manifest", () => {

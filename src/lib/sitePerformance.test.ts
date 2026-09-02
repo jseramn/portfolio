@@ -88,6 +88,8 @@ describe("site performance chrome load", () => {
     expect(home).not.toContain("asciiSamplerWebm")
     expect(home).toContain('id="boot-loader"')
     expect(home).not.toContain("videoSrcMp4")
+    expect(home).not.toContain("videoSrcWebm")
+    expect(home).not.toContain("/videobg.webm")
     expect(home).not.toContain("/videobg.mp4")
     expect(readSrc("lib/heroAsciiBudget.ts")).toContain('VIDEO_PRELOAD = "none"')
     expect(readSrc("lib/heroAsciiRuntime.ts")).toContain("video.preload = VIDEO_PRELOAD")

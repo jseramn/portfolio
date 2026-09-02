@@ -17,12 +17,11 @@ import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "
 import { signalHeroBootReady } from "./bootLoader"
 import { getCapabilities } from "./capabilities"
 import { HERO_ASCII_DISPLAY_CLASS, getHeroRoot, isUiBlockingOverlayOpen } from "./domSignals"
+import { applyHeroSamplerFailure } from "./heroAsciiSamplerFailure"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
   samplerMp4: string
-  fallbackWebm: string
-  fallbackMp4: string
   poster?: string
 }
 
@@ -179,15 +178,6 @@ export async function mountHeroAscii(
   fillSources(video, opts.samplerWebm, opts.samplerMp4)
   if (opts.poster) video.preload = "metadata"
   host.appendChild(video)
-
-  let usedFallback = false
-  const onVideoError = () => {
-    if (usedFallback) return
-    usedFallback = true
-    fillSources(video, opts.fallbackWebm, opts.fallbackMp4)
-    tryPlay(video)
-  }
-  video.addEventListener("error", onVideoError)
 
   let renderer: InstanceType<typeof WebGLRenderer>
   try {
@@ -744,6 +734,23 @@ export async function mountHeroAscii(
     }
     raf = requestAnimationFrame(tick)
   }
+
+  const stopLoop = () => {
+    alive = false
+    cancelAnimationFrame(raf)
+    raf = 0
+    video.pause()
+  }
+
+  let samplerFailed = false
+  const onVideoError = () => {
+    if (samplerFailed) return
+    samplerFailed = true
+    applyHeroSamplerFailure(host, stopLoop)
+    signalHeroBootReady()
+  }
+  video.addEventListener("error", onVideoError)
+  if (video.error) onVideoError()
 
   const onVideoReady = () => {
     tryPlay(video)
