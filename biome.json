@@ -19,6 +19,7 @@
       "!**/.astro",
       "!**/node_modules",
       "!**/public",
+      "!**/src/tinity",
       "!**/pnpm-lock.yaml",
       "!**/test-results",
       "!**/playwright-report",
