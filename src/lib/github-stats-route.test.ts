@@ -87,3 +87,45 @@ describe("GET /api/github-stats", () => {
     await expect(response.json()).resolves.toEqual({ error: "unavailable" })
   })
 })
+
+describe("non-GET /api/github-stats", () => {
+  it.each(["POST", "OPTIONS"] as const)(
+    "answers %s with JSON 405 and Allow: GET",
+    async (method) => {
+      vi.resetModules()
+      fetchGitHubStats.mockReset()
+      const handler = (await import("../pages/api/github-stats"))[method]
+      const response = await handler({
+        request: new Request("https://jseramn.tech/api/github-stats", { method }),
+      } as never)
+      expect(response.status).toBe(405)
+      expect(response.headers.get("Allow")).toBe("GET")
+      await expect(response.json()).resolves.toEqual({ error: "method_not_allowed" })
+      expect(fetchGitHubStats).not.toHaveBeenCalled()
+    },
+  )
+})
+
+describe("fetchGitHubStats public events", () => {
+  it("always requests /events/public even when a token is set", async () => {
+    const ok = (body: unknown) => ({ ok: true, json: async () => body })
+    const fetchMock = vi.fn(async (input: RequestInfo, _init?: RequestInit) => {
+      const url = String(input)
+      if (url.includes("github-contributions-api")) return ok({ contributions: [], total: {} })
+      if (url.includes("/events/public")) return ok([])
+      return { ok: false, json: async () => ({}) }
+    })
+    vi.stubGlobal("fetch", fetchMock)
+    const { fetchGitHubStats: fetchStats } =
+      await vi.importActual<typeof import("./githubStats")>("./githubStats")
+    await fetchStats("jseramn", "ghs_test_token")
+    const urls = fetchMock.mock.calls.map(([input]) => String(input))
+    expect(urls.some((u) => u.includes("/users/jseramn/events/public?per_page=30"))).toBe(true)
+    expect(urls.some((u) => /\/events\?per_page=/.test(u))).toBe(false)
+    const headers = fetchMock.mock.calls.find(([input]) =>
+      String(input).includes("/events/public"),
+    )?.[1]?.headers as Record<string, string> | undefined
+    expect(headers?.Authorization).toBe("Bearer ghs_test_token")
+    vi.unstubAllGlobals()
+  })
+})
