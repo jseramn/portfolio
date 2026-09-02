@@ -6,6 +6,9 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
   expect(response?.ok(), "home should be HTTP 200").toBe(true)
   expect(response?.headers()["content-type"] ?? "").toMatch(/text\/html/)
 
+  const html = await page.content()
+  expect(html).not.toMatch(/rel=["']preload["'][^>]*as=["']video["']/)
+
   const boot = page.locator("#boot-loader")
   await expect(boot).toBeAttached()
   await expect

@@ -3,20 +3,12 @@ export const prerender = false
 import Layout from "../layouts/Layout.astro"
 import Hero from "../components/Hero"
 import { agentCopy } from "../lib/agent/copy"
-import { site } from "../config/site"
 
 const home = agentCopy("home")
 const homeSections = home.sections ?? []
 ---
 
 <Layout lockScroll bootPending>
-  <link
-    slot="head"
-    rel="preload"
-    href={site.asciiSamplerWebm}
-    as="video"
-    type="video/webm"
-  />
   <div
     id="boot-loader"
     role="status"
