@@ -275,6 +275,24 @@ body {
   color: color-mix(in srgb, var(--hero-ink) 50%, transparent);
 }
 
+/* Soften overflow-hidden ticker clips so a static paint never hard-cuts a glyph. */
+.marquee-edge-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2rem,
+    #000 calc(100% - 2rem),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2rem,
+    #000 calc(100% - 2rem),
+    transparent
+  );
+}
+
 .glass-fallback {
   position: relative;
   overflow: hidden;

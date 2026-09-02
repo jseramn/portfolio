@@ -159,7 +159,7 @@ Home is a locked HUD over a full-viewport ASCII field. Four-corner chrome uses t
 +---------------------------+
 ```
 
-**(b) Short viewports, height < 500px (e.g. 844×390)** — **Proposed:** do **not** use the desktop four-corner HUD even if width ≥ 768. Stack compact chrome or a single bottom dock; never overlap TextLoop lines inside `overflow-hidden`.
+**(b) Short viewports, height < 500px (e.g. 844×390)** — **Proposed:** do **not** use the desktop four-corner HUD even if width ≥ 768. Stack compact chrome or a single bottom dock; never overlap TextLoop lines inside `overflow-hidden`. Social icons stay visible on `short` (not `short:hidden`).
 
 ```
 +------------------------------------------+

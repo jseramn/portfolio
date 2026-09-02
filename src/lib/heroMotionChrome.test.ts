@@ -45,11 +45,12 @@ describe("hero motion static fallbacks", () => {
     expect(renderToStaticMarkup(createElement(TextLoopStatic, null, roles))).toBe(
       renderToStaticMarkup(createElement(TextLoop, null, roles)),
     )
-    expect(
-      renderToStaticMarkup(
-        createElement(InfiniteSliderStatic, { gap: 32 }, createElement("span", null, "Hi")),
-      ).split("Hi").length,
-    ).toBe(3)
+    const pending = renderToStaticMarkup(
+      createElement(InfiniteSliderStatic, { gap: 32 }, createElement("span", null, "Hi")),
+    )
+    expect(pending.split("Hi").length).toBe(3)
+    expect(pending).toContain("data-marquee-fade")
+    expect(pending).toContain("marquee-edge-fade")
   })
 
   it("ready+reduced-motion keeps the static ticker box, not InfiniteSlider wrap-freeze", () => {
