@@ -723,42 +723,59 @@ export default function Hero() {
           </div>
           <div className="relative z-10 flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
             <div data-hud-region="roles">
-              <GlassSurface
-                preset="button"
-                mouseContainer={heroRootRef}
-                className="self-start w-max max-w-full md:shrink-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onHireCtaClicked()
-                    setContactOpen(true)
-                  }}
-                  className={`hero-on-video group inline-flex min-h-11 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW}`}
-                  aria-label="Hire / Contact"
+              <div className="flex flex-col gap-3 self-start hud:flex-row hud:items-end hud:gap-4">
+                <GlassSurface
+                  preset="button"
+                  mouseContainer={heroRootRef}
+                  className="self-start w-max max-w-full md:shrink-0"
                 >
-                  <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
-                  <span
-                    aria-hidden="true"
-                    className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onHireCtaClicked()
+                      setContactOpen(true)
+                    }}
+                    className={`hero-on-video group inline-flex min-h-11 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW}`}
+                    aria-label="Hire / Contact"
                   >
-                    <HeroMotionRoles
-                      ready={motionChrome}
-                      onIndexChange={setRoleIndex}
-                      paused={contactOpen}
+                    <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
+                    <span
+                      aria-hidden="true"
+                      className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
                     >
-                      {PROFESSIONS.map((p) => (
-                        <span
-                          key={p}
-                          className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </HeroMotionRoles>
-                  </span>
-                </button>
-              </GlassSurface>
+                      <HeroMotionRoles
+                        ready={motionChrome}
+                        onIndexChange={setRoleIndex}
+                        paused={contactOpen}
+                      >
+                        {PROFESSIONS.map((p) => (
+                          <span
+                            key={p}
+                            className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </HeroMotionRoles>
+                    </span>
+                  </button>
+                </GlassSurface>
+                <GlassSurface
+                  preset="button"
+                  mouseContainer={heroRootRef}
+                  className="self-start w-max max-w-full md:shrink-0"
+                >
+                  <a
+                    href={site.tinity.path}
+                    className={`hero-on-video ${TAP_TARGET} font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer ${GLOW} ${CHROME_FOCUS}`}
+                    aria-label="Open Tinity"
+                  >
+                    <span className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] hover:decoration-[var(--hero-ink)]/50">
+                      tinity
+                    </span>
+                  </a>
+                </GlassSurface>
+              </div>
             </div>
             <div data-hud-region="tagline" className="min-w-0 short:w-full">
               <GlassSurface

@@ -11,6 +11,7 @@ Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over
 - [Home](https://jseramn.tech/): identity and contact routing
 - [About](https://jseramn.tech/about): who operates the domain
 - [Contact](https://jseramn.tech/contact): mailto:contacto@jseramn.tech; encrypted browser form for humans
+- [Tinity](https://jseramn.tech/tinity): public landing for the Tinity harness experiment
 
 ## Legal
 

@@ -105,7 +105,7 @@ async function assertHireChrome(page: Page, testInfo: TestInfo) {
   if (testInfo.project.name === "chromium") {
     await expect(
       page.locator('[data-hero-root] [data-glass-host][data-glass-preset="button"]'),
-    ).toHaveCount(1, { timeout: 8_000 })
+    ).toHaveCount(2, { timeout: 8_000 })
   }
 
   const hire = page.getByRole("button", { name: "Hire / Contact" })

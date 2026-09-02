@@ -32,9 +32,9 @@ describe("Tinity subpage", () => {
 
   it("exposes a homepage Tinity control without restyling hire", () => {
     const hero = readSrc("components/Hero.tsx")
-    expect(hero).toContain('href={site.tinity.path}')
+    expect(hero).toContain("href={site.tinity.path}")
     expect(hero).toContain('aria-label="Open Tinity"')
     expect(hero).toContain("onHireCtaClicked")
-    expect(hero).toContain("Open contact form")
+    expect(hero).toContain("Hire / Contact")
   })
 })

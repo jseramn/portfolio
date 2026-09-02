@@ -56,7 +56,7 @@ describe("hero liquid-glass chrome wiring", () => {
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
-    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(hero)).toBe(6)
     expect(countGlassSurfaces(modal)).toBe(1)
     for (const preset of ["bar", "pill", "dock", "button", "card"] as const) {
       expect(hero).toContain(`preset="${preset}"`)
@@ -295,7 +295,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("timeout: 2000")
     expect(glass).toContain("setUseLiveGlass")
     expect(glass).toContain("getCapabilities().liveGlass")
-    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(hero)).toBe(6)
     expect(countGlassSurfaces(read("components/ContactModal.tsx"))).toBe(1)
   })
 
