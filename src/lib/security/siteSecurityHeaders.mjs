@@ -1,8 +1,6 @@
 /** Shared security header values — imported by Astro middleware and synced into vercel.json at build. */
 const SITE_ORIGIN = "https://jseramn.tech"
 const POSTHOG_HOST = "https://*.posthog.com"
-const VERCEL_ANALYTICS_SCRIPT = "https://va.vercel-scripts.com"
-const VERCEL_ANALYTICS_CONNECT = "https://vitals.vercel-insights.com"
 
 export function buildContentSecurityPolicy(isDev) {
   const scriptSrc = [
@@ -11,7 +9,6 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     POSTHOG_HOST,
-    VERCEL_ANALYTICS_SCRIPT,
   ]
 
   const connectSrc = [
@@ -21,7 +18,6 @@ export function buildContentSecurityPolicy(isDev) {
     "https://www.youtube.com",
     "https://challenges.cloudflare.com",
     POSTHOG_HOST,
-    VERCEL_ANALYTICS_CONNECT,
   ]
 
   if (isDev) {

@@ -1,11 +1,9 @@
 ---
 import globalCss from "../styles/globals.css?inline"
 import PostHog from "../components/posthog.astro"
-import VercelAnalytics from "../components/VercelAnalytics.astro"
 import { buildGraphJsonLd } from "../lib/agent/jsonld"
 import { site } from "../config/site"
 import geistSans from "../assets/fonts/Geist-Variable.woff2?url"
-import SpeedInsights from "@vercel/speed-insights/astro"
 
 interface Props {
   title?: string
@@ -97,7 +95,6 @@ const sameAs = site.socials
     <meta name="twitter:image:alt" content={site.seo.ogImageAlt} />
 
     <PostHog />
-    <VercelAnalytics />
 
     <script type="application/ld+json" set:html={JSON.stringify(buildGraphJsonLd(sameAs))} />
   </head>

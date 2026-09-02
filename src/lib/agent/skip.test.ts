@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { skipNegotiate } from "./skip"
+import { shouldNegotiateAccept, skipNegotiate } from "./skip"
 
 describe("skipNegotiate", () => {
   it("skips documentation-like and executable extensioned paths", () => {
@@ -25,5 +25,25 @@ describe("skipNegotiate", () => {
     expect(skipNegotiate("/about")).toBe(false)
     expect(skipNegotiate("/contact")).toBe(false)
     expect(skipNegotiate("/some-path-that-does-not-exist")).toBe(false)
+  })
+})
+
+describe("shouldNegotiateAccept", () => {
+  it("does not read Accept on prerendered pages", () => {
+    expect(shouldNegotiateAccept("/policy", true)).toBe(false)
+    expect(shouldNegotiateAccept("/terms", true)).toBe(false)
+    expect(shouldNegotiateAccept("/data-deletion", true)).toBe(false)
+    expect(shouldNegotiateAccept("/", true)).toBe(false)
+  })
+
+  it("negotiates Accept on SSR HTML routes", () => {
+    expect(shouldNegotiateAccept("/", false)).toBe(true)
+    expect(shouldNegotiateAccept("/about", false)).toBe(true)
+    expect(shouldNegotiateAccept("/contact", false)).toBe(true)
+  })
+
+  it("still skips APIs and static files when SSR", () => {
+    expect(shouldNegotiateAccept("/api/contact", false)).toBe(false)
+    expect(shouldNegotiateAccept("/llms.txt", false)).toBe(false)
   })
 })

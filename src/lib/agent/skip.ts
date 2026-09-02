@@ -7,3 +7,8 @@ export function skipNegotiate(pathname: string): boolean {
   const segments = path.split("/").filter(Boolean)
   return segments.some((segment) => segment.includes("."))
 }
+
+/** False on prerendered routes so they never read request headers at build. */
+export function shouldNegotiateAccept(pathname: string, isPrerendered: boolean): boolean {
+  return !isPrerendered && !skipNegotiate(pathname)
+}
