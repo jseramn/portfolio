@@ -276,6 +276,15 @@ body {
   left: var(--glass-ex, 0px);
 }
 
+[data-glass-host][data-glass-preset="button"] {
+  width: max-content;
+  max-width: 100%;
+}
+
+[data-glass-host][data-glass-preset="button"] .glass {
+  overflow: visible !important;
+}
+
 [data-glass-host][data-glass-preset="bar"],
 [data-glass-host][data-glass-preset="modal"] {
   display: block;
