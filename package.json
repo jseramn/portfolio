@@ -10,6 +10,7 @@
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "typecheck": "astro check && tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
@@ -34,6 +35,7 @@
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "@biomejs/biome": "^2.5.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
