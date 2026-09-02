@@ -168,8 +168,16 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")
-    expect(llms).toContain("linkedin.com")
     expect(llms).toContain("https://jseramn.tech/oembed.json")
+    expect(llms).toMatch(/^## Pages$/m)
+    expect(llms).toMatch(/^## Legal$/m)
+    expect(llms).toMatch(/^## Optional$/m)
+    expect(llms).toContain("Accept: text/markdown")
+    expect(llms).toContain("Prefer email over any JSON API")
+    expect(llms).toContain("/.well-known/security.txt")
+    expect(llms).not.toMatch(/^- \*\*/m)
+    const fileList = llms.match(/^- \[[^\]]+\]\([^)]+\)/gm) ?? []
+    expect(fileList.length).toBeGreaterThanOrEqual(6)
 
     const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8")) as {
       redirects: { source: string; destination: string; permanent: boolean }[]
