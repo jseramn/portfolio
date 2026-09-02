@@ -122,6 +122,80 @@ async function assertHireChrome(page: Page, testInfo: TestInfo) {
   expect(report.smallTargets, JSON.stringify(report.smallTargets)).toEqual([])
 }
 
+type HudBox = { name: string; x: number; y: number; w: number; h: number }
+
+type HudOverlapReport = {
+  names: string[]
+  overlaps: string[]
+  overflowX: boolean
+  scrollWidth: number
+  clientWidth: number
+  boxes: HudBox[]
+}
+
+function measureHudOverlap(page: Page) {
+  return page.locator("[data-hero-root]").evaluate((root): HudOverlapReport => {
+    const boxes = [...root.querySelectorAll<HTMLElement>("[data-hud-region]")].flatMap((el) => {
+      const r = el.getBoundingClientRect()
+      if (r.width <= 1 || r.height <= 1) return []
+      return [
+        {
+          name: el.dataset.hudRegion ?? "unknown",
+          x: r.x,
+          y: r.y,
+          w: r.width,
+          h: r.height,
+        },
+      ]
+    })
+    const slack = 2
+    const overlaps: string[] = []
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]
+        const b = boxes[j]
+        const hit =
+          a.x + slack < b.x + b.w &&
+          a.x + a.w > b.x + slack &&
+          a.y + slack < b.y + b.h &&
+          a.y + a.h > b.y + slack
+        if (hit) overlaps.push(`${a.name}∩${b.name}`)
+      }
+    }
+    return {
+      names: boxes.map((b) => b.name).sort(),
+      overlaps,
+      overflowX: root.scrollWidth > root.clientWidth + 1,
+      scrollWidth: root.scrollWidth,
+      clientWidth: root.clientWidth,
+      boxes,
+    }
+  })
+}
+
+async function assertHudRegions(page: Page) {
+  await expect
+    .poll(async () => (await measureHudOverlap(page)).names.length, { timeout: 8_000 })
+    .toBeGreaterThanOrEqual(5)
+
+  const report = await measureHudOverlap(page)
+  expect(report.names, JSON.stringify(report)).toEqual([
+    "marquee",
+    "now-playing",
+    "roles",
+    "socials",
+    "tagline",
+  ])
+  expect(report.overlaps, JSON.stringify(report)).toEqual([])
+  expect(report.overflowX, JSON.stringify(report)).toBe(false)
+}
+
+const SHORT_VIEWPORTS = [
+  { width: 844, height: 390 },
+  { width: 1024, height: 480 },
+  { width: 1280, height: 480 },
+] as const
+
 test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
   await openHome(page)
 
@@ -167,4 +241,21 @@ test("home chrome: 44px tap targets and unclipped hire CTA", async ({ page }, te
   await page.setViewportSize({ width: 768, height: 1024 })
   await page.evaluate(() => document.fonts.ready)
   await assertHireChrome(page, testInfo)
+})
+
+test("home chrome: hud regions do not overlap or overflow", async ({ page }, testInfo) => {
+  await openHome(page)
+  await assertHudRegions(page)
+
+  if (testInfo.project.name !== "chromium") return
+
+  for (const viewport of SHORT_VIEWPORTS) {
+    await page.setViewportSize(viewport)
+    await page.evaluate(() => document.fonts.ready)
+    await assertHudRegions(page)
+  }
+
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await page.evaluate(() => document.fonts.ready)
+  await assertHudRegions(page)
 })

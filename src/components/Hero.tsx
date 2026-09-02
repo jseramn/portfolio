@@ -385,7 +385,7 @@ export default function Hero() {
       </Suspense>
       <div
         ref={heroRootRef}
-        className="relative z-10 flex h-dvh max-h-dvh flex-col overflow-hidden md:block"
+        className="relative z-10 flex h-dvh max-h-dvh flex-col gap-2 overflow-hidden hud:block hud:gap-0"
         data-hero-root
       >
         <canvas
@@ -405,7 +405,10 @@ export default function Hero() {
           className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
           aria-hidden
         />
-        <div className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:block md:px-0 md:pt-8">
+        <div
+          data-hud-region="marquee"
+          className="relative z-10 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] hud:absolute hud:inset-x-0 hud:top-0 hud:px-0 hud:pt-8"
+        >
           <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
             <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
               <span className={MARQUEE_TYPE}>
@@ -456,19 +459,24 @@ export default function Hero() {
               {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
             </InfiniteSlider>
           </GlassSurface>
-          <div className="md:absolute md:inset-x-auto md:right-8 md:top-24">
+        </div>
+        <div className="relative z-10 mt-auto flex min-h-0 flex-1 flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] hud:contents short:mt-auto short:flex-none short:flex-row short:flex-nowrap short:items-end short:gap-2">
+          <div
+            data-hud-region="now-playing"
+            className="hud:absolute hud:inset-x-auto hud:right-8 hud:top-24 short:shrink-0"
+          >
             <GlassSurface
               preset="pill"
               mouseContainer={heroRootRef}
-              className="w-full md:w-fit md:ml-auto"
+              className="w-full hud:ml-auto hud:w-fit short:w-auto"
             >
-              <div className="font-mono text-xs md:text-sm flex flex-wrap items-center justify-center md:justify-end gap-2 px-4 md:px-0">
+              <div className="font-mono text-xs md:text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0 short:flex-nowrap short:px-0">
                 {musicPlaying ? (
                   <a
                     href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hero-on-video inline-flex min-h-11 items-center whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
+                    className="hero-on-video inline-flex min-h-11 items-center whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis short:hidden"
                     style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
                   >
                     <span className="sound-bars">
@@ -483,7 +491,7 @@ export default function Hero() {
                   <button
                     type="button"
                     onClick={toggleMusic}
-                    className={`hero-on-video inline-flex min-h-11 items-center whitespace-nowrap cursor-pointer ${GLOW}`}
+                    className={`hero-on-video inline-flex min-h-11 items-center whitespace-nowrap cursor-pointer short:hidden ${GLOW}`}
                     style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
                   >
                     click to listen{" "}
@@ -532,12 +540,16 @@ export default function Hero() {
               </div>
             </GlassSurface>
           </div>
-        </div>
-        <div className="relative z-[1] min-h-0 flex-1 pointer-events-none md:hidden" aria-hidden />
-        <div className="relative z-10 mt-auto flex flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:contents">
-          <div className="flex justify-center z-10 md:absolute md:left-8 md:top-24 md:bottom-auto md:right-auto md:translate-x-0 md:justify-start">
+          <div
+            className="relative z-[1] min-h-0 flex-1 pointer-events-none hud:hidden short:hidden"
+            aria-hidden
+          />
+          <div
+            data-hud-region="socials"
+            className="flex justify-center z-10 hud:absolute hud:left-8 hud:top-24 hud:bottom-auto hud:right-auto hud:translate-x-0 hud:justify-start short:shrink-0"
+          >
             <GlassSurface preset="dock" mouseContainer={heroRootRef}>
-              <div className="flex flex-row items-center gap-4 md:gap-5">
+              <div className="flex flex-row items-center gap-4 md:gap-5 short:gap-2">
                 {site.socials.map((social) => {
                   const Icon = SOCIAL_ICONS[social.icon]
                   if (!Icon) return null
@@ -559,49 +571,57 @@ export default function Hero() {
               </div>
             </GlassSurface>
           </div>
-          <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
-            <GlassSurface
-              preset="button"
-              mouseContainer={heroRootRef}
-              className="self-start w-max max-w-full md:shrink-0"
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  onHireCtaClicked()
-                  setContactOpen(true)
-                }}
-                className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
-                aria-label={`Open contact form — current role: ${activeRole}`}
+          <div className="flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
+            <div data-hud-region="roles">
+              <GlassSurface
+                preset="button"
+                mouseContainer={heroRootRef}
+                className="self-start w-max max-w-full md:shrink-0"
               >
-                <span aria-hidden="true">
-                  <TextLoop
-                    interval={2.5}
-                    transition={{ duration: 0.4 }}
-                    onIndexChange={setRoleIndex}
-                    paused={contactOpen}
-                  >
-                    {PROFESSIONS.map((p) => (
-                      <span
-                        key={p}
-                        className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
-                      >
-                        {p}
-                      </span>
-                    ))}
-                  </TextLoop>
-                </span>
-              </button>
-            </GlassSurface>
-            <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
-              <p
-                className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
-                onMouseEnter={desc.start}
-                onMouseLeave={desc.stop}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onHireCtaClicked()
+                    setContactOpen(true)
+                  }}
+                  className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
+                  aria-label={`Open contact form — current role: ${activeRole}`}
+                >
+                  <span aria-hidden="true">
+                    <TextLoop
+                      interval={2.5}
+                      transition={{ duration: 0.4 }}
+                      onIndexChange={setRoleIndex}
+                      paused={contactOpen}
+                    >
+                      {PROFESSIONS.map((p) => (
+                        <span
+                          key={p}
+                          className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
+                        >
+                          {p}
+                        </span>
+                      ))}
+                    </TextLoop>
+                  </span>
+                </button>
+              </GlassSurface>
+            </div>
+            <div data-hud-region="tagline" className="min-w-0 short:w-full">
+              <GlassSurface
+                preset="card"
+                mouseContainer={heroRootRef}
+                className="w-full md:w-auto short:min-w-0"
               >
-                {desc.display}
-              </p>
-            </GlassSurface>
+                <p
+                  className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed hud:max-w-md text-left hud:text-right cursor-default ${GLOW} whitespace-pre-line short:whitespace-normal`}
+                  onMouseEnter={desc.start}
+                  onMouseLeave={desc.stop}
+                >
+                  {desc.display}
+                </p>
+              </GlassSurface>
+            </div>
           </div>
         </div>
         <div className="absolute w-0 h-0 overflow-hidden">

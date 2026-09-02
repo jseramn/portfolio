@@ -63,6 +63,12 @@ const config: Config = {
         sans: ["var(--font-geist-sans)"],
         mono: ["var(--font-geist-mono)"],
       },
+      screens: {
+        hud: { raw: "(min-width: 768px) and (min-height: 700px)" },
+        short: {
+          raw: "(max-height: 499px), (min-width: 768px) and (max-height: 699px)",
+        },
+      },
       keyframes: {
         flicker: {
           "0%, 100%": { opacity: "1" },

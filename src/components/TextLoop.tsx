@@ -45,7 +45,7 @@ export function TextLoop({
   }
 
   return (
-    <div className={`relative inline-grid justify-items-start ${className ?? ""}`}>
+    <div className={`relative inline-grid justify-items-start overflow-hidden ${className ?? ""}`}>
       {items.map((item) =>
         isValidElement(item) ? (
           <div
@@ -57,7 +57,7 @@ export function TextLoop({
           </div>
         ) : null,
       )}
-      <div className="col-start-1 row-start-1 overflow-hidden">
+      <div className="col-start-1 row-start-1 h-full overflow-hidden">
         <AnimatePresence mode={mode} initial={false}>
           <motion.div
             key={currentIndex}
