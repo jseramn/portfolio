@@ -327,8 +327,21 @@ async function assertHomeIdentity(page: Page) {
 }
 
 test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async ({ page }) => {
+  await page.addInitScript(() => {
+    const state = window as typeof window & { __heroCls: number }
+    state.__heroCls = 0
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number }
+        if (!shift.hadRecentInput) state.__heroCls += shift.value ?? 0
+      }
+    })
+    observer.observe({ type: "layout-shift", buffered: true })
+  })
   await openHome(page)
-  const marquee = page.locator("[data-hud-region=marquee] .flex.w-max").first()
+  const marqueeRegion = page.locator("[data-hud-region=marquee]")
+  const marquee = marqueeRegion.locator(".flex.w-max").first()
+  const firstHeight = await marqueeRegion.evaluate((el) => el.getBoundingClientRect().height)
   const firstTransform = await marquee.evaluate((el) => getComputedStyle(el).transform)
   await expect
     .poll(async () => marquee.evaluate((el) => getComputedStyle(el).transform), { timeout: 5_000 })
@@ -344,19 +357,9 @@ test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async 
     })
     .not.toBe(firstRole)
 
-  const cls = await page.evaluate(() => {
-    let total = 0
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const shift = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number }
-        if (!shift.hadRecentInput) total += shift.value ?? 0
-      }
-    })
-    observer.observe({ type: "layout-shift", buffered: true })
-    observer.disconnect()
-    return total
-  })
+  const cls = await page.evaluate(() => (window as typeof window & { __heroCls: number }).__heroCls)
   expect(cls).toBeLessThan(0.01)
+  expect(await marqueeRegion.evaluate((el) => el.getBoundingClientRect().height)).toBe(firstHeight)
 })
 
 test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {

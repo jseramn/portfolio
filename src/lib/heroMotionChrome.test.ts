@@ -1,11 +1,21 @@
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { TextLoop } from "../components/TextLoop"
-import { InfiniteSliderStatic, TextLoopStatic } from "../components/heroMotionStatic"
+import {
+  HeroMotionSlider,
+  InfiniteSliderStatic,
+  TextLoopStatic,
+} from "../components/heroMotionStatic"
 import { site } from "../config/site"
 import { ASCII_PAINT_SELECTOR } from "./domSignals"
 import { scheduleHeroMotionChrome } from "./heroMotionSchedule"
+
+const motionPrefs = vi.hoisted(() => ({ reducedMotion: false }))
+
+vi.mock("./capabilities", () => ({
+  getCapabilities: () => ({ reducedMotion: motionPrefs.reducedMotion }),
+}))
 
 vi.mock("motion/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("motion/react")>()),
@@ -13,6 +23,10 @@ vi.mock("motion/react", async (importOriginal) => ({
 }))
 
 const roles = site.roles.map((role) => createElement("span", { key: role }, role))
+
+afterEach(() => {
+  motionPrefs.reducedMotion = false
+})
 
 describe("hero motion static fallbacks", () => {
   it("arms immediately when ASCII has already painted", () => {
@@ -36,5 +50,18 @@ describe("hero motion static fallbacks", () => {
         createElement(InfiniteSliderStatic, { gap: 32 }, createElement("span", null, "Hi")),
       ).split("Hi").length,
     ).toBe(3)
+  })
+
+  it("ready+reduced-motion keeps the static ticker box, not InfiniteSlider wrap-freeze", () => {
+    motionPrefs.reducedMotion = true
+    const child = createElement("span", null, "Hi")
+    const pending = renderToStaticMarkup(createElement(InfiniteSliderStatic, { gap: 32 }, child))
+    const ready = renderToStaticMarkup(createElement(HeroMotionSlider, { ready: true }, child))
+    expect(ready).toContain("data-marquee-static")
+    expect(ready).toContain("flex w-max")
+    expect(ready).not.toContain("flex-wrap")
+    expect(ready).not.toContain("max-w-full")
+    expect(ready.split("Hi").length).toBe(3)
+    expect(ready.replaceAll("data-marquee-static", "data-marquee-pending")).toBe(pending)
   })
 })

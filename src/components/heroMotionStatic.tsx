@@ -1,4 +1,5 @@
 import { Children, cloneElement, isValidElement, lazy, Suspense, type ReactNode } from "react"
+import { getCapabilities } from "../lib/capabilities"
 
 const LazyTextLoop = lazy(() => import("./TextLoop").then((mod) => ({ default: mod.TextLoop })))
 const LazySlider = lazy(() =>
@@ -36,13 +37,18 @@ export function InfiniteSliderStatic({
   children,
   gap = 16,
   className,
+  frozen = false,
 }: {
   children?: ReactNode
   gap?: number
   className?: string
+  frozen?: boolean
 }) {
   return (
-    <div className={`overflow-hidden ${className ?? ""}`} data-marquee-pending="">
+    <div
+      className={`overflow-hidden ${className ?? ""}`}
+      {...(frozen ? { "data-marquee-static": "" } : { "data-marquee-pending": "" })}
+    >
       <div className="flex w-max" style={{ gap: `${gap}px`, flexDirection: "row" }}>
         {children}
         {children}
@@ -51,9 +57,16 @@ export function InfiniteSliderStatic({
   )
 }
 
-export function HeroMotionSlider({ ready, children }: { ready: boolean; children: ReactNode }) {
+export function HeroMotionSlider({ ready, children }: { ready: boolean; children?: ReactNode }) {
   const fallback = <InfiniteSliderStatic gap={32}>{children}</InfiniteSliderStatic>
   if (!ready) return fallback
+  if (getCapabilities().reducedMotion) {
+    return (
+      <InfiniteSliderStatic gap={32} frozen>
+        {children}
+      </InfiniteSliderStatic>
+    )
+  }
   return (
     <Suspense fallback={fallback}>
       <LazySlider gap={32} speed={50} speedOnHover={20}>
