@@ -39,7 +39,7 @@ type HireChromeReport = {
 
 function measureHireChrome(page: Page) {
   return page.locator("[data-hero-root]").evaluate((root): HireChromeReport => {
-    const hireEl = root.querySelector<HTMLElement>('[aria-label^="Open contact form"]')
+    const hireEl = root.querySelector<HTMLElement>('[aria-label="Hire / Contact"]')
     const label = hireEl?.querySelector<HTMLElement>('[aria-hidden="true"]') ?? hireEl
     const liveHost = root.querySelector<HTMLElement>(
       '[data-glass-host][data-glass-preset="button"]',
@@ -108,7 +108,7 @@ async function assertHireChrome(page: Page, testInfo: TestInfo) {
     ).toHaveCount(1, { timeout: 8_000 })
   }
 
-  const hire = page.getByRole("button", { name: /Open contact form/ })
+  const hire = page.getByRole("button", { name: "Hire / Contact" })
   await expect
     .poll(async () => hire.evaluate((el) => el.clientWidth), { timeout: 8_000 })
     .toBeGreaterThan(80)
@@ -202,7 +202,7 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
   await expect(page.locator("main")).toBeAttached()
   await expect(page.getByRole("heading", { level: 1 })).toBeAttached()
 
-  const hire = page.getByRole("button", { name: /Open contact form/ })
+  const hire = page.getByRole("button", { name: "Hire / Contact" })
   await hire.click()
   const dialog = page.locator('[role="dialog"][aria-modal="true"]')
   await expect(dialog).toBeVisible()
@@ -296,13 +296,63 @@ test("home chrome: hud regions do not overlap or overflow", async ({ page }, tes
 
   if (testInfo.project.name !== "chromium") return
 
-  for (const viewport of SHORT_VIEWPORTS) {
+  for (const viewport of [
+    ...SHORT_VIEWPORTS,
+    { width: 768, height: 1024 },
+    { width: 1920, height: 1080 },
+  ]) {
     await page.setViewportSize(viewport)
     await page.evaluate(() => document.fonts.ready)
     await assertHudRegions(page)
   }
+})
 
-  await page.setViewportSize({ width: 1920, height: 1080 })
-  await page.evaluate(() => document.fonts.ready)
-  await assertHudRegions(page)
+async function assertHomeIdentity(page: Page) {
+  const root = page.locator("[data-hero-root]")
+  const wordmark = root.getByRole("link", { name: "jseramn", exact: true })
+  const about = root.getByRole("link", { name: "about", exact: true })
+  const contact = root.getByRole("link", { name: "contact", exact: true })
+  const hire = page.getByRole("button", { name: "Hire / Contact" })
+
+  for (const loc of [wordmark, about, contact]) {
+    await expect(loc).toBeVisible()
+    const box = await loc.boundingBox()
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+  }
+
+  await expect(hire).toBeVisible()
+  await expect(hire).toContainText(/hire/i)
+  await expect(hire).not.toHaveAttribute("aria-live")
+}
+
+test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {
+  await openHome(page)
+  await assertHomeIdentity(page)
+
+  const forceClick = testInfo.project.name === "landscape-phone"
+  const about = page.locator("[data-hero-root]").getByRole("link", { name: "about", exact: true })
+  const aboutDoc = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/about" &&
+      response.request().resourceType() === "document",
+  )
+  await about.click({ force: forceClick })
+  expect((await aboutDoc).status()).toBe(200)
+  await expect(page).toHaveURL(/\/about\/?$/)
+
+  await openHome(page)
+  await assertHomeIdentity(page)
+
+  const contact = page
+    .locator("[data-hero-root]")
+    .getByRole("link", { name: "contact", exact: true })
+  const contactDoc = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/contact" &&
+      response.request().resourceType() === "document",
+  )
+  await contact.click({ force: forceClick })
+  expect((await contactDoc).status()).toBe(200)
+  await expect(page).toHaveURL(/\/contact\/?$/)
 })

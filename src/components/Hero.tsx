@@ -19,7 +19,13 @@ const CHARS = "!@#$%^&*()_+-=[]{}|;:,./<>?`~abcdefghijklmnopqrstuvwxyz0123456789
 const GLOW =
   "transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(0,0,0,0.75)] hover:text-[var(--hero-ink-hover)]"
 const TAP_TARGET = "inline-flex min-h-11 min-w-11 items-center justify-center"
+const CHROME_FOCUS =
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]"
 const MARQUEE_TYPE = "hero-on-video font-mono text-sm md:text-base whitespace-nowrap"
+const HOME_NAV = [
+  { href: "/about", label: "about" },
+  { href: "/contact", label: "contact" },
+] as const
 
 function useScramble(text: string, { autoStart = false }: { autoStart?: boolean } = {}) {
   const [display, setDisplay] = useState(autoStart ? ".".repeat(text.length) : text)
@@ -407,9 +413,20 @@ export default function Hero() {
         />
         <div
           data-hud-region="marquee"
-          className="relative z-10 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] hud:absolute hud:inset-x-0 hud:top-0 hud:px-0 hud:pt-8"
+          className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] hud:absolute hud:inset-x-0 hud:top-0 hud:flex-row hud:items-center hud:gap-4 hud:px-8 hud:pt-8 short:flex-row short:items-center short:gap-3"
         >
-          <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
+          <a
+            href="/"
+            aria-current="page"
+            className={`hero-on-video font-mono text-sm ${TAP_TARGET} ${GLOW} ${CHROME_FOCUS} shrink-0 self-start hud:self-center`}
+          >
+            {site.brand}
+          </a>
+          <GlassSurface
+            preset="bar"
+            mouseContainer={heroRootRef}
+            className="w-full min-w-0 hud:flex-1 short:flex-1"
+          >
             <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
               <span className={MARQUEE_TYPE}>
                 Hi, I am {site.name} — {site.locationLine}
@@ -549,25 +566,44 @@ export default function Hero() {
             className="flex justify-center z-10 hud:absolute hud:left-8 hud:top-24 hud:bottom-auto hud:right-auto hud:translate-x-0 hud:justify-start short:shrink-0"
           >
             <GlassSurface preset="dock" mouseContainer={heroRootRef}>
-              <div className="flex flex-row items-center gap-4 md:gap-5 short:gap-2">
-                {site.socials.map((social) => {
-                  const Icon = SOCIAL_ICONS[social.icon]
-                  if (!Icon) return null
-                  const external = social.href.startsWith("http")
-                  return (
-                    <a
-                      key={social.id}
-                      href={social.href}
-                      target={external ? "_blank" : undefined}
-                      rel={external ? "noopener noreferrer" : undefined}
-                      className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} ${TAP_TARGET} hover:scale-125`}
-                      aria-label={social.id}
-                      onClick={() => onOutboundSocial(social.id)}
-                    >
-                      <Icon size={24} />
-                    </a>
-                  )
-                })}
+              <div className="flex flex-col items-center gap-1 short:flex-row short:items-center">
+                <div className="flex flex-row items-center gap-4 md:gap-5 short:hidden">
+                  {site.socials.map((social) => {
+                    const Icon = SOCIAL_ICONS[social.icon]
+                    if (!Icon) return null
+                    const external = social.href.startsWith("http")
+                    return (
+                      <a
+                        key={social.id}
+                        href={social.href}
+                        target={external ? "_blank" : undefined}
+                        rel={external ? "noopener noreferrer" : undefined}
+                        className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} ${TAP_TARGET} hover:scale-125`}
+                        aria-label={social.id}
+                        onClick={() => onOutboundSocial(social.id)}
+                      >
+                        <Icon size={24} />
+                      </a>
+                    )
+                  })}
+                </div>
+                <nav aria-label="Site" className="flex flex-row items-center gap-1">
+                  {HOME_NAV.map((item, index) => (
+                    <span key={item.href} className="flex items-center gap-1">
+                      {index > 0 ? (
+                        <span className="hero-ink-muted font-mono text-sm" aria-hidden>
+                          ·
+                        </span>
+                      ) : null}
+                      <a
+                        href={item.href}
+                        className={`hero-on-video font-mono text-sm ${TAP_TARGET} ${GLOW} ${CHROME_FOCUS}`}
+                      >
+                        {item.label}
+                      </a>
+                    </span>
+                  ))}
+                </nav>
               </div>
             </GlassSurface>
           </div>
@@ -584,10 +620,14 @@ export default function Hero() {
                     onHireCtaClicked()
                     setContactOpen(true)
                   }}
-                  className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW}`}
-                  aria-label={`Open contact form — current role: ${activeRole}`}
+                  className={`hero-on-video group inline-flex min-h-11 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW}`}
+                  aria-label="Hire / Contact"
                 >
-                  <span aria-hidden="true">
+                  <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
+                  <span
+                    aria-hidden="true"
+                    className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
+                  >
                     <TextLoop
                       interval={2.5}
                       transition={{ duration: 0.4 }}
