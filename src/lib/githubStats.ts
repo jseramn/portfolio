@@ -47,15 +47,9 @@ function githubHeaders(token?: string): HeadersInit {
   return headers
 }
 
-/** Authenticated `/users/{user}/events` includes private activity for the token owner. */
+/** Always public events: CDN-cached JSON must never include the token owner's private activity. */
 async function fetchUserEvents(username: string, token?: string): Promise<unknown> {
   const headers = githubHeaders(token)
-
-  if (token) {
-    const authed = await fetch(`${GITHUB_API}/users/${username}/events?per_page=30`, { headers })
-    if (authed.ok) return authed.json()
-  }
-
   const pub = await fetch(`${GITHUB_API}/users/${username}/events/public?per_page=30`, { headers })
   if (!pub.ok) throw new Error("github_events_failed")
   return pub.json()

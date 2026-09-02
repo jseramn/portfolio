@@ -5,6 +5,13 @@ import { fetchGitHubStats, type GitHubStats } from "../../lib/githubStats"
 
 export const prerender = false
 
+const methodNotAllowed = () =>
+  Response.json({ error: "method_not_allowed" }, { status: 405, headers: { Allow: "GET" } })
+
+export const POST: APIRoute = () => methodNotAllowed()
+
+export const OPTIONS: APIRoute = () => methodNotAllowed()
+
 const CACHE_MS = 5 * 60 * 1000
 
 let memoryCache: { data: GitHubStats; at: number } | null = null

@@ -16,29 +16,27 @@ async function getOEmbed(target: string | null): Promise<Response> {
 }
 
 describe("resolveOEmbed", () => {
-  it("returns rich iframe payloads for allowlisted paths", () => {
+  it("returns photo payloads using the OG image that CSP allows", () => {
     for (const path of OEMBED_PATHS) {
       const target = path === "/" ? "https://jseramn.tech/" : `https://jseramn.tech${path}`
       const payload = resolveOEmbed(target, origins)
       expect(payload).not.toBeNull()
       expect(payload).toMatchObject({
         version: "1.0",
-        type: "rich",
+        type: "photo",
+        url: site.seo.ogImage,
         title: site.seo.title,
         author_name: site.name,
+        author_url: site.url,
         provider_name: site.brand,
         provider_url: site.url,
         thumbnail_url: site.seo.ogImage,
         thumbnail_width: 1200,
         thumbnail_height: 630,
-        width: 480,
-        height: 320,
+        width: 1200,
+        height: 630,
       })
-      expect(payload?.html).toContain(
-        `src="${target === "https://jseramn.tech/" ? "https://jseramn.tech/" : `https://jseramn.tech${path}`}"`,
-      )
-      expect(payload?.html).toContain('width="480"')
-      expect(payload?.html).toContain('height="320"')
+      expect(payload).not.toHaveProperty("html")
     }
   })
 
@@ -52,19 +50,24 @@ describe("resolveOEmbed", () => {
 })
 
 describe("GET /oembed.json", () => {
-  it("returns 200 rich JSON for allowlisted urls and 404 otherwise", async () => {
+  it("returns 200 photo JSON for allowlisted urls and 400 JSON otherwise", async () => {
     const ok = await getOEmbed("https://jseramn.tech/about")
     expect(ok.status).toBe(200)
-    const body = (await ok.json()) as { type: string; html: string; width: number; height: number }
-    expect(body.type).toBe("rich")
-    expect(body.html).toContain("https://jseramn.tech/about")
-    expect(body.width).toBe(480)
-    expect(body.height).toBe(320)
+    expect(ok.headers.get("content-type") ?? "").toMatch(/application\/json/)
+    const body = (await ok.json()) as { type: string; url: string; width: number; height: number }
+    expect(body.type).toBe("photo")
+    expect(body.url).toBe(site.seo.ogImage)
+    expect(body.width).toBe(1200)
+    expect(body.height).toBe(630)
+    expect(body).not.toHaveProperty("html")
 
-    expect((await getOEmbed(null)).status).toBe(404)
-    expect((await getOEmbed("https://evil.example/")).status).toBe(404)
-    expect((await getOEmbed("https://jseramn.tech/api/contact")).status).toBe(404)
-    expect((await getOEmbed("https://jseramn.tech/unknown")).status).toBe(404)
+    const missing = await getOEmbed(null)
+    expect(missing.status).toBe(400)
+    expect(missing.headers.get("content-type") ?? "").toMatch(/application\/json/)
+    await expect(missing.json()).resolves.toEqual({ error: "url_required" })
+    expect((await getOEmbed("https://evil.example/")).status).toBe(400)
+    expect((await getOEmbed("https://jseramn.tech/api/contact")).status).toBe(400)
+    expect((await getOEmbed("https://jseramn.tech/unknown")).status).toBe(400)
   })
 
   it("stays dynamic and does not flip home, about, contact, or 404 to prerender true", () => {
