@@ -2,8 +2,11 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { site } from "../../config/site"
+import { MANIFESTO } from "../../tinity/experience/copy"
 import { agentCopy, readableLength } from "./copy"
 import { LEGAL_PAGE_IDS, legalDocument, legalVisibleText, normalizeLegalVisible } from "./legalCopy"
+import { pageFromPath, toMarkdown } from "./markdown"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..")
 const dist = join(root, "dist/client")
@@ -287,6 +290,18 @@ describe("built HTML overlay", () => {
       ])
       expect(allowedExternal.has(parsed.hostname), url).toBe(true)
     }
+  })
+
+  it("tinity HTML source and markdown share title, manifesto, and repo without live fetch", () => {
+    const src = readFileSync(join(root, "src/pages/tinity/index.astro"), "utf8")
+    expect(src).toContain("<h1>{site.tinity.name}</h1>")
+    expect(src).toContain("{MANIFESTO}")
+    expect(src).toContain("site.tinity.repo")
+    expect(pageFromPath("/tinity")).toBe("tinity")
+    const md = toMarkdown("tinity")
+    expect(md).toContain(`# ${site.tinity.name}`)
+    expect(md).toContain(MANIFESTO)
+    expect(md).toContain(site.tinity.repo)
   })
 
   it("legal HTML readable text matches the shared legal copy", async () => {

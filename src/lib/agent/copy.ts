@@ -1,6 +1,7 @@
 import { site } from "../../config/site"
+import { MANIFESTO } from "../../tinity/experience/copy"
 
-export type AgentPage = "home" | "about" | "contact" | "notFound"
+export type AgentPage = "home" | "about" | "contact" | "notFound" | "tinity"
 
 export type AgentSection = {
   h2: string
@@ -16,6 +17,8 @@ export type AgentCopy = {
 const ORGS = site.marqueeOrgs
   .map((org) => ("href" in org && org.href ? `${org.label} (${org.href})` : org.label))
   .join("; ")
+
+const TINTY_EXPERIMENT = "Tinity is a single public experiment at /tinity, not a product catalog."
 
 const HOME_H1 = `${site.name} (${site.brand})`
 
@@ -50,7 +53,7 @@ const HOME_SECTIONS: readonly AgentSection[] = [
     body: [
       `jseramn.tech is not a product, SaaS, or billed service. It does not publish pricing, plans, packages, or a commercial catalog.`,
       `There is no /projects, /docs, or /services catalog on this domain.`,
-      `Tinity is a single public experiment at /tinity, not a product catalog.`,
+      TINTY_EXPERIMENT,
       `There is no app download, no waitlist, and no self-serve billing.`,
       `The visible homepage is a live ASCII portrait of ${site.name} on a black terminal layout; this article remains the readable source for agents.`,
       `The hire control and encrypted contact form on that visual layer are the same contact routes named here and on /contact.`,
@@ -87,6 +90,14 @@ const CONTACT_BODY = [
   `Legal: /policy, /terms, /data-deletion. Sitemap: /sitemap-index.xml. Agent index: /llms.txt.`,
 ].join(" ")
 
+const TINTY_H1 = site.tinity.name
+
+const TINTY_BODY = [
+  TINTY_EXPERIMENT,
+  MANIFESTO,
+  `Source: ${site.tinity.repo}. Home: ${site.url}.`,
+].join(" ")
+
 const NOT_FOUND_H1 = "Page not found"
 
 const NOT_FOUND_BODY = [
@@ -99,6 +110,7 @@ const PAGES: Record<AgentPage, AgentCopy> = {
   about: { h1: ABOUT_H1, body: ABOUT_BODY },
   contact: { h1: CONTACT_H1, body: CONTACT_BODY },
   notFound: { h1: NOT_FOUND_H1, body: NOT_FOUND_BODY },
+  tinity: { h1: TINTY_H1, body: TINTY_BODY },
 }
 
 export function agentCopy(page: AgentPage): AgentCopy {

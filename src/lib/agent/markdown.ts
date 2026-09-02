@@ -23,6 +23,7 @@ export function pageFromPath(pathname: string): MarkdownPage | null {
   if (path === "/") return "home"
   if (path === "/about") return "about"
   if (path === "/contact") return "contact"
+  if (path === "/tinity") return "tinity"
   const legal = legalDocumentFromPath(path)
   return legal?.id ?? null
 }

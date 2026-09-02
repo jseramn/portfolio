@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest"
+import { site } from "../../config/site"
+import { MANIFESTO } from "../../tinity/experience/copy"
 import { ACCEPT_VARY, negotiate } from "./accept"
 import { agentCopy } from "./copy"
 import { LEGAL_PAGE_IDS, legalDocument, legalMarkdownHrefs } from "./legalCopy"
@@ -34,6 +36,20 @@ describe("markdown negotiation bodies", () => {
       expect(hrefs).toEqual([...linkedHrefs(agentCopy(page).body)].sort())
       expect(md).toContain("[contacto@jseramn.tech](mailto:contacto@jseramn.tech)")
     }
+  })
+
+  it("maps /tinity and renders title, manifesto, experiment framing, and repo link", () => {
+    expect(pageFromPath("/tinity")).toBe("tinity")
+    expect(pageFromPath("/tinity/")).toBe("tinity")
+    expect(pageFromPath("/tinity?ref=home")).toBe("tinity")
+    const md = toMarkdown("tinity")
+    expect(md).toMatch(/^# Tinity\n/)
+    expect(md).toContain(
+      "Tinity is a single public experiment at [/tinity](/tinity), not a product catalog.",
+    )
+    expect(md).toContain(MANIFESTO)
+    expect(md).toContain(`[${site.tinity.repo}](${site.tinity.repo})`)
+    expect(md).not.toMatch(/WebGL|ForceField/i)
   })
 
   it("maps legal routes and renders headings, links, and lastUpdated", () => {
