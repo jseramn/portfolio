@@ -1,9 +1,14 @@
+import {
+  ASCII_PAINT_ATTR,
+  ASCII_PAINT_SELECTOR,
+  BOOT_FALLBACK_ATTR,
+  BOOT_FALLBACK_SELECTOR,
+} from "./domSignals"
+
 export const BOOT_LOADER_ID = "boot-loader"
 export const BOOT_READY_EVENT = "hero:boot-ready"
 export const BOOT_TIMEOUT_MS = 8_000
-export const BOOT_FALLBACK_ATTR = "data-hero-boot-fallback"
-export const ASCII_PAINT_SELECTOR = "canvas.hero-ascii-display[data-ascii-paint]"
-export const BOOT_FALLBACK_SELECTOR = `[${BOOT_FALLBACK_ATTR}]`
+export { ASCII_PAINT_SELECTOR, BOOT_FALLBACK_ATTR, BOOT_FALLBACK_SELECTOR }
 
 export type BootDismissInput = {
   ready: boolean
@@ -89,7 +94,7 @@ export function installBootLoader(
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["data-ascii-paint", BOOT_FALLBACK_ATTR],
+    attributeFilter: [ASCII_PAINT_ATTR, BOOT_FALLBACK_ATTR],
   })
   win.addEventListener(BOOT_READY_EVENT, onReadyEvent)
   win.addEventListener("pageshow", onPageshow)

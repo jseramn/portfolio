@@ -3,7 +3,6 @@ import {
   VIDEO_PRELOAD,
   cellBudget,
   coverDestRect,
-  isPointerCoarse,
   pickGrid,
   planAsciiFrame,
   sampleMsForLoop,
@@ -16,6 +15,8 @@ import {
 } from "./heroAsciiBudget"
 import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "./heroAsciiStamp"
 import { signalHeroBootReady } from "./bootLoader"
+import { getCapabilities } from "./capabilities"
+import { HERO_ASCII_DISPLAY_CLASS, getHeroRoot, isUiBlockingOverlayOpen } from "./domSignals"
 
 export type HeroAsciiMountOpts = {
   samplerWebm: string
@@ -78,12 +79,11 @@ function fillSources(video: HTMLVideoElement, webm: string, mp4: string) {
 }
 
 function isContactModalOpen(): boolean {
-  if (document.querySelector("[data-contact-modal-open]")) return true
-  return Boolean(document.querySelector('[role="dialog"][aria-modal="true"]'))
+  return isUiBlockingOverlayOpen(document)
 }
 
 function eventInsideHero(event: Event): boolean {
-  const root = document.querySelector("[data-hero-root]")
+  const root = getHeroRoot(document)
   if (!root || !(event.target instanceof Node)) return false
   return root.contains(event.target)
 }
@@ -134,7 +134,7 @@ export async function mountHeroAscii(
   const ownsPaintCanvas = !paintCanvas
   const displayCanvas = paintCanvas ?? document.createElement("canvas")
   if (ownsPaintCanvas) {
-    displayCanvas.className = "hero-ascii-display"
+    displayCanvas.className = HERO_ASCII_DISPLAY_CLASS
     displayCanvas.setAttribute("aria-hidden", "true")
     host.appendChild(displayCanvas)
   }
@@ -300,7 +300,11 @@ export async function mountHeroAscii(
     camera.position.z = cameraDistance(aspect)
     camera.updateProjectionMatrix()
 
-    const { cols, rows } = pickGrid(width, height, cellBudget(width, isPointerCoarse()))
+    const { cols, rows } = pickGrid(
+      width,
+      height,
+      cellBudget(width, getCapabilities().pointerCoarse),
+    )
     renderer.setPixelRatio(1)
     renderer.setSize(cols, rows)
     asciiSample.width = cols
@@ -343,7 +347,7 @@ export async function mountHeroAscii(
 
   const applyCamera = () => {
     const hovering = (() => {
-      const root = document.querySelector("[data-hero-root]")
+      const root = getHeroRoot(document)
       if (performance.now() - lastPointerAt < 800) return true
       return root ? root.matches(":hover") : true
     })()
@@ -639,7 +643,7 @@ export async function mountHeroAscii(
 
   const onWheel = (event: WheelEvent) => {
     if (isContactModalOpen()) return
-    const root = document.querySelector("[data-hero-root]")
+    const root = getHeroRoot(document)
     if (root) {
       if (!eventInsideHero(event)) return
       event.preventDefault()

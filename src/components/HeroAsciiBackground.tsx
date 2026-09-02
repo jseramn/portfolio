@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import { site } from "../config/site"
 import { signalHeroBootReady } from "../lib/bootLoader"
-import { canUseWebGL, prefersReducedMotion } from "../lib/webgl"
+import { getCapabilities } from "../lib/capabilities"
 
 type Phase = "boot" | "ascii" | "photo"
 
@@ -14,9 +14,8 @@ export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgro
   const [phase, setPhase] = useState<Phase>("boot")
 
   useEffect(() => {
-    const webgl = canUseWebGL()
-    const reduced = prefersReducedMotion()
-    if (!webgl || reduced) {
+    const { webgl, reducedMotion } = getCapabilities()
+    if (!webgl || reducedMotion) {
       setPhase("photo")
       return
     }
