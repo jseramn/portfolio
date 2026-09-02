@@ -1,13 +1,27 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
+const src = join(root, "src")
+
+function readHeroIsland(): string {
+  const heroDir = join(src, "components/hero")
+  const files = existsSync(heroDir)
+    ? readdirSync(heroDir)
+        .filter((name) => /\.(ts|tsx)$/.test(name) && !name.includes(".test."))
+        .sort()
+    : []
+  return [
+    readFileSync(join(root, "src/components/Hero.tsx"), "utf8"),
+    ...files.map((name) => readFileSync(join(heroDir, name), "utf8")),
+  ].join("\n")
+}
 
 describe("homepage viewport lock", () => {
   it("uses dynamic viewport height on the hero, not 100vh h-screen", () => {
-    const hero = readFileSync(join(root, "src/components/Hero.tsx"), "utf8")
+    const hero = readHeroIsland()
     expect(hero).toContain("h-dvh")
     expect(hero).toContain("max-h-dvh")
     expect(hero).not.toMatch(/h-screen/)
@@ -55,7 +69,7 @@ describe("homepage viewport lock", () => {
   })
 
   it("gates four-corner HUD on width and height, not width alone", () => {
-    const hero = readFileSync(join(root, "src/components/Hero.tsx"), "utf8")
+    const hero = readHeroIsland()
     const tw = readFileSync(join(root, "tailwind.config.ts"), "utf8")
     expect(tw).toContain("(min-width: 768px) and (min-height: 700px)")
     expect(tw).toContain("(max-height: 499px)")
