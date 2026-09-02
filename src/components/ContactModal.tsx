@@ -48,7 +48,7 @@ type FallbackState = {
 }
 
 const fieldClass =
-  "w-full bg-black/30 border border-vesper-accent/50 px-3 py-2.5 font-mono text-sm text-vesper-accent placeholder:text-vesper-accent/35 outline-none transition-colors focus:border-vesper-accent focus:shadow-[0_0_12px_rgba(0,240,255,0.25)]"
+  "w-full bg-black/30 border border-vesper-accent/50 px-3 py-2.5 font-mono text-sm text-vesper-accent placeholder:text-vesper-accent/35 transition-colors focus:border-vesper-accent focus:shadow-[0_0_12px_rgba(0,240,255,0.25)]"
 
 async function copyText(text: string): Promise<boolean> {
   try {

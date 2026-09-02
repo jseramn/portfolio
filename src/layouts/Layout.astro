@@ -107,6 +107,7 @@ const jsonLd = JSON.stringify(buildGraphJsonLd(sameAs, { kind: jsonLdPage, canon
     <script type="application/ld+json" set:html={jsonLd} />
   </head>
   <body class:list={["font-sans bg-black text-vesper-accent antialiased", lockClass]}>
+    <a class="skip-link" href="#main">Skip to content</a>
     <slot />
   </body>
 </html>

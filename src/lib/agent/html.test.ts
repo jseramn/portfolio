@@ -69,7 +69,8 @@ describe("built HTML overlay", () => {
   it("homepage source wraps the hero in a main landmark", () => {
     const home = readFileSync(join(root, "src/pages/index.astro"), "utf8")
     expect(home).toMatch(/<main\b/)
-    expect(home).toContain('<main class="contents">')
+    expect(home).toContain('id="main"')
+    expect(home).not.toContain('class="contents"')
     expect(home.indexOf("<main")).toBeLessThan(home.indexOf("<h1>"))
     expect(home.indexOf("</main>")).toBeGreaterThan(home.indexOf("<Hero client:load"))
   })
