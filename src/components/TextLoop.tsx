@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react"
-import { useState, useEffect, Children } from "react"
+import { useState, useEffect, Children, cloneElement, isValidElement } from "react"
 import type { Transition, Variants, AnimatePresenceProps } from "motion/react"
 
 type TextLoopProps = {
@@ -45,19 +45,32 @@ export function TextLoop({
   }
 
   return (
-    <div className={`relative inline-block ${className ?? ""}`}>
-      <AnimatePresence mode={mode} initial={false}>
-        <motion.div
-          key={currentIndex}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={transition}
-          variants={variants || defaultVariants}
-        >
-          {items[currentIndex]}
-        </motion.div>
-      </AnimatePresence>
+    <div className={`relative inline-grid justify-items-start ${className ?? ""}`}>
+      {items.map((item) =>
+        isValidElement(item) ? (
+          <div
+            key={`sizer-${item.key}`}
+            className="col-start-1 row-start-1 invisible"
+            aria-hidden="true"
+          >
+            {cloneElement(item)}
+          </div>
+        ) : null,
+      )}
+      <div className="col-start-1 row-start-1 overflow-hidden">
+        <AnimatePresence mode={mode} initial={false}>
+          <motion.div
+            key={currentIndex}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transition}
+            variants={variants || defaultVariants}
+          >
+            {items[currentIndex]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }

@@ -18,6 +18,8 @@ const DESC = site.tagline.en
 const CHARS = "!@#$%^&*()_+-=[]{}|;:,./<>?`~abcdefghijklmnopqrstuvwxyz0123456789"
 const GLOW =
   "transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(0,0,0,0.75)] hover:text-[var(--hero-ink-hover)]"
+const TAP_TARGET = "inline-flex min-h-11 min-w-11 items-center justify-center"
+const MARQUEE_TYPE = "hero-on-video font-mono text-sm md:text-base whitespace-nowrap"
 
 function useScramble(text: string, { autoStart = false }: { autoStart?: boolean } = {}) {
   const [display, setDisplay] = useState(autoStart ? ".".repeat(text.length) : text)
@@ -406,7 +408,7 @@ export default function Hero() {
         <div className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:block md:px-0 md:pt-8">
           <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
             <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
-              <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
+              <span className={MARQUEE_TYPE}>
                 Hi, I am {site.name} — {site.locationLine}
               </span>
               <span className="hero-ink-muted font-mono">·</span>
@@ -417,7 +419,7 @@ export default function Hero() {
                     href={org.href}
                     target={org.href.startsWith("http") ? "_blank" : undefined}
                     rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
+                    className={`${MARQUEE_TYPE} inline-flex min-h-11 items-center ${GLOW}`}
                     onClick={() => onOutboundOrg(org.label)}
                   >
                     {org.label}
@@ -425,7 +427,7 @@ export default function Hero() {
                 ) : (
                   <span
                     key={org.label}
-                    className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap"
+                    className={`${MARQUEE_TYPE} inline-flex min-h-11 items-center`}
                   >
                     {org.label}
                   </span>
@@ -435,7 +437,7 @@ export default function Hero() {
                 </span>,
               ])}
               {ghStats && (
-                <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
+                <span className={MARQUEE_TYPE}>
                   {ghStats.today} contributions today · {ghStats.month} this month · {ghStats.year}{" "}
                   this year · {ghStats.total} all-time
                 </span>
@@ -446,7 +448,7 @@ export default function Hero() {
                   href={ghStats.lastCommit.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`hero-on-video font-mono text-xs md:text-base whitespace-nowrap ${GLOW}`}
+                  className={`${MARQUEE_TYPE} inline-flex min-h-11 items-center ${GLOW}`}
                 >
                   last commit: {ghStats.lastCommit.message} ({ghStats.lastCommit.repo})
                 </a>
@@ -460,13 +462,13 @@ export default function Hero() {
               mouseContainer={heroRootRef}
               className="w-full md:w-fit md:ml-auto"
             >
-              <div className="font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
+              <div className="font-mono text-xs md:text-sm flex flex-wrap items-center justify-center md:justify-end gap-2 px-4 md:px-0">
                 {musicPlaying ? (
                   <a
                     href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hero-on-video whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
+                    className="hero-on-video inline-flex min-h-11 items-center whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
                     style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
                   >
                     <span className="sound-bars">
@@ -481,7 +483,7 @@ export default function Hero() {
                   <button
                     type="button"
                     onClick={toggleMusic}
-                    className={`hero-on-video whitespace-nowrap cursor-pointer ${GLOW}`}
+                    className={`hero-on-video inline-flex min-h-11 items-center whitespace-nowrap cursor-pointer ${GLOW}`}
                     style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
                   >
                     click to listen{" "}
@@ -493,42 +495,38 @@ export default function Hero() {
                     </span>
                   </button>
                 )}
-                <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={prevTrack}
-                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    className={`hero-ink ${GLOW} ${TAP_TARGET} hover:scale-125`}
                     aria-label="Previous track"
                   >
-                    <SkipBack size={16} className="md:w-5 md:h-5" />
+                    <SkipBack size={20} />
                   </button>
                   <button
                     type="button"
                     onClick={toggleMusic}
-                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    className={`hero-ink ${GLOW} ${TAP_TARGET} hover:scale-125`}
                     aria-label={musicPlaying ? "Mute music" : "Play music"}
                   >
-                    {musicPlaying ? (
-                      <Volume2 size={18} className="md:w-[22px] md:h-[22px]" />
-                    ) : (
-                      <VolumeX size={18} className="md:w-[22px] md:h-[22px]" />
-                    )}
+                    {musicPlaying ? <Volume2 size={22} /> : <VolumeX size={22} />}
                   </button>
                   <button
                     type="button"
                     onClick={nextTrack}
-                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    className={`hero-ink ${GLOW} ${TAP_TARGET} hover:scale-125`}
                     aria-label="Next track"
                   >
-                    <SkipForward size={16} className="md:w-5 md:h-5" />
+                    <SkipForward size={20} />
                   </button>
                   <button
                     type="button"
                     onClick={randomTrack}
-                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    className={`hero-ink ${GLOW} ${TAP_TARGET} hover:scale-125`}
                     aria-label="Random track"
                   >
-                    <Shuffle size={16} className="md:w-5 md:h-5" />
+                    <Shuffle size={20} />
                   </button>
                 </div>
               </div>
@@ -550,11 +548,11 @@ export default function Hero() {
                       href={social.href}
                       target={external ? "_blank" : undefined}
                       rel={external ? "noopener noreferrer" : undefined}
-                      className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
+                      className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} ${TAP_TARGET} hover:scale-125`}
                       aria-label={social.id}
                       onClick={() => onOutboundSocial(social.id)}
                     >
-                      <Icon size={24} className="md:w-[26px] md:h-[26px]" />
+                      <Icon size={24} />
                     </a>
                   )
                 })}
@@ -562,14 +560,18 @@ export default function Hero() {
             </GlassSurface>
           </div>
           <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
-            <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
+            <GlassSurface
+              preset="button"
+              mouseContainer={heroRootRef}
+              className="self-start w-max max-w-full md:shrink-0"
+            >
               <button
                 type="button"
                 onClick={() => {
                   onHireCtaClicked()
                   setContactOpen(true)
                 }}
-                className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
+                className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer inline-flex min-h-11 items-center whitespace-nowrap ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
                 aria-label={`Open contact form — current role: ${activeRole}`}
               >
                 <span aria-hidden="true">

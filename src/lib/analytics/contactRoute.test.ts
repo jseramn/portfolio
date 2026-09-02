@@ -185,9 +185,8 @@ describe("product capture source wiring", () => {
     expect(hero).toContain("onHireCtaClicked")
     expect(hero).toContain("onOutboundSocial")
     expect(hero).toContain("onOutboundOrg")
-    expect(hero).toContain(
-      "className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}",
-    )
+    expect(hero).toContain("font-sans text-2xl md:text-3xl font-semibold tracking-tight")
+    expect(hero).not.toContain("md:w-[30%]")
     expect(modal).toContain("onContactOpened")
     expect(modal).toContain("onContactDismissed")
     expect(modal).toContain("onContactSubmittedClient")

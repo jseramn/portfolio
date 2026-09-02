@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page, type TestInfo } from "@playwright/test"
 
-test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
+async function openHome(page: Page) {
   const response = await page.goto("/")
   expect(response, "home should respond").toBeTruthy()
   expect(response?.ok(), "home should be HTTP 200").toBe(true)
@@ -24,6 +24,107 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
     )
     .toBe(true)
 
+  await page.evaluate(() => document.fonts.ready)
+}
+
+type HireChromeReport = {
+  clipOk: boolean
+  scrollWidth: number
+  hostWidth: number
+  hireWidth: number
+  hostKind: "live-button" | "fallback-overflow" | "missing"
+  hireText: string
+  smallTargets: { name: string; w: number; h: number }[]
+}
+
+function measureHireChrome(page: Page) {
+  return page.locator("[data-hero-root]").evaluate((root): HireChromeReport => {
+    const hireEl = root.querySelector<HTMLElement>('[aria-label^="Open contact form"]')
+    const label = hireEl?.querySelector<HTMLElement>('[aria-hidden="true"]') ?? hireEl
+    const liveHost = root.querySelector<HTMLElement>(
+      '[data-glass-host][data-glass-preset="button"]',
+    )
+
+    let fallbackHost: HTMLElement | null = null
+    if (!liveHost && hireEl) {
+      let node: HTMLElement | null = hireEl.parentElement
+      while (node && node !== root) {
+        const overflow = getComputedStyle(node).overflow
+        if (overflow === "hidden" || overflow === "clip") {
+          fallbackHost = node
+          break
+        }
+        node = node.parentElement
+      }
+    }
+
+    const host = liveHost ?? fallbackHost
+    const hostWidth = host?.getBoundingClientRect().width ?? 0
+    const scrollWidth = label?.scrollWidth ?? 0
+    const smallTargets = [
+      ...root.querySelectorAll<HTMLElement>("a, button, [role=button]"),
+    ].flatMap((el) => {
+      const box = el.getBoundingClientRect()
+      const style = getComputedStyle(el)
+      if (
+        box.width <= 0 ||
+        box.height <= 0 ||
+        style.visibility === "hidden" ||
+        style.display === "none"
+      ) {
+        return []
+      }
+      if (box.width + 0.5 < 44 || box.height + 0.5 < 44) {
+        return [
+          {
+            name:
+              el.getAttribute("aria-label") ||
+              el.getAttribute("href") ||
+              (el.textContent ?? "").trim().slice(0, 80),
+            w: Math.round(box.width * 10) / 10,
+            h: Math.round(box.height * 10) / 10,
+          },
+        ]
+      }
+      return []
+    })
+
+    return {
+      clipOk: Boolean(host && label && scrollWidth <= hostWidth + 1),
+      scrollWidth,
+      hostWidth: Math.round(hostWidth * 10) / 10,
+      hireWidth: Math.round((hireEl?.getBoundingClientRect().width ?? 0) * 10) / 10,
+      hostKind: liveHost ? "live-button" : fallbackHost ? "fallback-overflow" : "missing",
+      hireText: (hireEl?.innerText ?? "").replace(/\s+/g, " ").trim(),
+      smallTargets,
+    }
+  })
+}
+
+async function assertHireChrome(page: Page, testInfo: TestInfo) {
+  if (testInfo.project.name === "chromium") {
+    await expect(
+      page.locator('[data-hero-root] [data-glass-host][data-glass-preset="button"]'),
+    ).toHaveCount(1, { timeout: 8_000 })
+  }
+
+  const hire = page.getByRole("button", { name: /Open contact form/ })
+  await expect
+    .poll(async () => hire.evaluate((el) => el.clientWidth), { timeout: 8_000 })
+    .toBeGreaterThan(80)
+
+  await expect
+    .poll(async () => (await measureHireChrome(page)).clipOk, { timeout: 8_000 })
+    .toBe(true)
+
+  const report = await measureHireChrome(page)
+  expect(report.clipOk, JSON.stringify(report)).toBe(true)
+  expect(report.smallTargets, JSON.stringify(report.smallTargets)).toEqual([])
+}
+
+test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
+  await openHome(page)
+
   await expect(page.locator("main")).toBeAttached()
   await expect(page.getByRole("heading", { level: 1 })).toBeAttached()
 
@@ -32,4 +133,13 @@ test("home chrome: boot loader, landmarks, contact modal", async ({ page }) => {
   await expect(dialog).toBeVisible()
   await page.keyboard.press("Escape")
   await expect(dialog).toBeHidden()
+})
+
+test("home chrome: 44px tap targets and unclipped hire CTA", async ({ page }, testInfo) => {
+  await openHome(page)
+  await assertHireChrome(page, testInfo)
+
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.evaluate(() => document.fonts.ready)
+  await assertHireChrome(page, testInfo)
 })
