@@ -19,16 +19,8 @@ export function applyGitHubStatsCacheHeaders(headers: Headers, status: number): 
   headers.set("Vercel-CDN-Cache-Control", value)
 }
 
-export function applyNegotiatedResponseHeaders(
-  headers: Headers,
-  opts: { vary: boolean; status: number },
-): void {
-  if (opts.vary) {
+export function applyNegotiatedResponseHeaders(headers: Headers, vary: boolean): void {
+  if (vary) {
     headers.set("Vary", ACCEPT_VARY)
   }
-  if (!opts.vary || opts.status !== 200) return
-  const existing = headers.get("Cache-Control") ?? ""
-  if (/\bno-store\b/i.test(existing)) return
-  headers.set("Cache-Control", CDN_SWR_CACHE)
-  headers.set("Vercel-CDN-Cache-Control", CDN_SWR_CACHE)
 }

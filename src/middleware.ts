@@ -19,7 +19,7 @@ function applyLegalOverrides(pathname: string, response: Response): void {
 function finish(pathname: string, response: Response, vary: boolean): Response {
   applySecurityHeaders(response)
   applyApiNoStoreHeaders(pathname, response.headers)
-  applyNegotiatedResponseHeaders(response.headers, { vary, status: response.status })
+  applyNegotiatedResponseHeaders(response.headers, vary)
   applyLegalOverrides(pathname, response)
   return response
 }
