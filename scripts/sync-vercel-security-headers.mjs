@@ -2,6 +2,9 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { basename, dirname, join } from "node:path"
 import {
+  AGENT_FILES_SOURCE,
+  WELL_KNOWN_SOURCE,
+  agentReadableFileHeaderGroup,
   buildLegalContentSecurityPolicy,
   buildSecurityHeaderEntries,
   githubStatsApiHeaderGroup,
@@ -47,6 +50,8 @@ export function buildVercelHeaderRules() {
       ],
     },
     hashedAstroAssetHeaderGroup(),
+    agentReadableFileHeaderGroup(AGENT_FILES_SOURCE),
+    agentReadableFileHeaderGroup(WELL_KNOWN_SOURCE),
     {
       source: "/(policy|terms|data-deletion)",
       headers: [
@@ -76,9 +81,21 @@ export function buildVercelHeaderRules() {
   ]
 }
 
+export function buildVercelRedirects() {
+  return [
+    { source: "/privacy", destination: "/policy", permanent: true },
+    {
+      source: "/security.txt",
+      destination: "/.well-known/security.txt",
+      permanent: true,
+    },
+  ]
+}
+
 export function syncVercelJson() {
   const vercel = JSON.parse(readFileSync(vercelPath, "utf8"))
   vercel.headers = buildVercelHeaderRules()
+  vercel.redirects = buildVercelRedirects()
   writeFileSync(vercelPath, `${JSON.stringify(vercel, null, 2)}\n`)
   console.log("[sync-vercel-security-headers] updated vercel.json")
 }

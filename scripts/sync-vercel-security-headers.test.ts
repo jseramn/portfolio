@@ -3,14 +3,17 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import {
+  AGENT_FILE_CACHE_CONTROL,
+  AGENT_FILES_SOURCE,
   ASTRO_ASSET_SOURCE,
   CDN_SWR_CACHE_CONTROL,
   GITHUB_STATS_API_SOURCE,
   IMMUTABLE_ASSET_CACHE_CONTROL,
+  WELL_KNOWN_SOURCE,
   buildContentSecurityPolicy,
   buildLegalContentSecurityPolicy,
 } from "../src/lib/security/siteSecurityHeaders.mjs"
-import { buildVercelHeaderRules } from "./sync-vercel-security-headers.mjs"
+import { buildVercelHeaderRules, buildVercelRedirects } from "./sync-vercel-security-headers.mjs"
 
 const POSTHOG_HOST = "https://*.posthog.com"
 const here = dirname(fileURLToPath(import.meta.url))
@@ -98,5 +101,61 @@ describe("sync-vercel-security-headers", () => {
     const middleware = readFileSync(join(here, "../src/middleware.ts"), "utf8")
     expect(middleware).toContain("buildLegalContentSecurityPolicy")
     expect(middleware).not.toMatch(/posthog-node/)
+  })
+
+  it("opens CORS for agent-readable files after the global ACAO lock", () => {
+    const rules = buildVercelHeaderRules()
+    const globalIdx = rules.findIndex((rule) => rule.source === "/(.*)")
+    const agentIdx = rules.findIndex((rule) => rule.source === AGENT_FILES_SOURCE)
+    const wellKnownIdx = rules.findIndex((rule) => rule.source === WELL_KNOWN_SOURCE)
+    const apiIdx = rules.findIndex((rule) => rule.source === "/api/(.*)")
+    expect(agentIdx).toBeGreaterThan(globalIdx)
+    expect(wellKnownIdx).toBeGreaterThan(globalIdx)
+    expect(apiIdx).toBeGreaterThan(agentIdx)
+    expect(apiIdx).toBeGreaterThan(wellKnownIdx)
+
+    const expected = [
+      { key: "Access-Control-Allow-Origin", value: "*" },
+      { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+      { key: "Cache-Control", value: AGENT_FILE_CACHE_CONTROL },
+    ]
+    expect(rules[agentIdx]?.headers).toEqual(expected)
+    expect(rules[wellKnownIdx]?.headers).toEqual(expected)
+    expect(rules[apiIdx]?.headers).toEqual(
+      expect.arrayContaining([{ key: "Cache-Control", value: "no-store" }]),
+    )
+  })
+
+  it("permanently redirects /security.txt and keeps vercel.json in sync", () => {
+    const redirects = [
+      { source: "/privacy", destination: "/policy", permanent: true },
+      {
+        source: "/security.txt",
+        destination: "/.well-known/security.txt",
+        permanent: true,
+      },
+    ]
+    expect(buildVercelRedirects()).toEqual(redirects)
+    const vercel = JSON.parse(readFileSync(join(here, "../vercel.json"), "utf8"))
+    expect(vercel.headers).toEqual(buildVercelHeaderRules())
+    expect(vercel.redirects).toEqual(redirects)
+  })
+
+  it("publishes RFC 9116 security.txt with a future Expires within one year", () => {
+    const parsed = Object.fromEntries(
+      readFileSync(join(here, "../public/.well-known/security.txt"), "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => line.split(/:\s(.+)/).filter(Boolean)),
+    )
+    expect(parsed.Contact).toBe("mailto:contacto@jseramn.tech")
+    expect(parsed["Preferred-Languages"]).toBe("en, es")
+    expect(parsed.Canonical).toBe("https://www.jseramn.tech/.well-known/security.txt")
+    expect(parsed.Policy).toBe("https://jseramn.tech/policy")
+    expect(parsed.Encryption).toBeUndefined()
+    const expiresAt = Date.parse(parsed.Expires)
+    expect(parsed.Expires).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/)
+    expect(expiresAt).toBeGreaterThan(Date.now())
+    expect(expiresAt - Date.now()).toBeLessThanOrEqual(365 * 24 * 60 * 60 * 1000)
   })
 })
