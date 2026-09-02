@@ -9,7 +9,7 @@ import { site } from "../config/site"
 const copy = agentCopy("notFound")
 ---
 
-<SecondaryPage title={`Not found | ${site.brand}`} description={copy.body}>
+<SecondaryPage title={`Not found | ${site.brand}`} description={copy.body} jsonLdPage="notfound">
   <h1 class="mb-4 font-sans text-3xl font-semibold tracking-tight">{copy.h1}</h1>
   <p class="mb-8 font-sans text-sm leading-relaxed text-vesper-accent/85">{copy.body}</p>
   <ul class="flex flex-col gap-2 font-mono text-sm">

@@ -1,8 +1,8 @@
 export const ACCEPT_VARY = "Accept, Accept-Encoding" as const
 
-export type NegotiatedType = "text/html" | "text/markdown"
+export type NegotiatedType = "text/html" | "text/markdown" | "application/ld+json"
 
-const PRODUCES: readonly NegotiatedType[] = ["text/html", "text/markdown"]
+const PRODUCES: readonly NegotiatedType[] = ["text/html", "text/markdown", "application/ld+json"]
 
 type AcceptEntry = {
   type: string

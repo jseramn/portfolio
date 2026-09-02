@@ -1,7 +1,12 @@
 ---
 import globalCss from "../styles/globals.css?inline"
 import PostHog from "../components/posthog.astro"
-import { buildGraphJsonLd } from "../lib/agent/jsonld"
+import {
+  buildGraphJsonLd,
+  jsonLdPageKindFromPath,
+  jsonLdSameAs,
+  type JsonLdPageKind,
+} from "../lib/agent/jsonld"
 import { site } from "../config/site"
 import geistSans from "../assets/fonts/Geist-Variable.woff2?url"
 
@@ -10,6 +15,7 @@ interface Props {
   description?: string
   lockScroll?: boolean
   bootPending?: boolean
+  jsonLdPage?: JsonLdPageKind
 }
 
 const {
@@ -17,16 +23,16 @@ const {
   description = site.seo.description,
   lockScroll = false,
   bootPending = false,
+  jsonLdPage: jsonLdPageProp,
 } = Astro.props
 
 const lockClass = lockScroll ? "h-dvh overflow-hidden overscroll-none" : ""
 
 const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/"
 const canonical = pathname === "/" ? site.url : `${site.url}${pathname}`
-
-const sameAs = site.socials
-  .filter((s) => !s.href.startsWith("mailto:"))
-  .map((s) => s.href)
+const jsonLdPage = jsonLdPageProp ?? jsonLdPageKindFromPath(pathname) ?? "generic"
+const sameAs = jsonLdSameAs()
+const jsonLd = JSON.stringify(buildGraphJsonLd(sameAs, { kind: jsonLdPage, canonical }))
 
 ---
 
@@ -98,7 +104,7 @@ const sameAs = site.socials
 
     <PostHog />
 
-    <script type="application/ld+json" set:html={JSON.stringify(buildGraphJsonLd(sameAs))} />
+    <script type="application/ld+json" set:html={jsonLd} />
   </head>
   <body class:list={["font-sans bg-black text-vesper-accent antialiased", lockClass]}>
     <slot />

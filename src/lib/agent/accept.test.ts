@@ -39,4 +39,11 @@ describe("negotiate", () => {
   it("selects markdown for Accept: text/markdown (Markdown Accept)", () => {
     expect(negotiate("text/markdown")).toBe("text/markdown")
   })
+
+  it("selects application/ld+json without opening generic JSON", () => {
+    expect(negotiate("application/ld+json")).toBe("application/ld+json")
+    expect(negotiate("application/json")).toBeNull()
+    expect(negotiate("application/json, text/html;q=0.8")).toBe("text/html")
+    expect(negotiate(CHROME_ACCEPT)).toBe("text/html")
+  })
 })
