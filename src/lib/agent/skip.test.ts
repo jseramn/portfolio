@@ -27,6 +27,9 @@ describe("skipNegotiate", () => {
     expect(skipNegotiate("/")).toBe(false)
     expect(skipNegotiate("/about")).toBe(false)
     expect(skipNegotiate("/contact")).toBe(false)
+    expect(skipNegotiate("/policy")).toBe(false)
+    expect(skipNegotiate("/terms")).toBe(false)
+    expect(skipNegotiate("/data-deletion")).toBe(false)
     expect(skipNegotiate("/some-path-that-does-not-exist")).toBe(false)
   })
 })
@@ -43,6 +46,9 @@ describe("shouldNegotiateAccept", () => {
     expect(shouldNegotiateAccept("/", false)).toBe(true)
     expect(shouldNegotiateAccept("/about", false)).toBe(true)
     expect(shouldNegotiateAccept("/contact", false)).toBe(true)
+    expect(shouldNegotiateAccept("/policy", false)).toBe(true)
+    expect(shouldNegotiateAccept("/terms", false)).toBe(true)
+    expect(shouldNegotiateAccept("/data-deletion", false)).toBe(true)
   })
 
   it("still skips APIs and static files when SSR", () => {

@@ -3,6 +3,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { agentCopy, readableLength } from "./copy"
+import { LEGAL_PAGE_IDS, legalDocument, legalVisibleText, normalizeLegalVisible } from "./legalCopy"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..")
 const dist = join(root, "dist/client")
@@ -224,6 +225,29 @@ describe("built HTML overlay", () => {
         "linkedin.com",
       ])
       expect(allowedExternal.has(parsed.hostname), url).toBe(true)
+    }
+  })
+
+  it("legal HTML readable text matches the shared legal copy", async () => {
+    for (const id of LEGAL_PAGE_IDS) {
+      const doc = legalDocument(id)
+      const expected = legalVisibleText(doc)
+      const live = await fetchIfUp(doc.path)
+      let html: string | null = null
+      if (live?.ok) html = await live.text()
+      else {
+        const rel = `${doc.path.slice(1)}/index.html`
+        if (existsSync(join(dist, rel))) html = readFileSync(join(dist, rel), "utf8")
+      }
+      if (!html) {
+        expect(expected.length).toBeGreaterThan(100)
+        expect(expected).toContain("jseramn.tech")
+        continue
+      }
+      const text = normalizeLegalVisible(readableText(html))
+      expect(text).toContain(`Last updated: ${doc.lastUpdated}`)
+      expect(text).toContain(doc.heading)
+      expect(text).toContain(expected)
     }
   })
 })

@@ -86,15 +86,9 @@ describe("legal copy is a single source", () => {
 })
 
 describe("SSR routes stay dynamic", () => {
-  it("keeps prerender false on home, about, contact, and 404", () => {
-    for (const source of [home, about, contact, notFound]) {
+  it("keeps prerender false on home, about, contact, 404, and legal pages", () => {
+    for (const source of [home, about, contact, notFound, policyPage, deletionPage, termsPage]) {
       expect(source).toMatch(/export const prerender = false/)
-    }
-  })
-
-  it("keeps legal pages prerendered", () => {
-    for (const source of [policyPage, deletionPage, termsPage]) {
-      expect(source).not.toMatch(/export const prerender = false/)
     }
   })
 

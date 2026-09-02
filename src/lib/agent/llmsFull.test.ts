@@ -25,14 +25,20 @@ describe("llms-full.txt corpus", () => {
     expect(buildLlmsFullTxt()).toBe(body)
   })
 
-  it("omits legal pages until pageFromPath maps them", () => {
-    expect(pageFromPath("/policy")).toBeNull()
-    expect(pageFromPath("/terms")).toBeNull()
-    expect(pageFromPath("/data-deletion")).toBeNull()
+  it("includes legal pages once pageFromPath maps them", () => {
+    expect(pageFromPath("/policy")).toBe("policy")
+    expect(pageFromPath("/terms")).toBe("terms")
+    expect(pageFromPath("/data-deletion")).toBe("dataDeletion")
     const body = buildLlmsFullTxt()
-    expect(body).not.toContain("## https://jseramn.tech/policy")
-    expect(body).not.toContain("## https://jseramn.tech/terms")
-    expect(body).not.toContain("## https://jseramn.tech/data-deletion")
+    expect(body).toContain("## https://jseramn.tech/policy")
+    expect(body).toContain("## https://jseramn.tech/terms")
+    expect(body).toContain("## https://jseramn.tech/data-deletion")
+    for (const path of ["/policy", "/terms", "/data-deletion"] as const) {
+      const page = pageFromPath(path)
+      expect(page).toBeTruthy()
+      if (!page) continue
+      expect(body).toContain(toMarkdown(page).trimEnd())
+    }
   })
 
   it("keeps the committed public file identical to the generator", () => {
