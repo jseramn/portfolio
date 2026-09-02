@@ -61,6 +61,30 @@ function firstPartyPathExists(pathname: string): boolean {
   return existsSync(asPage) || existsSync(asTs) || existsSync(asIndex)
 }
 
+const LARGE_INLINE_CSS = 8_000
+
+function stylesheetHrefs(html: string): string[] {
+  return [...html.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi)].flatMap((tag) => {
+    const href = tag[0].match(/\bhref=["']([^"']+)["']/i)
+    return href?.[1] ? [href[1]] : []
+  })
+}
+
+function inlineStyleChars(html: string): number {
+  return [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].reduce(
+    (total, block) => total + (block[1]?.length ?? 0),
+    0,
+  )
+}
+
+async function pageHtml(path: string): Promise<string | null> {
+  const live = await fetchIfUp(path)
+  if (live?.ok) return live.text()
+  const rel = path === "/" ? "index.html" : `${path.slice(1)}/index.html`
+  const file = join(dist, rel)
+  return existsSync(file) ? readFileSync(file, "utf8") : null
+}
+
 describe("built HTML overlay", () => {
   it("home copy is long enough to keep ≥5% on a ~25kB prerendered shell", () => {
     expect(readableLength(agentCopy("home")) / 25_000).toBeGreaterThanOrEqual(0.05)
@@ -183,6 +207,29 @@ describe("built HTML overlay", () => {
     if (home?.ok) expect(await home.text()).toContain('type="speculationrules"')
     const about = await fetchIfUp("/about")
     if (about?.ok) expect(await about.text()).not.toContain('type="speculationrules"')
+  })
+
+  it("inlines critical CSS on home and links a stylesheet on secondary pages", async () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    const homeSrc = readFileSync(join(root, "src/pages/index.astro"), "utf8")
+    const secondarySrc = readFileSync(join(root, "src/components/SecondaryPage.astro"), "utf8")
+    expect(layout).toMatch(/inlineCss\s*=\s*false/)
+    expect(layout).toContain("globals.css?inline")
+    expect(layout).toContain("globals.css?url")
+    expect(layout).toContain('rel="stylesheet"')
+    expect(homeSrc).toMatch(/<Layout\b[^>]*\binlineCss\b/)
+    expect(secondarySrc).not.toMatch(/\binlineCss\b/)
+
+    const home = await pageHtml("/")
+    const about = await pageHtml("/about")
+    if (!home || !about || home.includes("/@vite/")) return
+
+    expect(home).toMatch(/<style\b/i)
+    expect(stylesheetHrefs(home).filter((href) => href.includes(".css"))).toEqual([])
+    expect(inlineStyleChars(home)).toBeGreaterThan(LARGE_INLINE_CSS)
+    expect(about).toMatch(/<link\b[^>]*rel=["']stylesheet["']/i)
+    expect(stylesheetHrefs(about).some((href) => /\/_astro\/[^"']+\.css/.test(href))).toBe(true)
+    expect(inlineStyleChars(about)).toBeLessThan(LARGE_INLINE_CSS)
   })
 
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
