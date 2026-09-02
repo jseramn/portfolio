@@ -171,7 +171,7 @@ describe("hero liquid-glass chrome wiring", () => {
     const start = glass.indexOf("const fallback")
     const liveHost = glass.indexOf('data-glass-host=""')
     const fallback = glass.slice(start, liveHost)
-    expect(fallback).toContain("glass-refraction")
+    expect(fallback).not.toContain("glass-refraction")
     expect(fallback).not.toContain("data-glass-host")
     expect(hero).toContain("hero-scrim-top")
     expect(hero).toContain("hero-scrim-bottom")

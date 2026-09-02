@@ -8,6 +8,7 @@ import {
 export const BOOT_LOADER_ID = "boot-loader"
 export const BOOT_READY_EVENT = "hero:boot-ready"
 export const BOOT_TIMEOUT_MS = 8_000
+export const BOOT_MIN_VISIBLE_MS = 600
 export { ASCII_PAINT_SELECTOR, BOOT_FALLBACK_ATTR, BOOT_FALLBACK_SELECTOR }
 
 export type BootDismissInput = {
@@ -74,25 +75,56 @@ export function bootReadyFromMutations(
   return false
 }
 
-export function createBootLoaderSession(opts: { hide: () => void }): {
+export function createBootLoaderSession(opts: {
+  hide: () => void
+  now?: () => number
+  minVisibleMs?: number
+  schedule?: (fn: () => void, delay: number) => number
+  clearSchedule?: (id: number) => void
+}): {
   dismiss: () => void
   onReady: () => void
   onPageshow: (persisted: boolean) => void
   onTimeout: () => void
+  dispose: () => void
 } {
   let done = false
+  let holdId = 0
+  const startedAt = opts.now?.() ?? 0
+  const minMs = opts.minVisibleMs ?? 0
+
+  const clearHold = () => {
+    if (holdId && opts.clearSchedule) opts.clearSchedule(holdId)
+    holdId = 0
+  }
+
   const dismiss = () => {
     if (done) return
     done = true
+    clearHold()
     opts.hide()
   }
+
+  const onReady = () => {
+    if (done) return
+    const elapsed = (opts.now?.() ?? 0) - startedAt
+    const wait = Math.max(0, minMs - elapsed)
+    if (wait === 0 || !opts.schedule) {
+      dismiss()
+      return
+    }
+    if (holdId) return
+    holdId = opts.schedule(dismiss, wait)
+  }
+
   return {
     dismiss,
-    onReady: dismiss,
+    onReady,
     onPageshow: (persisted) => {
       if (persisted) dismiss()
     },
     onTimeout: dismiss,
+    dispose: clearHold,
   }
 }
 
@@ -106,6 +138,10 @@ export function installBootLoader(
   const html = doc.documentElement
   const session = createBootLoaderSession({
     hide: () => applyBootLoaderHidden(overlay, html),
+    now: () => win.performance.now(),
+    minVisibleMs: BOOT_MIN_VISIBLE_MS,
+    schedule: (fn, delay) => win.setTimeout(fn, delay),
+    clearSchedule: (id) => win.clearTimeout(id),
   })
 
   const check = () => {
@@ -131,5 +167,6 @@ export function installBootLoader(
     win.removeEventListener(BOOT_READY_EVENT, onReadyEvent)
     win.removeEventListener("pageshow", onPageshow)
     win.clearTimeout(timeoutId)
+    session.dispose()
   }
 }

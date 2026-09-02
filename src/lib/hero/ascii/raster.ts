@@ -101,7 +101,6 @@ export function stampSlice(session: HeroAsciiSession) {
   session.lastRasterMs = performance.now() - started
   session.skipNextSample = shouldSkipSample(session.lastRasterMs)
   if (session.displayCtx) session.displayCtx.putImageData(session.displayImage, 0, 0)
-  if (takeFirstAsciiPaint(session.displayCanvas.dataset)) signalHeroBootReady()
   if (shouldContinueStamp(session.stampCursor, rows)) {
     session.rasterBusy = true
     return
