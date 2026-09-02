@@ -3,6 +3,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { behindRect } from "../components/GlassSurface"
+import { CONTACT_MODAL_OPEN_ATTR } from "./domSignals"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 const src = join(root, "src")
@@ -178,7 +179,7 @@ describe("hero liquid-glass chrome wiring", () => {
     const glass = read("components/GlassSurface.tsx")
     const ascii = read("lib/heroAsciiRuntime.ts")
     const css = read("styles/globals.css")
-    expect(glass).toContain("const GLASS_MS = 1000 / 12")
+    expect(glass).toContain("const GLASS_MS = 1000 / ASCII_FPS")
     expect(glass).not.toContain("getImageData")
     expect(glass).not.toContain("ctx.filter")
     expect(ascii).toContain("dataset.glassBox")
@@ -189,8 +190,8 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).not.toContain('host.querySelector("svg")')
     expect(glass).toContain("asciiReadyForGlass")
     expect(glass).toContain("bindGlassAsciiWait")
-    expect(glass).toContain("data-glass-gen")
-    expect(glass).toContain("isPointerCoarse")
+    expect(glass).toContain("GLASS_GEN_ATTR")
+    expect(glass).toContain("getCapabilities")
   })
 
   it("samples ascii behind each pane instead of a shared portrait box", () => {
@@ -226,7 +227,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(cardGlyph.sx).toBeGreaterThan(dockGlyph.sx)
     expect(glass).toContain("function behindRect")
     expect(glass).not.toContain("ascii.width < 800")
-    expect(glass).toContain("ascii.dataset.glassGen")
+    expect(glass).toContain("readGlassGen")
     expect(glass).not.toContain("box.h * 0.32")
     expect(glass).not.toContain("readPortraitBox")
     expect(glass).not.toContain("lensRect(")
@@ -284,7 +285,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("requestIdleCallback")
     expect(glass).toContain("timeout: 2000")
     expect(glass).toContain("setUseLiveGlass")
-    expect(glass).toContain("isPointerCoarse()")
+    expect(glass).toContain("getCapabilities().liveGlass")
     expect(glass).toContain("function behindRect")
     expect(countGlassSurfaces(hero)).toBe(5)
     expect(countGlassSurfaces(read("components/ContactModal.tsx"))).toBe(1)
@@ -293,11 +294,12 @@ describe("hero liquid-glass chrome wiring", () => {
   it("pauses the shared pump when the document is hidden or contact is open", () => {
     const glass = read("components/GlassSurface.tsx")
     expect(glass).toContain("document.hidden")
-    expect(glass).toContain("[data-contact-modal-open]")
-    expect(glass).toContain('[role="dialog"][aria-modal="true"]')
+    expect(glass).toContain("isUiBlockingOverlayOpen")
+    expect(glass).toContain("CONTACT_MODAL_OPEN_ATTR")
+    expect(glass).toContain("ARIA_MODAL_ATTR")
     expect(glass).toContain("cancelAnimationFrame")
     expect(glass).toContain("visibilitychange")
-    expect(read("components/ContactModal.tsx")).toContain("data-contact-modal-open")
+    expect(read("components/ContactModal.tsx")).toContain(CONTACT_MODAL_OPEN_ATTR)
   })
 
   it("strips glass debug ingest and debug attributes", () => {
