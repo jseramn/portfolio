@@ -6,10 +6,14 @@ import {
   BOOT_READY_EVENT,
   BOOT_TIMEOUT_MS,
   applyBootLoaderHidden,
+  BOOT_MUTATION_OBSERVER_INIT,
+  bootReadyFromMutations,
   createBootLoaderSession,
+  isBootReadyAttributeTarget,
   isHeroBootReady,
   shouldDismissBootLoader,
   signalHeroBootReady,
+  takeFirstAsciiPaint,
   wipeAnimationEnabled,
 } from "./bootLoader"
 
@@ -87,5 +91,34 @@ describe("boot loader dismiss", () => {
   it("keeps overlay id and 8s failsafe stable", () => {
     expect(BOOT_LOADER_ID).toBe("boot-loader")
     expect(BOOT_TIMEOUT_MS).toBe(8_000)
+  })
+
+  it("signals boot only on the first ASCII paint mark", () => {
+    const dataset: { asciiPaint?: string } = {}
+    expect(takeFirstAsciiPaint(dataset)).toBe(true)
+    expect(dataset.asciiPaint).toBe("1")
+    expect(takeFirstAsciiPaint(dataset)).toBe(false)
+  })
+
+  it("observes paint attributes without watching childList on html", () => {
+    expect(BOOT_MUTATION_OBSERVER_INIT.childList).toBe(false)
+    expect(BOOT_MUTATION_OBSERVER_INIT.subtree).toBe(true)
+    expect(BOOT_MUTATION_OBSERVER_INIT.attributes).toBe(true)
+    expect(BOOT_MUTATION_OBSERVER_INIT.attributeFilter).toEqual([
+      "data-ascii-paint",
+      "data-hero-boot-fallback",
+    ])
+    const canvas = {
+      getAttribute: (name: string) => (name === "data-ascii-paint" ? "1" : null),
+      hasAttribute: () => false,
+    }
+    const other = {
+      getAttribute: () => null,
+      hasAttribute: () => false,
+    }
+    expect(isBootReadyAttributeTarget(canvas)).toBe(true)
+    expect(isBootReadyAttributeTarget(other)).toBe(false)
+    expect(bootReadyFromMutations([{ type: "childList", target: canvas }])).toBe(false)
+    expect(bootReadyFromMutations([{ type: "attributes", target: canvas }])).toBe(true)
   })
 })

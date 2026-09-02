@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import {
   ASCII_FPS,
+  ASCII_IDLE_TIMEOUT_MS,
   ASCII_WARMUP_MS,
   ASCII_WARMUP_SAMPLE_MS,
   COARSE_MAX_CELLS,
@@ -16,6 +17,7 @@ import {
   pickGrid,
   planAsciiFrame,
   sampleMsForLoop,
+  scheduleAsciiStart,
   shouldRefineOccupancy,
   shouldSkipSample,
   shouldStartLoop,
@@ -111,6 +113,92 @@ describe("hero ASCII loop budget", () => {
   it("yields the main thread without hanging if scheduler.yield never settles", async () => {
     await expect(yieldToMain()).resolves.toBeUndefined()
   })
+
+  it("starts ASCII after first paint then idle, and cancel prevents start", () => {
+    const rafs: Array<(time: number) => void> = []
+    const idles: Array<() => void> = []
+    const cancelledIdle: number[] = []
+    let started = 0
+    const host = {
+      requestAnimationFrame: (cb: (time: number) => void) => {
+        rafs.push(cb)
+        return rafs.length
+      },
+      cancelAnimationFrame: () => {},
+      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => {
+        expect(opts?.timeout).toBe(ASCII_IDLE_TIMEOUT_MS)
+        idles.push(cb)
+        return idles.length
+      },
+      cancelIdleCallback: (id: number) => {
+        cancelledIdle.push(id)
+      },
+      setTimeout: () => 0,
+      clearTimeout: () => {},
+    }
+    const stop = scheduleAsciiStart(() => {
+      started += 1
+    }, host)
+    expect(started).toBe(0)
+    rafs[0]?.(0)
+    expect(started).toBe(0)
+    rafs[1]?.(0)
+    expect(idles).toHaveLength(1)
+    expect(started).toBe(0)
+    idles[0]?.()
+    expect(started).toBe(1)
+
+    started = 0
+    const rafs2: Array<(time: number) => void> = []
+    const idles2: Array<() => void> = []
+    const host2 = {
+      ...host,
+      requestAnimationFrame: (cb: (time: number) => void) => {
+        rafs2.push(cb)
+        return rafs2.length
+      },
+      requestIdleCallback: (cb: () => void) => {
+        idles2.push(cb)
+        return 9
+      },
+    }
+    const cancel = scheduleAsciiStart(() => {
+      started += 1
+    }, host2)
+    rafs2[0]?.(0)
+    rafs2[1]?.(0)
+    cancel()
+    idles2[0]?.()
+    expect(started).toBe(0)
+    expect(cancelledIdle).toContain(9)
+    stop()
+  })
+
+  it("falls back to setTimeout(0) when requestIdleCallback is missing", () => {
+    const rafs: Array<(time: number) => void> = []
+    let timeoutMs: number | undefined
+    let started = 0
+    const host = {
+      requestAnimationFrame: (cb: (time: number) => void) => {
+        rafs.push(cb)
+        return rafs.length
+      },
+      cancelAnimationFrame: () => {},
+      setTimeout: (handler: () => void, timeout?: number) => {
+        timeoutMs = timeout
+        handler()
+        return 1
+      },
+      clearTimeout: () => {},
+    }
+    scheduleAsciiStart(() => {
+      started += 1
+    }, host)
+    rafs[0]?.(0)
+    rafs[1]?.(0)
+    expect(timeoutMs).toBe(0)
+    expect(started).toBe(1)
+  })
 })
 
 describe("hero ASCII runtime wiring", () => {
@@ -121,7 +209,7 @@ describe("hero ASCII runtime wiring", () => {
     expect(runtime).not.toMatch(/preload\s*=\s*["']auto["']/)
     expect(runtime).toContain("blitHeroPoster")
     expect(runtime).toContain("coverDestRect")
-    expect(runtime).toContain("dataset.asciiPaint")
+    expect(runtime).toContain("takeFirstAsciiPaint")
     expect(runtime).toContain('video.preload = "metadata"')
     expect(runtime).toContain("planAsciiFrame")
     expect(runtime).toContain("cellBudget")
@@ -132,14 +220,17 @@ describe("hero ASCII runtime wiring", () => {
     )
     expect(runtime).toMatch(/addEventListener\(\s*["']canplay["']/)
     expect(runtime).toContain("renderer.render")
+    const captureAt = runtime.indexOf("const captureGlPixels")
     const passAt = runtime.indexOf("const runRasterPass")
-    const renderAt = runtime.indexOf("renderer.render", passAt)
-    const rasterCallAt = runtime.indexOf("stampSlice", renderAt)
+    const renderAt = runtime.indexOf("renderer.render", captureAt)
+    const rasterCallAt = runtime.indexOf("stampSlice", passAt)
     const tickAt = runtime.indexOf("const tick")
     const planAt = runtime.indexOf("planAsciiFrame", tickAt)
-    expect(passAt).toBeGreaterThan(-1)
-    expect(renderAt).toBeGreaterThan(passAt)
-    expect(rasterCallAt).toBeGreaterThan(renderAt)
+    expect(captureAt).toBeGreaterThan(-1)
+    expect(passAt).toBeGreaterThan(captureAt)
+    expect(renderAt).toBeGreaterThan(captureAt)
+    expect(renderAt).toBeLessThan(passAt)
+    expect(rasterCallAt).toBeGreaterThan(passAt)
     expect(tickAt).toBeGreaterThan(passAt)
     expect(planAt).toBeGreaterThan(tickAt)
     expect(runtime.indexOf("runRasterPass()", tickAt)).toBeGreaterThan(planAt)
@@ -150,13 +241,14 @@ describe("hero ASCII runtime wiring", () => {
     expect(runtime).toContain("shouldContinueStamp")
   })
 
-  it("does not skip ASCII on coarse pointers and mounts ASCII without an idle chrome gate", () => {
+  it("does not skip ASCII on coarse pointers; Hero chrome stays free of idle gates", () => {
     const runtime = readSrc("lib/heroAsciiRuntime.ts")
     const hero = readSrc("components/Hero.tsx")
     const home = readSrc("pages/index.astro")
     expect(runtime).not.toMatch(/ascii\.width\s*<\s*800/)
     expect(runtime).toContain("cellBudget")
     expect(runtime).toContain("signalHeroBootReady")
+    expect(runtime).toContain("takeFirstAsciiPaint")
     expect(hero).toContain("<HeroAsciiBackground")
     expect(hero).not.toContain("timeout: 0")
     expect(hero).not.toContain("timeout: 2000")

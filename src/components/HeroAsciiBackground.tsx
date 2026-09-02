@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react"
 import { site } from "../config/site"
 import { signalHeroBootReady } from "../lib/bootLoader"
 import { getCapabilities } from "../lib/capabilities"
+import { scheduleAsciiStart, type AsciiStartHost } from "../lib/heroAsciiBudget"
 
 type Phase = "boot" | "ascii" | "photo"
 
@@ -19,7 +20,7 @@ export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgro
       setPhase("photo")
       return
     }
-    setPhase("ascii")
+    return scheduleAsciiStart(() => setPhase("ascii"), window as AsciiStartHost)
   }, [])
 
   useEffect(() => {

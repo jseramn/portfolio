@@ -46,6 +46,38 @@ export function signalHeroBootReady(target?: EventTarget | null): void {
   dest.dispatchEvent(new Event(BOOT_READY_EVENT))
 }
 
+export function takeFirstAsciiPaint(dataset: { asciiPaint?: string }): boolean {
+  if (dataset.asciiPaint === "1") return false
+  dataset.asciiPaint = "1"
+  return true
+}
+
+export const BOOT_MUTATION_OBSERVER_INIT: MutationObserverInit = {
+  subtree: true,
+  childList: false,
+  attributes: true,
+  attributeFilter: [ASCII_PAINT_ATTR, BOOT_FALLBACK_ATTR],
+}
+
+export function isBootReadyAttributeTarget(target: unknown): boolean {
+  if (!target || typeof target !== "object") return false
+  const el = target as {
+    getAttribute?: (name: string) => string | null
+    hasAttribute?: (name: string) => boolean
+  }
+  if (typeof el.getAttribute !== "function" || typeof el.hasAttribute !== "function") return false
+  return el.getAttribute(ASCII_PAINT_ATTR) === "1" || el.hasAttribute(BOOT_FALLBACK_ATTR)
+}
+
+export function bootReadyFromMutations(
+  records: ReadonlyArray<{ type: string; target: unknown }>,
+): boolean {
+  for (const rec of records) {
+    if (rec.type === "attributes" && isBootReadyAttributeTarget(rec.target)) return true
+  }
+  return false
+}
+
 export function createBootLoaderSession(opts: { hide: () => void }): {
   dismiss: () => void
   onReady: () => void
@@ -89,13 +121,10 @@ export function installBootLoader(
     session.onPageshow("persisted" in event && Boolean((event as PageTransitionEvent).persisted))
   }
 
-  const observer = new MutationObserver(check)
-  observer.observe(html, {
-    subtree: true,
-    childList: true,
-    attributes: true,
-    attributeFilter: [ASCII_PAINT_ATTR, BOOT_FALLBACK_ATTR],
+  const observer = new MutationObserver((records) => {
+    if (bootReadyFromMutations(records)) session.onReady()
   })
+  observer.observe(html, BOOT_MUTATION_OBSERVER_INIT)
   win.addEventListener(BOOT_READY_EVENT, onReadyEvent)
   win.addEventListener("pageshow", onPageshow)
   const timeoutId = win.setTimeout(() => session.onTimeout(), BOOT_TIMEOUT_MS)

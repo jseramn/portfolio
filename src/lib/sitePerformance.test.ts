@@ -99,7 +99,7 @@ describe("site performance chrome load", () => {
     expect(readSrc("pages/contact.astro")).not.toContain("boot-loader")
   })
 
-  it("defers YouTube and ContactModal; ASCII stays lazy without an idle gate", () => {
+  it("defers YouTube and ContactModal; ASCII stays lazy outside the Hero chrome file", () => {
     const hero = readSrc("components/Hero.tsx")
     expect(hero).not.toMatch(/import \{ ContactModal \}/)
     expect(hero).toContain('import("./ContactModal")')

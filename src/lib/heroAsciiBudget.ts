@@ -124,3 +124,53 @@ export function yieldToMain(): Promise<void> {
   }
   return timeout
 }
+
+export const ASCII_IDLE_TIMEOUT_MS = 1_500
+
+export type AsciiStartHost = {
+  requestAnimationFrame: (cb: (time: number) => void) => number
+  cancelAnimationFrame: (id: number) => void
+  requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number
+  cancelIdleCallback?: (id: number) => void
+  setTimeout: (handler: () => void, timeout?: number) => number
+  clearTimeout: (id: number) => void
+}
+
+export function scheduleAsciiStart(
+  start: () => void,
+  host: AsciiStartHost,
+  idleTimeoutMs = ASCII_IDLE_TIMEOUT_MS,
+): () => void {
+  let cancelled = false
+  let idleId = 0
+  let timeoutId = 0
+  let raf1 = 0
+  let raf2 = 0
+
+  const run = () => {
+    if (!cancelled) start()
+  }
+
+  const afterPaint = () => {
+    if (cancelled) return
+    if (typeof host.requestIdleCallback === "function") {
+      idleId = host.requestIdleCallback(run, { timeout: idleTimeoutMs })
+      return
+    }
+    timeoutId = host.setTimeout(run, 0)
+  }
+
+  raf1 = host.requestAnimationFrame(() => {
+    raf2 = host.requestAnimationFrame(afterPaint)
+  })
+
+  return () => {
+    cancelled = true
+    host.cancelAnimationFrame(raf1)
+    host.cancelAnimationFrame(raf2)
+    if (idleId && typeof host.cancelIdleCallback === "function") {
+      host.cancelIdleCallback(idleId)
+    }
+    if (timeoutId) host.clearTimeout(timeoutId)
+  }
+}

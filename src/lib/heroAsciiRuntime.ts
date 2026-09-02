@@ -14,7 +14,7 @@ import {
   yieldToMain,
 } from "./heroAsciiBudget"
 import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "./heroAsciiStamp"
-import { signalHeroBootReady } from "./bootLoader"
+import { signalHeroBootReady, takeFirstAsciiPaint } from "./bootLoader"
 import { getCapabilities } from "./capabilities"
 import { HERO_ASCII_DISPLAY_CLASS, getHeroRoot, isUiBlockingOverlayOpen } from "./domSignals"
 import { applyHeroSamplerFailure } from "./heroAsciiSamplerFailure"
@@ -196,6 +196,7 @@ export async function mountHeroAscii(
 
   renderer.setPixelRatio(1)
   renderer.setClearColor(0x000000, 1)
+  await yieldToMain()
 
   const scene = new Scene()
   const camera = new PerspectiveCamera(FOV, 1, 0.1, 100)
@@ -246,6 +247,7 @@ export async function mountHeroAscii(
     displayCanvas.getContext("2d", { alpha: true, desynchronized: true }) ??
     displayCanvas.getContext("2d", { alpha: true }) ??
     displayCanvas.getContext("2d")
+  await yieldToMain()
 
   let mouseX = 0
   let mouseY = 0
@@ -278,6 +280,7 @@ export async function mountHeroAscii(
   let rastersCompleted = 0
   let rasterBusy = false
   let skipNextSample = false
+  let glFlipY = true
   const mountedAt = performance.now()
 
   const applySize = () => {
@@ -529,9 +532,7 @@ export async function mountHeroAscii(
       displayCanvas.dataset.glassBox = `${stampMinGX * cellW},${stampMinGY * cellH},${(stampMaxGX - stampMinGX + 1) * cellW},${(stampMaxGY - stampMinGY + 1) * cellH}`
     }
     displayCanvas.dataset.glassGen = String((Number(displayCanvas.dataset.glassGen) || 0) + 1)
-    const firstPaint = displayCanvas.dataset.asciiPaint !== "1"
-    displayCanvas.dataset.asciiPaint = "1"
-    if (firstPaint) signalHeroBootReady()
+    if (takeFirstAsciiPaint(displayCanvas.dataset)) signalHeroBootReady()
     stampCursor = -1
     rastersCompleted += 1
     rasterBusy = false
@@ -560,6 +561,7 @@ export async function mountHeroAscii(
     lastRasterMs = performance.now() - started
     skipNextSample = shouldSkipSample(lastRasterMs)
     if (displayCtx) displayCtx.putImageData(displayImage, 0, 0)
+    if (takeFirstAsciiPaint(displayCanvas.dataset)) signalHeroBootReady()
     if (shouldContinueStamp(stampCursor, rows)) {
       rasterBusy = true
       return
@@ -567,7 +569,7 @@ export async function mountHeroAscii(
     finishStamp()
   }
 
-  const runRasterPass = () => {
+  const captureGlPixels = (): boolean => {
     const t = video.currentTime
     if (t !== lastVideoTime) {
       lastVideoTime = t
@@ -586,12 +588,23 @@ export async function mountHeroAscii(
       if (!gl || cols <= 0 || rows <= 0) throw new Error("no-gl")
       gl.readPixels(0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, glPixels)
     } catch {
-      if (!asciiCtx) return
+      if (!asciiCtx) return false
       asciiCtx.drawImage(renderer.domElement, 0, 0)
       glPixels.set(asciiCtx.getImageData(0, 0, cols, rows).data)
       flipY = false
     }
-    prepareCellGlyphs(glPixels, flipY)
+    glFlipY = flipY
+    return true
+  }
+
+  const runRasterPass = async () => {
+    const splitStartup = rastersCompleted === 0
+    if (!captureGlPixels()) return
+    if (splitStartup) await yieldToMain()
+    if (!alive) return
+    prepareCellGlyphs(glPixels, glFlipY)
+    if (splitStartup) await yieldToMain()
+    if (!alive) return
     displayPixels.fill(0)
     stampCursor = 0
     stampSlice()
@@ -694,17 +707,20 @@ export async function mountHeroAscii(
     }
 
     const beginPass = () => {
-      try {
-        if (!alive) {
+      const go = async () => {
+        try {
+          if (!alive) {
+            stampCursor = -1
+            return
+          }
+          await runRasterPass()
+        } catch {
           stampCursor = -1
-          return
+        } finally {
+          if (!shouldContinueStamp(stampCursor, asciiSample.height)) rasterBusy = false
         }
-        runRasterPass()
-      } catch {
-        stampCursor = -1
-      } finally {
-        if (!shouldContinueStamp(stampCursor, asciiSample.height)) rasterBusy = false
       }
+      void go()
     }
 
     if (shouldYieldToMain(rastersCompleted, lastRasterMs)) {
@@ -769,6 +785,7 @@ export async function mountHeroAscii(
   }
 
   applySize()
+  await yieldToMain()
   window.addEventListener("mousemove", onMouseMove)
   window.addEventListener("pointermove", onPointerMove, { passive: true })
   window.addEventListener("pointerdown", onPointerDown, { passive: true })
