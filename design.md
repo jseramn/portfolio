@@ -11,7 +11,7 @@ Extracted facts cite `file:line` or report IDs (`A-##`, `B-##`, `C-##`, `D-##`).
 |-----------|------|
 | Vesper terminal | Full-viewport white ASCII portrait on black; glass HUD chrome; Geist / Geist Mono. The portrait is the hero. Chrome is glass, not a second hero. |
 | Black until glyphs | First paint is `#000`. Boot overlay exists only on `/` until the first finished ASCII raster (`finishStamp`) plus min 600ms in `installBootLoader`, or a fallback signals ready (`src/pages/index.astro:12–27`, `src/lib/bootLoader.ts`, `src/lib/hero/ascii/raster.ts`). |
-| ASCII is the identity | Hidden 480p sampler drives glyphs. No visible video pixels. No colourful still (`portrait.jpg` / ascii-poster). |
+| ASCII is the identity | Hidden 426×240 sampler (filenames still `videobg-480.{webm,mp4}`) drives glyphs. No visible video pixels. No colourful still (`portrait.jpg` / ascii-poster). |
 | Chrome is glass | **6 hero `GlassSurface` wraps + 1 modal** (Tinity extra wrap). Live liquid glass only on Chromium desktop + fine pointer. |
 | Agent-first | Every human HTML surface has a machine-readable twin (`Accept: text/markdown`, `/llms.txt`). |
 | Performance is a constraint | Budgets in §7 bind layout and motion. JS/TBT overruns are design failures, not polish debt. |
@@ -428,7 +428,7 @@ npx --yes lighthouse@13.4.1 https://www.jseramn.tech/ \
   --output-path=./lh-home-mobile.json
 ```
 
-Hold LCP ≤ 1.5 s, TBT ≤ 100 ms, CLS 0, JS in LH window ≤ 150 KB, total ≤ 350 KB (§7). prod-r4b home-mobile median transfer is ~518 KB (**FAIL** on videobg-480 Range); that is measurement, not a budget change.
+Hold LCP ≤ 1.5 s, TBT ≤ 100 ms, CLS 0, JS in LH window ≤ 150 KB, total ≤ 350 KB (§7). prod-r5 home-mobile median transfer is 333923 B (~334 KB) (**PASS** vs ≤350 KB, n=3, all runs 333744–333957); live sampler webm 131446 B / mp4 137141 B (5s 426×240 12fps, filenames still `videobg-480.*`). Cite `docs/swarm/measure/prod-r5-report.md`. That is measurement, not a budget change.
 
 ### Code limits
 
@@ -477,7 +477,7 @@ Owner decisions already taken (sanitation plan). Change them only by updating th
 | Video preload link | **Remove** `<link rel="preload" as="video">`; keep element `preload="none"` (B-02) | Re-add only with LH proof that LCP/SI need it |
 | Analytics | **PostHog-only, slim** (disable session recording / surveys / console recording on public). Delete dead SpeedInsights import; do not add vendors (A-09, B-08, B-10, invariant 7) | Owner PR if Vercel Analytics must emit |
 | Points cloud (`sampleLuminance`) | **Remove only if indistinguishable** from plane+readPixels (A-08) | Side-by-side visual; keep if the bust look depends on it |
-| Replace Three | **Shipped U11 WebGL2.** `three` is gone from `package.json` and product `src`. Do not start a Three unit. prod-r4b TBT 31 ms / JS ~138 KB. | Reintroduce Three only with an explicit owner decision after a TBT/JS budget FAIL |
+| Replace Three | **Shipped U11 WebGL2.** `three` is gone from `package.json` and product `src`. Do not start a Three unit. prod-r5 TBT 18.5 ms / JS ~138 KB. | Reintroduce Three only with an explicit owner decision after a TBT/JS budget FAIL |
 | Reduced-motion / no-WebGL | **Monochrome ASCII fallback** (text/SVG from first sampler frame). Not `portrait.jpg` | Only with a new invariant change |
 | Legal pages | **`prerender = false`** so Accept markdown is honest (D-03) | Static `.md` twins are forbidden by tests |
 | Agent contact | **mailto** `contacto@jseramn.tech`. Humans use the form + Turnstile (D-report Q2) | Agent POST without Turnstile needs Web Bot Auth + rate limit — explicit owner ask |
