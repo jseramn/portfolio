@@ -453,7 +453,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center text-vesper-accent/70 transition-colors hover:text-vesper-accent"
+                className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center text-vesper-accent/70 transition-colors hover:text-vesper-accent"
                 aria-label="Close"
               >
                 <X size={20} />
