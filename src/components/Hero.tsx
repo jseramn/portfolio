@@ -563,7 +563,7 @@ export default function Hero() {
             <GlassSurface
               preset="button"
               mouseContainer={heroRootRef}
-              className="self-start w-max max-w-full"
+              className="self-start w-max max-w-full md:shrink-0"
             >
               <button
                 type="button"

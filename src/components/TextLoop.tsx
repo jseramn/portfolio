@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react"
-import { useState, useEffect, Children, isValidElement } from "react"
+import { useState, useEffect, Children, cloneElement, isValidElement } from "react"
 import type { Transition, Variants, AnimatePresenceProps } from "motion/react"
 
 type TextLoopProps = {
@@ -53,7 +53,7 @@ export function TextLoop({
             className="col-start-1 row-start-1 invisible"
             aria-hidden="true"
           >
-            {item}
+            {cloneElement(item)}
           </div>
         ) : null,
       )}
