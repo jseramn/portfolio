@@ -12,13 +12,15 @@ Personal portfolio for **José Ramón García Del Risco** ([jseramn](https://git
 |-------|------|
 | Site | [Astro 5](https://astro.build) (static + serverless API on Vercel) |
 | UI | [React 19](https://react.dev) islands, [Tailwind CSS](https://tailwindcss.com), [Motion](https://motion.dev) |
+| ASCII | WebGL2 (no Three) |
 | Email | [Resend](https://resend.com) (`POST /api/contact`) |
 | Crypto | [age](https://github.com/FiloSottile/age) / [typage](https://github.com/FiloSottile/typage) in the browser |
 
 ## Features
 
-- Fullscreen ASCII portrait (black until glyphs paint)
+- Fullscreen ASCII portrait via **WebGL2** (no Three; black until glyphs paint)
 - Rotating roles, marquee (orgs + GitHub commit ticker), YouTube ambient audio
+- Public Tinity page at `/tinity`
 - **Encrypted contact modal** — ciphertext to `contacto@jseramn.tech`; decryption key via X / Instagram DM
 - SEO: Open Graph, Twitter Cards, JSON-LD, sitemap, `robots.txt`
 - Security headers (CSP, HSTS), optional Turnstile + Upstash rate limits on the contact API
@@ -38,8 +40,9 @@ Production build:
 
 ```bash
 pnpm build
-pnpm preview
 ```
+
+`pnpm preview` does **not** work with the Vercel adapter. Use `pnpm dev` locally for runtime checks.
 
 Deploy target: **Vercel** (`@astrojs/vercel`). Set environment variables in the Vercel dashboard (see below).
 
@@ -49,10 +52,12 @@ Deploy target: **Vercel** (`@astrojs/vercel`). Set environment variables in the 
 src/
   config/site.ts          # Identity, SEO, socials, contact email, crypto links
   components/
-    Hero.tsx              # Main island
-    ContactModal.tsx      # age encrypt + API send
+    Hero.tsx              # Split island (~82 LOC); not a 500-line monolith
+    ContactModal.tsx      # age encrypt + API send (~260 LOC)
+    contact/              # Form, success, fallback views
     TurnstileField.tsx    # Optional bot check
     TextLoop.tsx, InfiniteSlider.tsx
+  tinity/                 # Tinity experience (`/tinity`)
   lib/
     contactEncrypt.ts     # Client-side age passphrase encryption
     contactEmail.ts       # Payload validation + email body
@@ -60,10 +65,12 @@ src/
   middleware.ts           # Security headers on all responses
   pages/
     index.astro
+    tinity/               # `/tinity`
     api/contact.ts        # Resend relay (ciphertext only)
 public/
   llms.txt                # Machine-readable site & profile summary
-  videobg-480.webm, videobg-480.mp4, thumbnail.png, favicons, site.webmanifest
+  videobg-480.webm, videobg-480.mp4  # ASCII sampler 426×240
+  thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot

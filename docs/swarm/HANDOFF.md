@@ -2,12 +2,12 @@
 
 ## Current (2026-09-02)
 
-Production is **`90f76f3`** (#57). Measure: [`docs/swarm/measure/prod-r4b-report.md`](measure/prod-r4b-report.md). Do **not** promote; www already serves this SHA.
+Production product tree is **`b9e209a`** (#59 sampler). Docs tip is **`ddf3540`** (#60). Measure: [`docs/swarm/measure/prod-r5-report.md`](measure/prod-r5-report.md) transfer **333923 B PASS**. Gates on main green: [`docs/swarm/measure/dod-gates-main.md`](measure/dod-gates-main.md) (245 Vitest, e2e 72/4 including modal trap). Do **not** promote.
 
 - Home chrome: **6 hero `GlassSurface` + 1 modal** (Tinity extra wrap). ASCII is **WebGL2** (U11); Three is gone.
 - Boot overlay dismisses after first finished raster (`finishStamp`) + min 600ms (`installBootLoader`, #53).
-- Contact invalid POST: **JSON 400**. Real send UNVERIFIED. Is Agentic 100 UNVERIFIED.
-- Remaining FAIL: transfer ≤350 KB (prod-r4b median ~518 KB, videobg-480 Range). Do not start a transfer/video, Three, Motion, or LH unit from this file.
+- Contact invalid POST: **JSON 400**. Real send UNVERIFIED (user). Is Agentic 100 UNVERIFIED.
+- Remaining: real contact send (user), remote `swarm/*` deletes (user). Do not start sampler, Three, or Motion from this file.
 
 Historical U07 / wave text below is frozen context, not the live queue.
 
