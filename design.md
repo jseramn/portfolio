@@ -10,9 +10,9 @@ Extracted facts cite `file:line` or report IDs (`A-##`, `B-##`, `C-##`, `D-##`).
 | Principle | Rule |
 |-----------|------|
 | Vesper terminal | Full-viewport white ASCII portrait on black; glass HUD chrome; Geist / Geist Mono. The portrait is the hero. Chrome is glass, not a second hero. |
-| Black until glyphs | First paint is `#000`. Boot overlay exists only on `/` until ASCII paints or fallback signals ready (`src/pages/index.astro:12–27`, `src/lib/bootLoader.ts:1–6`). |
+| Black until glyphs | First paint is `#000`. Boot overlay exists only on `/` until the first finished ASCII raster (`finishStamp`) plus min 600ms in `installBootLoader`, or a fallback signals ready (`src/pages/index.astro:12–27`, `src/lib/bootLoader.ts`, `src/lib/hero/ascii/raster.ts`). |
 | ASCII is the identity | Hidden 480p sampler drives glyphs. No visible video pixels. No colourful still (`portrait.jpg` / ascii-poster). |
-| Chrome is glass | Exactly six `GlassSurface` wraps (5 hero + 1 modal). Live liquid glass only on Chromium desktop + fine pointer. |
+| Chrome is glass | **6 hero `GlassSurface` wraps + 1 modal** (Tinity extra wrap). Live liquid glass only on Chromium desktop + fine pointer. |
 | Agent-first | Every human HTML surface has a machine-readable twin (`Accept: text/markdown`, `/llms.txt`). |
 | Performance is a constraint | Budgets in §7 bind layout and motion. JS/TBT overruns are design failures, not polish debt. |
 | Accessibility is not optional | Contrast, 44×44 targets, keyboard, landmarks, and reduced-motion fallback are ship gates. |
@@ -203,7 +203,7 @@ Home is a locked HUD over a full-viewport ASCII field. Four-corner chrome uses t
 
 ## 4. Motion
 
-Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`); glass pump `GLASS_MS = 1000 / 12` (`GlassSurface.tsx:145`). Warmup: 1 fps for 4 s then 12 fps (`heroAsciiBudget.ts:9–10`). Stamp slices 8 ms (`heroAsciiBudget.ts:11`). Raster skip if last pass > 50 ms (`heroAsciiBudget.ts:7`). Pause ASCII + glass while the contact modal is open or the document is hidden.
+Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`); glass pump `GLASS_MS = 1000 / ASCII_FPS` (`src/lib/glass/pump.ts`). Warmup: 1 fps for 4 s then 12 fps (`heroAsciiBudget.ts:9–10`). Stamp slices 8 ms (`heroAsciiBudget.ts:11`). Raster skip if last pass > 50 ms (`heroAsciiBudget.ts:7`). Pause ASCII + glass while the contact modal is open or the document is hidden.
 
 | Motion | Allowed | Source |
 |--------|---------|--------|
@@ -282,7 +282,7 @@ Purpose: human path to `/about` and `/contact`. Compact text links, ≥44×44, b
 
 ### ContactModal
 
-Purpose: age-encrypt then POST `/api/contact` (production POST is **404 HTML**, D-01; agents use mailto). Anatomy: overlay, `GlassSurface modal`, fields Name / Email / Subject / Message, honeypot `company` (`ContactModal.tsx:338–345`), Turnstile slot when `PUBLIC_TURNSTILE_SITE_KEY` (`TurnstileField.tsx:3–6`), Encrypt and send. Overlay `bg-black/75` + `backdrop-blur-[2px]` is locked (openspec).
+Purpose: age-encrypt then POST `/api/contact` (production invalid payload is **JSON 400**, not 404 HTML; agents use mailto). Anatomy: overlay, `GlassSurface modal`, fields Name / Email / Subject / Message, honeypot `company` (`ContactModal.tsx:338–345`), Turnstile slot when `PUBLIC_TURNSTILE_SITE_KEY` (`TurnstileField.tsx:3–6`), Encrypt and send. Overlay `bg-black/75` + `backdrop-blur-[2px]` is locked (openspec).
 
 | State | Behaviour |
 |-------|-----------|
@@ -319,8 +319,8 @@ Home `/` lab targets from `B-report` budget (production HEAD `8f9a743`; mobile m
 | When | What | Source |
 |------|------|--------|
 | Before first paint | Black field, inlined CSS, Geist preload (`swap`), SSR tagline, boot overlay on `/` | `Layout.astro:53–61`, `index.astro:12–27` |
-| `client:load` chrome only | Hero island (hire + tagline + marquee). Must **not** start YouTube, live LiquidGlass, ASCII three/video, or ContactModal/`age-encryption` | openspec site-performance |
-| After first paint / idle | ASCII Three: `HeroAsciiBackground` waits double-rAF then `requestIdleCallback` (1.5 s timeout, or `setTimeout(0)` if rIC is missing) before `mountHeroAscii` / `import("three")`. Startup yields between renderer, scene, first `readPixels`, `prepareCellGlyphs`, and the first glyph stamp. Boot overlay dismisses on the first glyph slice (`data-ascii-paint` + `hero:boot-ready`), not the finished first frame. Live glass after `requestIdleCallback` 2 s (`GlassSurface.tsx:297–304`) | |
+| `client:load` chrome only | Hero island (hire + tagline + marquee). Must **not** start YouTube, live LiquidGlass, ASCII WebGL2/video, or ContactModal/`age-encryption` | openspec site-performance |
+| After first paint / idle | ASCII WebGL2 (U11): `HeroAsciiBackground` waits double-rAF then `requestIdleCallback` (1.5 s timeout, or `setTimeout(0)` if rIC is missing) before `mountHeroAscii` (`src/lib/hero/ascii/mount.ts`; no `three` / `import("three")`). `VIDEO_PRELOAD = "none"`. Boot overlay dismisses after the first finished raster (`finishStamp` → `data-ascii-paint` + `hero:boot-ready`) plus min 600ms (`installBootLoader`, `BOOT_MIN_VISIBLE_MS`). Live glass after `requestIdleCallback` 2 s (`GlassSurface.tsx`) | |
 | Gesture | YouTube `iframe_api` | `Hero.tsx:170–173` |
 | Hire click | ContactModal + `age-encryption` | `Hero.tsx:570–578` |
 | 6 s | PostHog `setTimeout(arm, 6000)` — **never** `requestIdleCallback` | `posthog.astro:27`, invariant 6 |
@@ -345,7 +345,7 @@ Is Agentic already **100/100** (D-report, 2026-09-02). Remaining work is off-sco
 | robots | `Allow: /`, `Disallow: /api/` (`public/robots.txt`) | **Policy A:** allow all cooperating crawlers. Never `Disallow: /` on `User-agent: *`. Never block Googlebot |
 | CORS agent files | ACAO apex origin + CORP same-site (D-06) | `*` + CORP `cross-origin` on `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/.well-known/security.txt` |
 | oEmbed | `type: rich` iframe (`oembed.ts:56–63`) vs CSP `frame-ancestors 'none'` (D-09) | Type consistent with CSP (`photo`/`link` + thumbnail, or `rich` only where framing is allowed) |
-| Agent contact | mailto in llms.txt; form POST 404 (D-01) | **mailto for agents.** Do not list `/api/contact` in llms.txt until the route is proven. Do not skip Turnstile |
+| Agent contact | mailto in llms.txt; form POST invalid payload is JSON 400 | **mailto for agents.** Do not list `/api/contact` in llms.txt until a real send is proven. Do not skip Turnstile |
 
 ### Recommended `llms.txt` outline (D-report WU3)
 
@@ -385,7 +385,7 @@ A2A `agent-card.json`, `/.well-known/mcp.json`, `ai-plugin.json`, WebMCP tools, 
 ## 9. Invariants (do not break)
 
 1. Visual identity stays: full-viewport white ASCII portrait on black (Vesper terminal aesthetic), glass chrome, Geist/Geist Mono. Layout, responsive behaviour, stacking and interaction details may change; Hero typography, scrim colours and `--hero-ink*` colours may NOT.
-2. Six `GlassSurface` wraps on the home chrome (5 hero + 1 modal). Live `liquid-glass-react` only on Chromium desktop with a fine pointer; CSS fallback everywhere else (Safari/WebKit/CriOS/Firefox/coarse pointers/reduced motion).
+2. **6 hero `GlassSurface` wraps + 1 modal** on the home chrome (Tinity extra wrap). Live `liquid-glass-react` only on Chromium desktop with a fine pointer; CSS fallback everywhere else (Safari/WebKit/CriOS/Firefox/coarse pointers/reduced motion).
 3. ASCII runs on mobile too. Reduced-motion or no-WebGL users get a static monochrome fallback — never a colourful still (no portrait.jpg / ascii-poster).
 4. First paint is black until glyphs paint; the boot loader overlay exists only on `/`.
 5. `prerender = false` stays on `/`, `/about`, `/contact`, `/404` and the API routes. Middleware runs at the Edge. `Accept: text/markdown` negotiation, 406 for unacceptable types, and `Vary: Accept, Accept-Encoding` on negotiated responses must keep working (tests in `src/lib/agent/*.test.ts`).
@@ -397,25 +397,25 @@ Additional tooling locks: **no Prettier + ESLint alongside Biome**; **`vercel.js
 
 ## 10. Definition of Done and verification recipes
 
-`package.json` today exposes `dev` / `build` / `preview` / `test` only. `pnpm check`, Biome, `astro check`, and Playwright are **not** in this branch (A-15). Run them when those units land. This documentation unit does not run builds.
+`package.json` exposes `dev` / `build` / `preview` / `format` / `lint` / `typecheck` / `test` / `test:e2e` / `check`. `pnpm check`, Biome, `astro check`, and Playwright exist. `biome check .` is green because `src/tinity` is excluded (`biome.json`). This documentation unit does not run product builds.
 
 ### Gates
 
 - [ ] `pnpm exec tsc --noEmit`
-- [ ] `pnpm test` (144 tests at audit HEAD)
-- [ ] `pnpm check` when added (expect `tsc` + `astro check` + Biome)
-- [ ] `pnpm exec astro check` when the tool exists
-- [ ] `pnpm exec biome check .` when Biome exists (Biome **or** Oxc; never Prettier+ESLint with it)
+- [ ] `pnpm test` (~244 Vitest tests at `90f76f3`)
+- [ ] `pnpm check` (`lint` + `typecheck` + `test`)
+- [ ] `pnpm exec astro check`
+- [ ] `pnpm exec biome check .` (`src/tinity` excluded; Biome **or** Oxc; never Prettier+ESLint with it)
 - [ ] `flock /tmp/swarm/build.lock -c "pnpm exec astro build"` (use `pnpm build` if headers changed; `vercel.json` diff must match the source module)
-- [ ] `pnpm test:e2e` when Playwright exists
+- [ ] `pnpm test:e2e` (72 tests, 4 skipped)
 
 ### Production / preview
 
 - [ ] Apex `308` → `www`
-- [ ] Home ASCII on mobile; live glass 0 on coarse pointer; 5 fallback hosts
+- [ ] Home ASCII on mobile; live glass 0 on coarse pointer; 6 frost fallback hosts
 - [ ] Boot overlay only on `/`
 - [ ] No `portrait.jpg` / ascii-poster
-- [ ] POST `/api/contact` is not 404 HTML (D-01)
+- [ ] POST `/api/contact` invalid payload is JSON 400 (not 404 HTML)
 
 ### Performance medians (home `/`, n≥3 mobile)
 
@@ -428,7 +428,7 @@ npx --yes lighthouse@13.4.1 https://www.jseramn.tech/ \
   --output-path=./lh-home-mobile.json
 ```
 
-Hold LCP ≤ 1.5 s, TBT ≤ 100 ms, CLS 0, JS in LH window ≤ 150 KB, total ≤ 350 KB (§7).
+Hold LCP ≤ 1.5 s, TBT ≤ 100 ms, CLS 0, JS in LH window ≤ 150 KB, total ≤ 350 KB (§7). prod-r4b home-mobile median transfer is ~518 KB (**FAIL** on videobg-480 Range); that is measurement, not a budget change.
 
 ### Code limits
 
@@ -477,7 +477,7 @@ Owner decisions already taken (sanitation plan). Change them only by updating th
 | Video preload link | **Remove** `<link rel="preload" as="video">`; keep element `preload="none"` (B-02) | Re-add only with LH proof that LCP/SI need it |
 | Analytics | **PostHog-only, slim** (disable session recording / surveys / console recording on public). Delete dead SpeedInsights import; do not add vendors (A-09, B-08, B-10, invariant 7) | Owner PR if Vercel Analytics must emit |
 | Points cloud (`sampleLuminance`) | **Remove only if indistinguishable** from plane+readPixels (A-08) | Side-by-side visual; keep if the bust look depends on it |
-| Replace Three | **Conditional on TBT > 100 ms** after cheaper ASCII-first-frame work (B-03, B-04) | If mobile TBT median still > 100 ms, a tiny WebGL sampler may replace `three` |
+| Replace Three | **Shipped U11 WebGL2.** `three` is gone from `package.json` and product `src`. Do not start a Three unit. prod-r4b TBT 31 ms / JS ~138 KB. | Reintroduce Three only with an explicit owner decision after a TBT/JS budget FAIL |
 | Reduced-motion / no-WebGL | **Monochrome ASCII fallback** (text/SVG from first sampler frame). Not `portrait.jpg` | Only with a new invariant change |
 | Legal pages | **`prerender = false`** so Accept markdown is honest (D-03) | Static `.md` twins are forbidden by tests |
 | Agent contact | **mailto** `contacto@jseramn.tech`. Humans use the form + Turnstile (D-report Q2) | Agent POST without Turnstile needs Web Bot Auth + rate limit — explicit owner ask |
