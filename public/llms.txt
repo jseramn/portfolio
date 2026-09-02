@@ -35,4 +35,5 @@ The on-site contact form encrypts messages in the browser with [age](https://git
 - [Open Graph image](https://jseramn.tech/thumbnail.png): social preview
 - [oEmbed](https://jseramn.tech/oembed.json): embed discovery for public pages
 - [Sitemap](https://jseramn.tech/sitemap-index.xml): crawlers
+- [security.txt](https://www.jseramn.tech/.well-known/security.txt): RFC 9116 vulnerability disclosure
 - [age format](https://age-encryption.org): encryption used for contact payloads
