@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "motion/react"
+import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import { useState, useEffect, Children, cloneElement, isValidElement } from "react"
 import type { Transition, Variants, AnimatePresenceProps } from "motion/react"
 
@@ -25,18 +25,20 @@ export function TextLoop({
 }: TextLoopProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const items = Children.toArray(children)
+  const reducedMotion = Boolean(useReducedMotion())
+  const freeze = paused || reducedMotion
 
   useEffect(() => {
     onIndexChange?.(currentIndex)
   }, [currentIndex, onIndexChange])
 
   useEffect(() => {
-    if (paused) return
+    if (freeze) return
     const timer = setInterval(() => {
       setCurrentIndex((current) => (current + 1) % items.length)
     }, interval * 1000)
     return () => clearInterval(timer)
-  }, [items.length, interval, paused])
+  }, [items.length, interval, freeze])
 
   const defaultVariants: Variants = {
     initial: { y: 20, opacity: 0 },
@@ -58,18 +60,22 @@ export function TextLoop({
         ) : null,
       )}
       <div className="col-start-1 row-start-1 h-full overflow-hidden">
-        <AnimatePresence mode={mode} initial={false}>
-          <motion.div
-            key={currentIndex}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={transition}
-            variants={variants || defaultVariants}
-          >
-            {items[currentIndex]}
-          </motion.div>
-        </AnimatePresence>
+        {freeze ? (
+          items[currentIndex]
+        ) : (
+          <AnimatePresence mode={mode} initial={false}>
+            <motion.div
+              key={currentIndex}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={transition}
+              variants={variants || defaultVariants}
+            >
+              {items[currentIndex]}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
     </div>
   )

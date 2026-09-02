@@ -163,6 +163,10 @@ body {
   }
 }
 
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
 /* ASCII 3D host: fullscreen glyph canvas; sampler + offscreen GL stay hidden */
 .hero-ascii-host {
   position: fixed;
@@ -455,6 +459,14 @@ body {
   .loader {
     animation: none;
     background-position: left;
+  }
+  .sound-bars span,
+  .glow-pulse {
+    animation: none;
+  }
+  .sound-bars span,
+  [data-hero-root] .hover\:scale-125:hover {
+    transform: none;
   }
 }
 

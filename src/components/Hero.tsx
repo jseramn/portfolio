@@ -5,6 +5,7 @@ import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
 import { site } from "../config/site"
 import { onHireCtaClicked, onOutboundOrg, onOutboundSocial } from "../lib/analytics/productCapture"
+import { getCapabilities } from "../lib/capabilities"
 import type { GitHubStats } from "../lib/githubStats"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
@@ -32,6 +33,10 @@ function useScramble(text: string, { autoStart = false }: { autoStart?: boolean 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const start = useCallback(() => {
+    if (getCapabilities().reducedMotion) {
+      setDisplay(text)
+      return
+    }
     if (intervalRef.current) clearInterval(intervalRef.current)
     let iteration = 0
     intervalRef.current = setInterval(() => {
@@ -300,11 +305,23 @@ export default function Hero() {
         emit(tgtX, tgtY)
         return
       }
+      const settleMs = getCapabilities().reducedMotion ? 0 : 220
+      if (settleMs === 0) {
+        stopSettle()
+        const box = root.getBoundingClientRect()
+        tgtX = box.left + box.width / 2
+        tgtY = box.top - 2000
+        curX = tgtX
+        curY = tgtY
+        seeded = false
+        emit(tgtX, tgtY)
+        return
+      }
       root.dataset.glassSettling = "1"
       for (const host of hosts()) host.classList.add("is-settling")
       const started = performance.now()
       const tickSettle = (now: number) => {
-        const t = Math.min(1, (now - started) / 220)
+        const t = Math.min(1, (now - started) / settleMs)
         const ease = 1 - (1 - t) ** 3
         for (const origin of origins) {
           const x = origin.x * (1 - ease)
@@ -493,8 +510,7 @@ export default function Hero() {
                     href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hero-on-video inline-flex min-h-11 items-center whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis short:hidden"
-                    style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
+                    className="hero-on-video inline-flex min-h-11 items-center whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis short:hidden glow-pulse"
                   >
                     <span className="sound-bars">
                       <span />
@@ -508,8 +524,7 @@ export default function Hero() {
                   <button
                     type="button"
                     onClick={toggleMusic}
-                    className={`hero-on-video inline-flex min-h-11 items-center whitespace-nowrap cursor-pointer short:hidden ${GLOW}`}
-                    style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
+                    className={`hero-on-video inline-flex min-h-11 items-center whitespace-nowrap cursor-pointer short:hidden glow-pulse ${GLOW}`}
                   >
                     click to listen{" "}
                     <span className="sound-bars">
