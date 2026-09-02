@@ -566,7 +566,7 @@ export default function Hero() {
             className="flex justify-center z-10 hud:absolute hud:left-8 hud:top-24 hud:bottom-auto hud:right-auto hud:translate-x-0 hud:justify-start short:shrink-0"
           >
             <GlassSurface preset="dock" mouseContainer={heroRootRef}>
-              <div className="flex flex-col items-center gap-1 hud:flex-row hud:items-center short:flex-row short:items-center">
+              <div className="flex flex-col items-center gap-1 short:flex-row short:items-center">
                 <div className="flex flex-row items-center gap-4 md:gap-5 short:hidden">
                   {site.socials.map((social) => {
                     const Icon = SOCIAL_ICONS[social.icon]
@@ -587,10 +587,6 @@ export default function Hero() {
                     )
                   })}
                 </div>
-                <span
-                  className="hidden h-5 w-px shrink-0 bg-[var(--hero-ink)]/35 hud:block"
-                  aria-hidden
-                />
                 <nav aria-label="Site" className="flex flex-row items-center gap-1">
                   {HOME_NAV.map((item, index) => (
                     <span key={item.href} className="flex items-center gap-1">

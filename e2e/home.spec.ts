@@ -296,15 +296,15 @@ test("home chrome: hud regions do not overlap or overflow", async ({ page }, tes
 
   if (testInfo.project.name !== "chromium") return
 
-  for (const viewport of SHORT_VIEWPORTS) {
+  for (const viewport of [
+    ...SHORT_VIEWPORTS,
+    { width: 768, height: 1024 },
+    { width: 1920, height: 1080 },
+  ]) {
     await page.setViewportSize(viewport)
     await page.evaluate(() => document.fonts.ready)
     await assertHudRegions(page)
   }
-
-  await page.setViewportSize({ width: 1920, height: 1080 })
-  await page.evaluate(() => document.fonts.ready)
-  await assertHudRegions(page)
 })
 
 async function assertHomeIdentity(page: Page) {
@@ -326,17 +326,18 @@ async function assertHomeIdentity(page: Page) {
   await expect(hire).not.toHaveAttribute("aria-live")
 }
 
-test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }) => {
+test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {
   await openHome(page)
   await assertHomeIdentity(page)
 
+  const forceClick = testInfo.project.name === "landscape-phone"
   const about = page.locator("[data-hero-root]").getByRole("link", { name: "about", exact: true })
   const aboutDoc = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === "/about" &&
       response.request().resourceType() === "document",
   )
-  await about.click({ force: true })
+  await about.click({ force: forceClick })
   expect((await aboutDoc).status()).toBe(200)
   await expect(page).toHaveURL(/\/about\/?$/)
 
@@ -351,7 +352,7 @@ test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }
       new URL(response.url()).pathname === "/contact" &&
       response.request().resourceType() === "document",
   )
-  await contact.click({ force: true })
+  await contact.click({ force: forceClick })
   expect((await contactDoc).status()).toBe(200)
   await expect(page).toHaveURL(/\/contact\/?$/)
 })
