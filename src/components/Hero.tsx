@@ -1,18 +1,6 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
-import {
-  Github,
-  Linkedin,
-  Twitter,
-  Mail,
-  Instagram,
-  Volume2,
-  VolumeX,
-  SkipBack,
-  SkipForward,
-  Shuffle,
-  type LucideIcon,
-} from "lucide-react"
 import { TextLoop } from "./TextLoop"
+import { Shuffle, SkipBack, SkipForward, SOCIAL_ICONS, Volume2, VolumeX } from "./icons"
 import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
 import { site } from "../config/site"
@@ -30,14 +18,6 @@ const DESC = site.tagline.en
 const CHARS = "!@#$%^&*()_+-=[]{}|;:,./<>?`~abcdefghijklmnopqrstuvwxyz0123456789"
 const GLOW =
   "transition-all duration-300 hover:drop-shadow-[0_0_14px_rgba(0,0,0,0.75)] hover:text-[var(--hero-ink-hover)]"
-
-const SOCIAL_ICONS: Record<string, LucideIcon> = {
-  Github,
-  Twitter,
-  Linkedin,
-  Instagram,
-  Mail,
-}
 
 function useScramble(text: string, { autoStart = false }: { autoStart?: boolean } = {}) {
   const [display, setDisplay] = useState(autoStart ? ".".repeat(text.length) : text)

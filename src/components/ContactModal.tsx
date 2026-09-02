@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useState, type FormEvent, type RefObject } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { X, Copy, Check, ExternalLink } from "lucide-react"
+import { Check, Copy, ExternalLink, X } from "./icons"
 import { site } from "../config/site"
 import {
   buildEncryptedMailto,
