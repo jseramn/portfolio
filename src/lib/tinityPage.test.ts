@@ -24,6 +24,12 @@ describe("Tinity subpage", () => {
     expect(existsSync(join(src, "tinity/components/canvasui/ForceField.tsx"))).toBe(true)
   })
 
+  it("declares the Layout tinity prop the page passes", () => {
+    const layout = readSrc("layouts/Layout.astro")
+    expect(layout).toMatch(/tinity\?: boolean/)
+    expect(layout).toMatch(/tinity = false/)
+  })
+
   it("exposes a homepage Tinity control without restyling hire", () => {
     const hero = readSrc("components/Hero.tsx")
     expect(hero).toContain('href={site.tinity.path}')
