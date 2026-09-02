@@ -104,6 +104,7 @@ describe("sync-vercel-security-headers", () => {
   })
 
   it("opens CORS for agent-readable files after the global ACAO lock", () => {
+    expect(AGENT_FILES_SOURCE).toMatch(/design\.md/)
     const rules = buildVercelHeaderRules()
     const globalIdx = rules.findIndex((rule) => rule.source === "/(.*)")
     const agentIdx = rules.findIndex((rule) => rule.source === AGENT_FILES_SOURCE)

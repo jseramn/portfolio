@@ -94,7 +94,7 @@
       ]
     },
     {
-      "source": "/(llms.txt|llms-full.txt|robots.txt)",
+      "source": "/(llms.txt|llms-full.txt|robots.txt|design.md)",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
