@@ -2,7 +2,7 @@ import { defineMiddleware } from "astro:middleware"
 import { negotiate } from "./lib/agent/accept"
 import { applyApiNoStoreHeaders, applyNegotiatedResponseHeaders } from "./lib/agent/apiCacheHeaders"
 import { notFoundMarkdown, pageFromPath, toMarkdown } from "./lib/agent/markdown"
-import { skipNegotiate } from "./lib/agent/skip"
+import { shouldNegotiateAccept } from "./lib/agent/skip"
 import { applySecurityHeaders } from "./lib/security/headers"
 import { buildLegalContentSecurityPolicy } from "./lib/security/siteSecurityHeaders.mjs"
 
@@ -27,7 +27,7 @@ function finish(pathname: string, response: Response, vary: boolean): Response {
 export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = context.url.pathname
 
-  if (skipNegotiate(pathname)) {
+  if (!shouldNegotiateAccept(pathname, context.isPrerendered)) {
     const response = await next()
     return finish(pathname, response, false)
   }

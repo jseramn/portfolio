@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest"
 const here = dirname(fileURLToPath(import.meta.url))
 const policy = readFileSync(join(here, "../pages/policy.astro"), "utf8")
 const deletion = readFileSync(join(here, "../pages/data-deletion.astro"), "utf8")
+const terms = readFileSync(join(here, "../pages/terms.astro"), "utf8")
 const home = readFileSync(join(here, "../pages/index.astro"), "utf8")
 const about = readFileSync(join(here, "../pages/about.astro"), "utf8")
 const contact = readFileSync(join(here, "../pages/contact.astro"), "utf8")
@@ -32,6 +33,12 @@ describe("SSR routes stay dynamic", () => {
   it("keeps prerender false on home, about, contact, and 404", () => {
     for (const source of [home, about, contact, notFound]) {
       expect(source).toMatch(/export const prerender = false/)
+    }
+  })
+
+  it("keeps legal pages prerendered", () => {
+    for (const source of [policy, deletion, terms]) {
+      expect(source).not.toMatch(/export const prerender = false/)
     }
   })
 })
