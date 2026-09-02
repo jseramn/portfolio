@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { Check, Copy, ExternalLink, X } from "./icons"
+import { X } from "./icons"
 import { site } from "../config/site"
 import {
   buildEncryptedMailto,
@@ -16,7 +16,7 @@ import {
   createEnvelopeId,
   encryptContactPayload,
 } from "../lib/contactEncrypt"
-import { TurnstileField, turnstileEnabled } from "./TurnstileField"
+import { turnstileEnabled } from "./TurnstileField"
 import { GlassSurface } from "./GlassSurface"
 import {
   contactFailedOutcomeFromClientError,
@@ -26,85 +26,16 @@ import {
   onContactSubmittedClient,
 } from "../lib/analytics/productCapture"
 import { useFocusTrap } from "../lib/useFocusTrap"
+import { ContactFormView } from "./contact/ContactFormView"
+import { ContactSuccessView } from "./contact/ContactSuccessView"
+import { sendEncryptedEmail } from "./contact/sendEncryptedEmail"
+import type { FallbackState, SuccessState } from "./contact/types"
 
 type ContactModalProps = {
   open: boolean
   onClose: () => void
   contextRole: string
   mouseContainer: RefObject<HTMLDivElement | null>
-}
-
-type SuccessState = {
-  envelopeId: string
-  passphrase: string
-}
-
-type FallbackState = {
-  envelopeId: string
-  passphrase: string
-  armored: string
-  mailtoHref: string
-  mailtoTruncated: boolean
-}
-
-const fieldClass =
-  "w-full bg-black/30 border border-vesper-accent/50 px-3 py-2.5 font-mono text-sm text-vesper-accent placeholder:text-vesper-accent/35 transition-colors focus:border-vesper-accent focus:shadow-[0_0_12px_rgba(0,240,255,0.25)]"
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function sendEncryptedEmail(payload: {
-  envelopeId: string
-  armored: string
-  visitorEmail: string
-  subjectLine: string
-  company: string
-  turnstileToken?: string
-}): Promise<void> {
-  const res = await fetch("/api/contact", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-  if (res.ok) return
-  const data = (await res.json().catch(() => null)) as { error?: string } | null
-  throw new Error(data?.error ?? "send_failed")
-}
-
-function CopyField({ label, value }: { label: string; value: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const onCopy = async () => {
-    const ok = await copyText(value)
-    if (!ok) return
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="font-mono text-xs text-vesper-accent/80">{label}</span>
-      <div className="flex gap-2">
-        <code className="min-w-0 flex-1 break-all border border-vesper-accent/40 bg-black/40 px-2 py-2 font-mono text-xs text-vesper-accent/90">
-          {value}
-        </code>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="shrink-0 border border-vesper-accent/50 px-2 text-vesper-accent transition-colors hover:border-vesper-accent"
-          aria-label={`Copy ${label}`}
-        >
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-        </button>
-      </div>
-    </div>
-  )
 }
 
 export function ContactModal({ open, onClose, contextRole, mouseContainer }: ContactModalProps) {
@@ -291,164 +222,26 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                 secure channel · {contextRole}
               </p>
               {success ? (
-                <div className="flex flex-col gap-5 pr-6">
-                  <p className="font-mono text-xs tracking-wide text-vesper-accent/60">
-                    sent · {success.envelopeId}
-                  </p>
-                  <p className="font-sans text-sm leading-relaxed text-vesper-accent/90">
-                    The encrypted email was sent to {site.email}.{" "}
-                    <strong className="font-medium text-vesper-accent">Last step:</strong> send me
-                    the key by DM (it is not in the email).
-                  </p>
-
-                  <CopyField
-                    label="Envelope ID (include it in the DM)"
-                    value={success.envelopeId}
-                  />
-                  <CopyField label="Decryption key (socials only)" value={success.passphrase} />
-
-                  <p className="font-mono text-xs text-vesper-accent/70">
-                    {keyDeliverySocials.map((s, i) => (
-                      <span key={s.id}>
-                        {i > 0 ? " · " : ""}
-                        <a
-                          href={s.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-vesper-pink underline-offset-2 hover:underline"
-                        >
-                          {s.label}
-                        </a>
-                      </span>
-                    ))}
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={handleDismiss}
-                    className="w-full border border-vesper-accent/40 py-2 font-mono text-xs text-vesper-accent/70 hover:text-vesper-accent"
-                  >
-                    Done
-                  </button>
-                </div>
+                <ContactSuccessView
+                  success={success}
+                  keyDeliverySocials={keyDeliverySocials}
+                  onDismiss={handleDismiss}
+                />
               ) : (
-                <>
-                  <p
-                    id={noteId}
-                    className="mb-5 font-mono text-[11px] leading-relaxed text-vesper-accent/50"
-                  >
-                    Encrypted in your browser with{" "}
-                    <a
-                      href={ageRepo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-11 items-center gap-0.5 text-vesper-accent/70 hover:text-vesper-accent"
-                    >
-                      age
-                      <ExternalLink size={10} aria-hidden />
-                    </a>{" "}
-                    (
-                    <a
-                      href={typageRepo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-11 items-center text-vesper-accent/70 hover:text-vesper-accent"
-                    >
-                      typage
-                    </a>
-                    ). The server only relays the ciphertext. Send the decryption key via{" "}
-                    {keyDeliverySocials.map((s) => s.label).join(" or ")} DM.
-                  </p>
-
-                  <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-                    <input
-                      type="text"
-                      name="company"
-                      tabIndex={-1}
-                      autoComplete="off"
-                      className="pointer-events-none absolute h-0 w-0 opacity-0"
-                      aria-hidden
-                    />
-                    <label className="flex flex-col gap-1.5">
-                      <span className="font-mono text-sm text-vesper-accent/90">Name</span>
-                      <input
-                        ref={nameRef}
-                        name="name"
-                        type="text"
-                        required
-                        autoComplete="name"
-                        className={fieldClass}
-                        placeholder="Your name"
-                        disabled={busy}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="font-mono text-sm text-vesper-accent/90">Email</span>
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        autoComplete="email"
-                        className={fieldClass}
-                        placeholder="you@example.com"
-                        disabled={busy}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="font-mono text-sm text-vesper-accent/90">Subject</span>
-                      <input
-                        name="subject"
-                        type="text"
-                        key={contextRole}
-                        defaultValue={`Inquiry — ${contextRole}`}
-                        className={fieldClass}
-                        disabled={busy}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="font-mono text-sm text-vesper-accent/90">Message</span>
-                      <textarea
-                        name="message"
-                        required
-                        rows={4}
-                        className={`${fieldClass} resize-y min-h-[100px]`}
-                        placeholder="Tell me what you're building…"
-                        disabled={busy}
-                      />
-                    </label>
-                    {error && (
-                      <p className="font-mono text-xs text-vesper-pink" role="alert">
-                        {error}
-                      </p>
-                    )}
-                    <TurnstileField resetKey={turnstileKey} onToken={setTurnstileToken} />
-                    {fallback && (
-                      <div className="flex flex-col gap-3 rounded border border-vesper-accent/30 bg-black/30 p-3">
-                        <p className="font-mono text-[11px] text-vesper-accent/70">
-                          Manual fallback
-                        </p>
-                        <CopyField label="Armored ciphertext" value={fallback.armored} />
-                        <CopyField label="Decryption key" value={fallback.passphrase} />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            window.location.href = fallback.mailtoHref
-                          }}
-                          className="w-full border border-vesper-accent/50 py-2 font-mono text-xs text-vesper-accent hover:border-vesper-accent"
-                        >
-                          Open email client
-                        </button>
-                      </div>
-                    )}
-                    <button
-                      type="submit"
-                      disabled={busy}
-                      className="mt-1 min-h-11 w-full border border-vesper-pink py-3 font-mono text-sm text-vesper-pink transition-all hover:bg-vesper-pink/10 hover:shadow-[0_0_24px_rgba(255,42,158,0.35)] disabled:opacity-50"
-                    >
-                      {busy ? "Encrypting & sending…" : "Encrypt and send"}
-                    </button>
-                  </form>
-                </>
+                <ContactFormView
+                  nameRef={nameRef}
+                  noteId={noteId}
+                  contextRole={contextRole}
+                  busy={busy}
+                  error={error}
+                  fallback={fallback}
+                  turnstileKey={turnstileKey}
+                  onToken={setTurnstileToken}
+                  onSubmit={handleSubmit}
+                  ageRepo={ageRepo}
+                  typageRepo={typageRepo}
+                  keyDeliverySocials={keyDeliverySocials}
+                />
               )}
               <button
                 type="button"
