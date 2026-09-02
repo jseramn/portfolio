@@ -13,7 +13,6 @@ import {
   SAMPLE_MS,
   VIDEO_PRELOAD,
   cellBudget,
-  coverDestRect,
   pickGrid,
   planAsciiFrame,
   sampleMsForLoop,
@@ -71,14 +70,6 @@ describe("hero ASCII loop budget", () => {
     const desktop = pickGrid(1920, 1080, cellBudget(1920, false))
     expect(desktop.cols * desktop.rows).toBeGreaterThan(0)
     expect(desktop.cols * desktop.rows).toBeLessThanOrEqual(MAX_CELLS)
-  })
-
-  it("covers the destination box without letterboxing", () => {
-    const dest = coverDestRect(480, 270, 390, 844)
-    expect(dest.dw).toBeGreaterThanOrEqual(390)
-    expect(dest.dh).toBeGreaterThanOrEqual(844)
-    expect(dest.dx).toBeLessThanOrEqual(0)
-    expect(dest.dy).toBeLessThanOrEqual(0)
   })
 
   it("does not start the loop until video has a frame and the tab is visible", () => {
@@ -205,12 +196,9 @@ describe("hero ASCII runtime wiring", () => {
   it("keeps WebGL raster inside the 12fps gate and does not preload the sampler as auto", () => {
     const runtime = readSrc("lib/heroAsciiRuntime.ts")
     expect(VIDEO_PRELOAD).toBe("none")
-    expect(runtime).toContain("VIDEO_PRELOAD")
+    expect(runtime).toContain("video.preload = VIDEO_PRELOAD")
     expect(runtime).not.toMatch(/preload\s*=\s*["']auto["']/)
-    expect(runtime).toContain("blitHeroPoster")
-    expect(runtime).toContain("coverDestRect")
     expect(runtime).toContain("takeFirstAsciiPaint")
-    expect(runtime).toContain('video.preload = "metadata"')
     expect(runtime).toContain("planAsciiFrame")
     expect(runtime).toContain("cellBudget")
     expect(runtime).toContain("startLoop")

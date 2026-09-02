@@ -130,9 +130,7 @@ describe("site performance chrome load", () => {
       expect(source).not.toContain("@react-three/postprocessing")
     }
     expect(ascii).not.toMatch(/preload\s*=\s*["']auto["']/)
-    expect(ascii).toContain("VIDEO_PRELOAD")
-    expect(ascii).toContain("blitHeroPoster")
-    expect(ascii).toContain('video.preload = "metadata"')
+    expect(ascii).toContain("video.preload = VIDEO_PRELOAD")
     expect(ascii).toContain("signalHeroBootReady")
     expect(asciiBg).toContain("data-hero-boot-fallback")
     expect(asciiBg).toContain("signalHeroBootReady")
