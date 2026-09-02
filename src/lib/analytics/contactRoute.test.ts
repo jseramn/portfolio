@@ -1,14 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const { captureNode, isAllowedContactOrigin, enforceContactRateLimit, turnstileRequired, verifyTurnstileToken, send } =
-  vi.hoisted(() => ({
-    captureNode: vi.fn().mockResolvedValue(undefined),
-    isAllowedContactOrigin: vi.fn().mockReturnValue(true),
-    enforceContactRateLimit: vi.fn().mockResolvedValue(null),
-    turnstileRequired: vi.fn().mockReturnValue(false),
-    verifyTurnstileToken: vi.fn().mockResolvedValue(true),
-    send: vi.fn(),
-  }))
+const {
+  captureNode,
+  isAllowedContactOrigin,
+  enforceContactRateLimit,
+  turnstileRequired,
+  verifyTurnstileToken,
+  send,
+} = vi.hoisted(() => ({
+  captureNode: vi.fn().mockResolvedValue(undefined),
+  isAllowedContactOrigin: vi.fn().mockReturnValue(true),
+  enforceContactRateLimit: vi.fn().mockResolvedValue(null),
+  turnstileRequired: vi.fn().mockReturnValue(false),
+  verifyTurnstileToken: vi.fn().mockResolvedValue(true),
+  send: vi.fn(),
+}))
 
 vi.mock("./captureNode", () => ({
   captureNode,
@@ -184,7 +190,7 @@ describe("product capture source wiring", () => {
     expect(hero).toContain("onOutboundSocial")
     expect(hero).toContain("onOutboundOrg")
     expect(hero).toContain(
-      'className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}',
+      "className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}",
     )
     expect(modal).toContain("onContactOpened")
     expect(modal).toContain("onContactDismissed")

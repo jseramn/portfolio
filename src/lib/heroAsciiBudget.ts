@@ -72,10 +72,7 @@ export function shouldStartLoop(opts: {
   return opts.alive && opts.raf === 0 && !opts.hidden && opts.videoReady
 }
 
-export function shouldSkipSample(
-  lastRasterMs: number,
-  budgetMs = RASTER_BUDGET_MS,
-): boolean {
+export function shouldSkipSample(lastRasterMs: number, budgetMs = RASTER_BUDGET_MS): boolean {
   return lastRasterMs > budgetMs
 }
 
@@ -120,8 +117,7 @@ export function coverDestRect(
 }
 
 export function yieldToMain(): Promise<void> {
-  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } })
-    .scheduler
+  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, 0))
   if (typeof scheduler?.yield === "function") {
     return Promise.race([scheduler.yield(), timeout])

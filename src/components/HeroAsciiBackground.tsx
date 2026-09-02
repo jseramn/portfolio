@@ -9,9 +9,7 @@ type HeroAsciiBackgroundProps = {
   paintCanvasRef?: RefObject<HTMLCanvasElement | null>
 }
 
-export default function HeroAsciiBackground({
-  paintCanvasRef,
-}: HeroAsciiBackgroundProps) {
+export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgroundProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<Phase>("boot")
 

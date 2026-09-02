@@ -275,15 +275,14 @@ export function GlassSurface({
       const userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent
       const reducedMotion = typeof window === "undefined" ? false : prefersReducedMotion()
       const chromeObject =
-        typeof window !== "undefined" &&
-        Boolean((window as Window & { chrome?: unknown }).chrome)
+        typeof window !== "undefined" && Boolean((window as Window & { chrome?: unknown }).chrome)
       const brands =
         typeof navigator !== "undefined" && "userAgentData" in navigator
-          ? (
+          ? ((
               navigator as Navigator & {
                 userAgentData?: { brands?: { brand: string }[] }
               }
-            ).userAgentData?.brands?.map((item) => item.brand) ?? []
+            ).userAgentData?.brands?.map((item) => item.brand) ?? [])
           : []
       const chromiumRuntime = chromiumRuntimeHint(userAgent, chromeObject, brands)
       const live = shouldUseLiquidGlass(
@@ -328,11 +327,15 @@ export function GlassSurface({
       const stretchIntensity = Math.min(Math.hypot(dx, dy) / 300, 1) * cfg.elasticity * fade
       const scaleX = Math.max(
         0.8,
-        1 + Math.abs(dx / dist) * stretchIntensity * 0.3 - Math.abs(dy / dist) * stretchIntensity * 0.15,
+        1 +
+          Math.abs(dx / dist) * stretchIntensity * 0.3 -
+          Math.abs(dy / dist) * stretchIntensity * 0.15,
       )
       const scaleY = Math.max(
         0.8,
-        1 + Math.abs(dy / dist) * stretchIntensity * 0.3 - Math.abs(dx / dist) * stretchIntensity * 0.15,
+        1 +
+          Math.abs(dy / dist) * stretchIntensity * 0.3 -
+          Math.abs(dx / dist) * stretchIntensity * 0.15,
       )
       host.style.setProperty("--glass-ex", `${x.toFixed(2)}px`)
       host.style.setProperty("--glass-ey", `${y.toFixed(2)}px`)
@@ -377,11 +380,7 @@ export function GlassSurface({
       const ascii = pumpAscii
       const ar = pumpAsciiRect
       const ready = Boolean(
-        ascii &&
-          ar &&
-          ascii.width >= 2 &&
-          ascii.height >= 2 &&
-          ascii.dataset.glassGen,
+        ascii && ar && ascii.width >= 2 && ascii.height >= 2 && ascii.dataset.glassGen,
       )
       if (!ready) {
         return
@@ -444,9 +443,7 @@ export function GlassSurface({
     }
   }, [useLiveGlass, preset, frostPx])
 
-  const familyClass = CARD_FAMILY.has(preset)
-    ? "glass-fallback-card"
-    : "glass-fallback-button"
+  const familyClass = CARD_FAMILY.has(preset) ? "glass-fallback-card" : "glass-fallback-button"
   const shellClassName = ["glass-fallback", familyClass, className].filter(Boolean).join(" ")
   const shellStyle: CSSProperties = {
     padding: cfg.padding,
@@ -469,11 +466,7 @@ export function GlassSurface({
     )
   }
 
-  const pane = stretch ? (
-    <div className="min-w-0 w-full overflow-hidden">{children}</div>
-  ) : (
-    children
-  )
+  const pane = stretch ? <div className="min-w-0 w-full overflow-hidden">{children}</div> : children
 
   return (
     <div

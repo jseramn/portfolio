@@ -207,7 +207,13 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
           subjectLine,
           armored,
         })
-        setFallback({ envelopeId, passphrase, armored, mailtoHref: href, mailtoTruncated: truncated })
+        setFallback({
+          envelopeId,
+          passphrase,
+          armored,
+          mailtoHref: href,
+          mailtoTruncated: truncated,
+        })
       }
 
       if (code === "server_not_configured") {
@@ -243,185 +249,191 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
             aria-label="Close contact form"
             onClick={handleDismiss}
           />
-          <GlassSurface preset="modal" mouseContainer={mouseContainer} className="relative z-10 w-full max-w-md">
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            className="relative z-10 max-h-[min(90vh,720px)] w-full max-w-md overflow-y-auto rounded-[15px] border border-vesper-accent/70 bg-black/25 px-6 py-8 shadow-[0_0_40px_rgba(0,240,255,0.15),inset_0_0_60px_rgba(0,240,255,0.03)]"
-            initial={{ opacity: 0, y: 16, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            onClick={(e) => e.stopPropagation()}
+          <GlassSurface
+            preset="modal"
+            mouseContainer={mouseContainer}
+            className="relative z-10 w-full max-w-md"
           >
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="absolute right-4 top-4 text-vesper-accent/70 transition-colors hover:text-vesper-accent"
-              aria-label="Close"
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              className="relative z-10 max-h-[min(90vh,720px)] w-full max-w-md overflow-y-auto rounded-[15px] border border-vesper-accent/70 bg-black/25 px-6 py-8 shadow-[0_0_40px_rgba(0,240,255,0.15),inset_0_0_60px_rgba(0,240,255,0.03)]"
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={20} />
-            </button>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="absolute right-4 top-4 text-vesper-accent/70 transition-colors hover:text-vesper-accent"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
 
-            <p id={titleId} className="sr-only">
-              Contact {site.brand}
-            </p>
+              <p id={titleId} className="sr-only">
+                Contact {site.brand}
+              </p>
 
-            {success ? (
-              <div className="flex flex-col gap-5 pr-6">
-                <p className="font-mono text-xs tracking-wide text-vesper-accent/60">
-                  sent · {success.envelopeId}
-                </p>
-                <p className="font-sans text-sm leading-relaxed text-vesper-accent/90">
-                  El correo cifrado ya fue enviado a {site.email}.{" "}
-                  <strong className="font-medium text-vesper-accent">Último paso:</strong> envíame la
-                  llave por DM (no va en el email).
-                </p>
+              {success ? (
+                <div className="flex flex-col gap-5 pr-6">
+                  <p className="font-mono text-xs tracking-wide text-vesper-accent/60">
+                    sent · {success.envelopeId}
+                  </p>
+                  <p className="font-sans text-sm leading-relaxed text-vesper-accent/90">
+                    El correo cifrado ya fue enviado a {site.email}.{" "}
+                    <strong className="font-medium text-vesper-accent">Último paso:</strong> envíame
+                    la llave por DM (no va en el email).
+                  </p>
 
-                <CopyField label="Envelope ID (inclúyelo en el DM)" value={success.envelopeId} />
-                <CopyField label="Decryption key (solo por redes)" value={success.passphrase} />
+                  <CopyField label="Envelope ID (inclúyelo en el DM)" value={success.envelopeId} />
+                  <CopyField label="Decryption key (solo por redes)" value={success.passphrase} />
 
-                <p className="font-mono text-xs text-vesper-accent/70">
-                  {keyDeliverySocials.map((s, i) => (
-                    <span key={s.id}>
-                      {i > 0 ? " · " : ""}
-                      <a
-                        href={s.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-vesper-pink underline-offset-2 hover:underline"
-                      >
-                        {s.label}
-                      </a>
-                    </span>
-                  ))}
-                </p>
+                  <p className="font-mono text-xs text-vesper-accent/70">
+                    {keyDeliverySocials.map((s, i) => (
+                      <span key={s.id}>
+                        {i > 0 ? " · " : ""}
+                        <a
+                          href={s.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-vesper-pink underline-offset-2 hover:underline"
+                        >
+                          {s.label}
+                        </a>
+                      </span>
+                    ))}
+                  </p>
 
-                <button
-                  type="button"
-                  onClick={handleDismiss}
-                  className="w-full border border-vesper-accent/40 py-2 font-mono text-xs text-vesper-accent/70 hover:text-vesper-accent"
-                >
-                  Done
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className="mb-2 font-mono text-xs tracking-wide text-vesper-accent/60">
-                  secure channel · {contextRole}
-                </p>
-                <p className="mb-5 font-mono text-[11px] leading-relaxed text-vesper-accent/50">
-                  Cifrado en tu navegador con{" "}
-                  <a
-                    href={ageRepo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-0.5 text-vesper-accent/70 hover:text-vesper-accent"
-                  >
-                    age
-                    <ExternalLink size={10} aria-hidden />
-                  </a>{" "}
-                  (
-                  <a
-                    href={typageRepo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-vesper-accent/70 hover:text-vesper-accent"
-                  >
-                    typage
-                  </a>
-                  ). El servidor solo reenvía el sobre cifrado.
-                </p>
-
-                <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    name="company"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    className="pointer-events-none absolute h-0 w-0 opacity-0"
-                    aria-hidden
-                  />
-                  <label className="flex flex-col gap-1.5">
-                    <span className="font-mono text-sm text-vesper-accent/90">Name</span>
-                    <input
-                      name="name"
-                      type="text"
-                      required
-                      autoComplete="name"
-                      className={fieldClass}
-                      placeholder="Your name"
-                      disabled={busy}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="font-mono text-sm text-vesper-accent/90">Email</span>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      autoComplete="email"
-                      className={fieldClass}
-                      placeholder="you@example.com"
-                      disabled={busy}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="font-mono text-sm text-vesper-accent/90">Subject</span>
-                    <input
-                      name="subject"
-                      type="text"
-                      key={contextRole}
-                      defaultValue={`Inquiry — ${contextRole}`}
-                      className={fieldClass}
-                      disabled={busy}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="font-mono text-sm text-vesper-accent/90">Message</span>
-                    <textarea
-                      name="message"
-                      required
-                      rows={4}
-                      className={`${fieldClass} resize-y min-h-[100px]`}
-                      placeholder="Tell me what you're building…"
-                      disabled={busy}
-                    />
-                  </label>
-                  {error && (
-                    <p className="font-mono text-xs text-vesper-pink" role="alert">
-                      {error}
-                    </p>
-                  )}
-                  <TurnstileField resetKey={turnstileKey} onToken={setTurnstileToken} />
-                  {fallback && (
-                    <div className="flex flex-col gap-3 rounded border border-vesper-accent/30 bg-black/30 p-3">
-                      <p className="font-mono text-[11px] text-vesper-accent/70">Respaldo manual</p>
-                      <CopyField label="Armored ciphertext" value={fallback.armored} />
-                      <CopyField label="Decryption key" value={fallback.passphrase} />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          window.location.href = fallback.mailtoHref
-                        }}
-                        className="w-full border border-vesper-accent/50 py-2 font-mono text-xs text-vesper-accent hover:border-vesper-accent"
-                      >
-                        Open email client
-                      </button>
-                    </div>
-                  )}
                   <button
-                    type="submit"
-                    disabled={busy}
-                    className="mt-1 w-full border border-vesper-pink py-3 font-mono text-sm text-vesper-pink transition-all hover:bg-vesper-pink/10 hover:shadow-[0_0_24px_rgba(255,42,158,0.35)] disabled:opacity-50"
+                    type="button"
+                    onClick={handleDismiss}
+                    className="w-full border border-vesper-accent/40 py-2 font-mono text-xs text-vesper-accent/70 hover:text-vesper-accent"
                   >
-                    {busy ? "Encrypting & sending…" : "Encrypt and send"}
+                    Done
                   </button>
-                </form>
-              </>
-            )}
-          </motion.div>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-2 font-mono text-xs tracking-wide text-vesper-accent/60">
+                    secure channel · {contextRole}
+                  </p>
+                  <p className="mb-5 font-mono text-[11px] leading-relaxed text-vesper-accent/50">
+                    Cifrado en tu navegador con{" "}
+                    <a
+                      href={ageRepo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-0.5 text-vesper-accent/70 hover:text-vesper-accent"
+                    >
+                      age
+                      <ExternalLink size={10} aria-hidden />
+                    </a>{" "}
+                    (
+                    <a
+                      href={typageRepo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-vesper-accent/70 hover:text-vesper-accent"
+                    >
+                      typage
+                    </a>
+                    ). El servidor solo reenvía el sobre cifrado.
+                  </p>
+
+                  <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+                    <input
+                      type="text"
+                      name="company"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      className="pointer-events-none absolute h-0 w-0 opacity-0"
+                      aria-hidden
+                    />
+                    <label className="flex flex-col gap-1.5">
+                      <span className="font-mono text-sm text-vesper-accent/90">Name</span>
+                      <input
+                        name="name"
+                        type="text"
+                        required
+                        autoComplete="name"
+                        className={fieldClass}
+                        placeholder="Your name"
+                        disabled={busy}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="font-mono text-sm text-vesper-accent/90">Email</span>
+                      <input
+                        name="email"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        className={fieldClass}
+                        placeholder="you@example.com"
+                        disabled={busy}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="font-mono text-sm text-vesper-accent/90">Subject</span>
+                      <input
+                        name="subject"
+                        type="text"
+                        key={contextRole}
+                        defaultValue={`Inquiry — ${contextRole}`}
+                        className={fieldClass}
+                        disabled={busy}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="font-mono text-sm text-vesper-accent/90">Message</span>
+                      <textarea
+                        name="message"
+                        required
+                        rows={4}
+                        className={`${fieldClass} resize-y min-h-[100px]`}
+                        placeholder="Tell me what you're building…"
+                        disabled={busy}
+                      />
+                    </label>
+                    {error && (
+                      <p className="font-mono text-xs text-vesper-pink" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    <TurnstileField resetKey={turnstileKey} onToken={setTurnstileToken} />
+                    {fallback && (
+                      <div className="flex flex-col gap-3 rounded border border-vesper-accent/30 bg-black/30 p-3">
+                        <p className="font-mono text-[11px] text-vesper-accent/70">
+                          Respaldo manual
+                        </p>
+                        <CopyField label="Armored ciphertext" value={fallback.armored} />
+                        <CopyField label="Decryption key" value={fallback.passphrase} />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            window.location.href = fallback.mailtoHref
+                          }}
+                          className="w-full border border-vesper-accent/50 py-2 font-mono text-xs text-vesper-accent hover:border-vesper-accent"
+                        >
+                          Open email client
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={busy}
+                      className="mt-1 w-full border border-vesper-pink py-3 font-mono text-sm text-vesper-pink transition-all hover:bg-vesper-pink/10 hover:shadow-[0_0_24px_rgba(255,42,158,0.35)] disabled:opacity-50"
+                    >
+                      {busy ? "Encrypting & sending…" : "Encrypt and send"}
+                    </button>
+                  </form>
+                </>
+              )}
+            </motion.div>
           </GlassSurface>
         </motion.div>
       )}

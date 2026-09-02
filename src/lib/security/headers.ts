@@ -1,8 +1,5 @@
 import { site } from "../../config/site"
-import {
-  buildContentSecurityPolicy,
-  buildSecurityHeaderEntries,
-} from "./siteSecurityHeaders.mjs"
+import { buildContentSecurityPolicy, buildSecurityHeaderEntries } from "./siteSecurityHeaders.mjs"
 
 const IS_DEV = import.meta.env.DEV
 

@@ -62,9 +62,7 @@ describe("product capture wiring", () => {
     onHireCtaClicked()
     onContactOpened()
     onContactSubmittedClient("sent")
-    expect(posthog.capture.mock.calls.map(([event]) => event)).toEqual([
-      ...HIRE_FUNNEL_EVENT_ORDER,
-    ])
+    expect(posthog.capture.mock.calls.map(([event]) => event)).toEqual([...HIRE_FUNNEL_EVENT_ORDER])
   })
 
   it("records dual contact_submitted with outcome only", async () => {

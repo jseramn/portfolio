@@ -70,10 +70,7 @@ export async function enforceContactRateLimit(request: Request): Promise<Respons
   )
 }
 
-export async function verifyTurnstileToken(
-  token: string,
-  remoteIp: string,
-): Promise<boolean> {
+export async function verifyTurnstileToken(token: string, remoteIp: string): Promise<boolean> {
   const secret = import.meta.env.TURNSTILE_SECRET_KEY
   if (!secret) return true
 

@@ -50,7 +50,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain('mode="standard"')
     expect(glass).not.toContain('mode="shader"')
     expect(glass).toContain("displacementScale={cfg.displacementScale}")
-    expect(hero).not.toContain("mode=\"shader\"")
+    expect(hero).not.toContain('mode="shader"')
   })
 
   it("wraps the marquee bar and hire button, not duplicated slider or loop children", () => {
@@ -200,8 +200,22 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(dock.sw).toBeCloseTo(226)
     expect(card.sh).toBeCloseTo(80)
     const occupied = { left: 700, top: 200, width: 500, height: 600 }
-    const dockGlyph = behindRect(1920, 1080, asciiCss, { left: 32, top: 96, width: 226, height: 42 }, 1, occupied)
-    const cardGlyph = behindRect(1920, 1080, asciiCss, { left: 1400, top: 900, width: 480, height: 80 }, 1, occupied)
+    const dockGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 32, top: 96, width: 226, height: 42 },
+      1,
+      occupied,
+    )
+    const cardGlyph = behindRect(
+      1920,
+      1080,
+      asciiCss,
+      { left: 1400, top: 900, width: 480, height: 80 },
+      1,
+      occupied,
+    )
     expect(dockGlyph.sx).toBeGreaterThanOrEqual(occupied.left)
     expect(dockGlyph.sx + dockGlyph.sw).toBeLessThanOrEqual(occupied.left + occupied.width + 0.01)
     expect(cardGlyph.sx).toBeGreaterThan(dockGlyph.sx)

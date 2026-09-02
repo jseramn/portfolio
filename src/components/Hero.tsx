@@ -16,11 +16,7 @@ import { TextLoop } from "./TextLoop"
 import { InfiniteSlider } from "./InfiniteSlider"
 import { GlassSurface } from "./GlassSurface"
 import { site } from "../config/site"
-import {
-  onHireCtaClicked,
-  onOutboundOrg,
-  onOutboundSocial,
-} from "../lib/analytics/productCapture"
+import { onHireCtaClicked, onOutboundOrg, onOutboundSocial } from "../lib/analytics/productCapture"
 import type { GitHubStats } from "../lib/githubStats"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
@@ -54,7 +50,14 @@ function useScramble(text: string, { autoStart = false }: { autoStart?: boolean 
       const keepCount = Math.floor(iteration / 2)
       let newText = ""
       for (let i = 0; i < text.length; i++) {
-        if (text[i] === " " || text[i] === "·" || text[i] === "." || text[i] === "&" || text[i] === "'" || text[i] === "\n") {
+        if (
+          text[i] === " " ||
+          text[i] === "·" ||
+          text[i] === "." ||
+          text[i] === "&" ||
+          text[i] === "'" ||
+          text[i] === "\n"
+        ) {
           newText += text[i]
         } else if (i < keepCount) {
           newText += text[i]
@@ -82,7 +85,9 @@ function useScramble(text: string, { autoStart = false }: { autoStart?: boolean 
 
   useEffect(() => {
     if (autoStart) start()
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
   }, [])
 
   return { display, start, stop }
@@ -153,7 +158,9 @@ export default function Hero() {
           playlist: track.id,
         },
         events: {
-          onReady: (e: { target: { unMute: () => void; setVolume: (n: number) => void; playVideo: () => void } }) => {
+          onReady: (e: {
+            target: { unMute: () => void; setVolume: (n: number) => void; playVideo: () => void }
+          }) => {
             e.target.unMute()
             e.target.setVolume(100)
             e.target.playVideo()
@@ -172,26 +179,30 @@ export default function Hero() {
       tag.src = "https://www.youtube.com/iframe_api"
       document.head.appendChild(tag)
     }
-    const previous = (window as Window & { onYouTubeIframeAPIReady?: () => void }).onYouTubeIframeAPIReady
+    const previous = (window as Window & { onYouTubeIframeAPIReady?: () => void })
+      .onYouTubeIframeAPIReady
     ;(window as Window & { onYouTubeIframeAPIReady?: () => void }).onYouTubeIframeAPIReady = () => {
       previous?.()
       startPlayer()
     }
   }, [])
 
-  const loadTrack = useCallback((index: number) => {
-    setTrackIndex(index)
-    trackIndexRef.current = index
-    if (!playerRef.current?.loadVideoById) {
-      ensureYtPlayer(index)
-      return
-    }
-    const track = YT_TRACKS[index]
-    playerRef.current.loadVideoById({ videoId: track.id, startSeconds: track.start })
-    playerRef.current.unMute()
-    playerRef.current.setVolume(100)
-    setMusicPlaying(true)
-  }, [ensureYtPlayer])
+  const loadTrack = useCallback(
+    (index: number) => {
+      setTrackIndex(index)
+      trackIndexRef.current = index
+      if (!playerRef.current?.loadVideoById) {
+        ensureYtPlayer(index)
+        return
+      }
+      const track = YT_TRACKS[index]
+      playerRef.current.loadVideoById({ videoId: track.id, startSeconds: track.start })
+      playerRef.current.unMute()
+      playerRef.current.setVolume(100)
+      setMusicPlaying(true)
+    },
+    [ensureYtPlayer],
+  )
 
   const nextTrack = useCallback(() => {
     loadTrack((trackIndex + 1) % YT_TRACKS.length)
@@ -203,7 +214,9 @@ export default function Hero() {
 
   const randomTrack = useCallback(() => {
     let next: number
-    do { next = Math.floor(Math.random() * YT_TRACKS.length) } while (next === trackIndex && YT_TRACKS.length > 1)
+    do {
+      next = Math.floor(Math.random() * YT_TRACKS.length)
+    } while (next === trackIndex && YT_TRACKS.length > 1)
     loadTrack(next)
   }, [trackIndex, loadTrack])
 
@@ -241,8 +254,7 @@ export default function Hero() {
         }),
       )
     }
-    const hosts = () =>
-      [...root.querySelectorAll("[data-glass-host]")] as HTMLElement[]
+    const hosts = () => [...root.querySelectorAll("[data-glass-host]")] as HTMLElement[]
     const stopSettle = () => {
       if (settleRaf) {
         cancelAnimationFrame(settleRaf)
@@ -394,189 +406,230 @@ export default function Hero() {
         className="relative z-10 flex h-dvh max-h-dvh flex-col overflow-hidden md:block"
         data-hero-root
       >
-      <canvas
-        ref={asciiPaintRef}
-        className="hero-ascii-display pointer-events-none absolute inset-0 z-[1] h-full w-full"
-        aria-hidden
-      />
-      <div
-        className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
-        aria-hidden
-      />
-      <div
-        className="hero-scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 z-0"
-        aria-hidden
-      />
-      <div
-        className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
-        aria-hidden
-      />
-      <div className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:block md:px-0 md:pt-8">
-        <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
-        <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
-          <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
-            Hi, I am {site.name} — {site.locationLine}
-          </span>
-          <span className="hero-ink-muted font-mono">·</span>
-          {site.marqueeOrgs.flatMap((org) => [
-            "href" in org && org.href ? (
-              <a
-                key={org.label}
-                href={org.href}
-                target={org.href.startsWith("http") ? "_blank" : undefined}
-                rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
-                onClick={() => onOutboundOrg(org.label)}
-              >
-                {org.label}
-              </a>
-            ) : (
-              <span
-                key={org.label}
-                className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap"
-              >
-                {org.label}
+        <canvas
+          ref={asciiPaintRef}
+          className="hero-ascii-display pointer-events-none absolute inset-0 z-[1] h-full w-full"
+          aria-hidden
+        />
+        <div
+          className="hero-scrim-top pointer-events-none absolute inset-x-0 top-0 z-0"
+          aria-hidden
+        />
+        <div
+          className="hero-scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 z-0"
+          aria-hidden
+        />
+        <div
+          className="hero-scrim-social pointer-events-none absolute inset-y-0 inset-x-0 z-0"
+          aria-hidden
+        />
+        <div className="relative z-10 flex flex-col gap-2 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:block md:px-0 md:pt-8">
+          <GlassSurface preset="bar" mouseContainer={heroRootRef} className="w-full">
+            <InfiniteSlider gap={32} speed={50} speedOnHover={20}>
+              <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
+                Hi, I am {site.name} — {site.locationLine}
               </span>
-            ),
-            <span key={`${org.label}-sep`} className="hero-ink-muted font-mono">·</span>,
-          ])}
-          {ghStats && (
-            <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
-              {ghStats.today} contributions today · {ghStats.month} this month · {ghStats.year} this year · {ghStats.total} all-time
-            </span>
-          )}
-          {ghStats && <span className="hero-ink-muted font-mono">·</span>}
-          {ghStats?.lastCommit && (
-            <a
-              href={ghStats.lastCommit.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`hero-on-video font-mono text-xs md:text-base whitespace-nowrap ${GLOW}`}
+              <span className="hero-ink-muted font-mono">·</span>
+              {site.marqueeOrgs.flatMap((org) => [
+                "href" in org && org.href ? (
+                  <a
+                    key={org.label}
+                    href={org.href}
+                    target={org.href.startsWith("http") ? "_blank" : undefined}
+                    rel={org.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className={`hero-on-video font-mono text-xs md:text-base ${GLOW} whitespace-nowrap`}
+                    onClick={() => onOutboundOrg(org.label)}
+                  >
+                    {org.label}
+                  </a>
+                ) : (
+                  <span
+                    key={org.label}
+                    className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap"
+                  >
+                    {org.label}
+                  </span>
+                ),
+                <span key={`${org.label}-sep`} className="hero-ink-muted font-mono">
+                  ·
+                </span>,
+              ])}
+              {ghStats && (
+                <span className="hero-on-video font-mono text-xs md:text-base whitespace-nowrap">
+                  {ghStats.today} contributions today · {ghStats.month} this month · {ghStats.year}{" "}
+                  this year · {ghStats.total} all-time
+                </span>
+              )}
+              {ghStats && <span className="hero-ink-muted font-mono">·</span>}
+              {ghStats?.lastCommit && (
+                <a
+                  href={ghStats.lastCommit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`hero-on-video font-mono text-xs md:text-base whitespace-nowrap ${GLOW}`}
+                >
+                  last commit: {ghStats.lastCommit.message} ({ghStats.lastCommit.repo})
+                </a>
+              )}
+              {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
+            </InfiniteSlider>
+          </GlassSurface>
+          <div className="md:absolute md:inset-x-auto md:right-8 md:top-24">
+            <GlassSurface
+              preset="pill"
+              mouseContainer={heroRootRef}
+              className="w-full md:w-fit md:ml-auto"
             >
-              last commit: {ghStats.lastCommit.message} ({ghStats.lastCommit.repo})
-            </a>
-          )}
-          {ghStats?.lastCommit && <span className="hero-ink-muted font-mono">·</span>}
-        </InfiniteSlider>
-        </GlassSurface>
-      <div className="md:absolute md:inset-x-auto md:right-8 md:top-24">
-        <GlassSurface preset="pill" mouseContainer={heroRootRef} className="w-full md:w-fit md:ml-auto">
-        <div className="font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
-        {musicPlaying ? (
-          <a
-            href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hero-on-video whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
-            style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
-          >
-            <span className="sound-bars"><span /><span /><span /><span /></span>
-            now playing: {YT_TRACKS[trackIndex].title}
-          </a>
-        ) : (
-          <button
-            onClick={toggleMusic}
-            className={`hero-on-video whitespace-nowrap cursor-pointer ${GLOW}`}
-            style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
-          >
-            click to listen <span className="sound-bars"><span /><span /><span /><span /></span>
-          </button>
-        )}
-        <div className="flex items-center gap-2 md:gap-3">
-          <button onClick={prevTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Previous track">
-            <SkipBack size={16} className="md:w-5 md:h-5" />
-          </button>
-          <button onClick={toggleMusic} className={`hero-ink ${GLOW} hover:scale-125`} aria-label={musicPlaying ? "Mute music" : "Play music"}>
-            {musicPlaying ? <Volume2 size={18} className="md:w-[22px] md:h-[22px]" /> : <VolumeX size={18} className="md:w-[22px] md:h-[22px]" />}
-          </button>
-          <button onClick={nextTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Next track">
-            <SkipForward size={16} className="md:w-5 md:h-5" />
-          </button>
-          <button onClick={randomTrack} className={`hero-ink ${GLOW} hover:scale-125`} aria-label="Random track">
-            <Shuffle size={16} className="md:w-5 md:h-5" />
-          </button>
+              <div className="font-mono text-xs md:text-sm flex items-center justify-center md:justify-end gap-3 px-4 md:px-0">
+                {musicPlaying ? (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${YT_TRACKS[trackIndex].id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hero-on-video whitespace-nowrap transition-all duration-300 max-w-[60vw] md:max-w-none overflow-hidden text-ellipsis"
+                    style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
+                  >
+                    <span className="sound-bars">
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                    now playing: {YT_TRACKS[trackIndex].title}
+                  </a>
+                ) : (
+                  <button
+                    onClick={toggleMusic}
+                    className={`hero-on-video whitespace-nowrap cursor-pointer ${GLOW}`}
+                    style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
+                  >
+                    click to listen{" "}
+                    <span className="sound-bars">
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                  </button>
+                )}
+                <div className="flex items-center gap-2 md:gap-3">
+                  <button
+                    onClick={prevTrack}
+                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    aria-label="Previous track"
+                  >
+                    <SkipBack size={16} className="md:w-5 md:h-5" />
+                  </button>
+                  <button
+                    onClick={toggleMusic}
+                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    aria-label={musicPlaying ? "Mute music" : "Play music"}
+                  >
+                    {musicPlaying ? (
+                      <Volume2 size={18} className="md:w-[22px] md:h-[22px]" />
+                    ) : (
+                      <VolumeX size={18} className="md:w-[22px] md:h-[22px]" />
+                    )}
+                  </button>
+                  <button
+                    onClick={nextTrack}
+                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    aria-label="Next track"
+                  >
+                    <SkipForward size={16} className="md:w-5 md:h-5" />
+                  </button>
+                  <button
+                    onClick={randomTrack}
+                    className={`hero-ink ${GLOW} hover:scale-125`}
+                    aria-label="Random track"
+                  >
+                    <Shuffle size={16} className="md:w-5 md:h-5" />
+                  </button>
+                </div>
+              </div>
+            </GlassSurface>
+          </div>
         </div>
+        <div className="relative z-[1] min-h-0 flex-1 pointer-events-none md:hidden" aria-hidden />
+        <div className="relative z-10 mt-auto flex flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:contents">
+          <div className="flex justify-center z-10 md:absolute md:left-8 md:top-24 md:bottom-auto md:right-auto md:translate-x-0 md:justify-start">
+            <GlassSurface preset="dock" mouseContainer={heroRootRef}>
+              <div className="flex flex-row items-center gap-4 md:gap-5">
+                {site.socials.map((social) => {
+                  const Icon = SOCIAL_ICONS[social.icon]
+                  if (!Icon) return null
+                  const external = social.href.startsWith("http")
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.href}
+                      target={external ? "_blank" : undefined}
+                      rel={external ? "noopener noreferrer" : undefined}
+                      className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
+                      aria-label={social.id}
+                      onClick={() => onOutboundSocial(social.id)}
+                    >
+                      <Icon size={24} className="md:w-[26px] md:h-[26px]" />
+                    </a>
+                  )
+                })}
+              </div>
+            </GlassSurface>
+          </div>
+          <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
+            <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
+              <button
+                type="button"
+                onClick={() => {
+                  onHireCtaClicked()
+                  setContactOpen(true)
+                }}
+                className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
+                aria-label={`Open contact form — current role: ${activeRole}`}
+              >
+                <span aria-hidden="true">
+                  <TextLoop
+                    interval={2.5}
+                    transition={{ duration: 0.4 }}
+                    onIndexChange={setRoleIndex}
+                    paused={contactOpen}
+                  >
+                    {PROFESSIONS.map((p) => (
+                      <span
+                        key={p}
+                        className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50"
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </TextLoop>
+                </span>
+              </button>
+            </GlassSurface>
+            <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
+              <p
+                className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
+                onMouseEnter={desc.start}
+                onMouseLeave={desc.stop}
+              >
+                {desc.display}
+              </p>
+            </GlassSurface>
+          </div>
         </div>
-        </GlassSurface>
-      </div>
-      </div>
-      <div className="relative z-[1] min-h-0 flex-1 pointer-events-none md:hidden" aria-hidden />
-      <div className="relative z-10 mt-auto flex flex-col gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:contents">
-      <div className="flex justify-center z-10 md:absolute md:left-8 md:top-24 md:bottom-auto md:right-auto md:translate-x-0 md:justify-start">
-        <GlassSurface preset="dock" mouseContainer={heroRootRef}>
-        <div className="flex flex-row items-center gap-4 md:gap-5">
-        {site.socials.map((social) => {
-          const Icon = SOCIAL_ICONS[social.icon]
-          if (!Icon) return null
-          const external = social.href.startsWith("http")
-          return (
-            <a
-              key={social.id}
-              href={social.href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener noreferrer" : undefined}
-              className={`hero-ink drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${GLOW} hover:scale-125`}
-              aria-label={social.id}
-              onClick={() => onOutboundSocial(social.id)}
-            >
-              <Icon size={24} className="md:w-[26px] md:h-[26px]" />
-            </a>
-          )
-        })}
+        <div className="absolute w-0 h-0 overflow-hidden">
+          <div id="yt-player" ref={playerContainerRef} />
         </div>
-        </GlassSurface>
-      </div>
-      <div className="flex flex-col gap-3 md:absolute md:inset-x-0 md:bottom-0 md:flex-row md:items-end md:justify-between md:px-16 md:pb-12 md:gap-0">
-        <GlassSurface preset="button" mouseContainer={heroRootRef} className="self-start">
-        <button
-          type="button"
-          onClick={() => {
-            onHireCtaClicked()
-            setContactOpen(true)
-          }}
-          className={`hero-on-video group font-sans text-2xl md:text-3xl font-semibold tracking-tight text-left cursor-pointer md:w-[30%] ${GLOW} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--hero-ink)]`}
-          aria-label={`Open contact form — current role: ${activeRole}`}
-        >
-          <span aria-hidden="true">
-          <TextLoop
-            interval={2.5}
-            transition={{ duration: 0.4 }}
-            onIndexChange={setRoleIndex}
-            paused={contactOpen}
-          >
-            {PROFESSIONS.map((p) => (
-              <span key={p} className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] group-hover:decoration-[var(--hero-ink)]/50">
-                {p}
-              </span>
-            ))}
-          </TextLoop>
-          </span>
-        </button>
-        </GlassSurface>
-        <GlassSurface preset="card" mouseContainer={heroRootRef} className="w-full md:w-auto">
-        <p
-          className={`hero-on-video font-sans text-base md:text-xl font-normal leading-relaxed md:max-w-md text-left md:text-right cursor-default ${GLOW} whitespace-pre-line`}
-          onMouseEnter={desc.start}
-          onMouseLeave={desc.stop}
-        >
-          {desc.display}
-        </p>
-        </GlassSurface>
-      </div>
-      </div>
-      <div className="absolute w-0 h-0 overflow-hidden">
-        <div id="yt-player" ref={playerContainerRef} />
-      </div>
-      {contactOpen ? (
-        <Suspense fallback={null}>
-          <ContactModal
-            open={contactOpen}
-            onClose={() => setContactOpen(false)}
-            contextRole={activeRole}
-            mouseContainer={heroRootRef}
-          />
-        </Suspense>
-      ) : null}
+        {contactOpen ? (
+          <Suspense fallback={null}>
+            <ContactModal
+              open={contactOpen}
+              onClose={() => setContactOpen(false)}
+              contextRole={activeRole}
+              mouseContainer={heroRootRef}
+            />
+          </Suspense>
+        ) : null}
       </div>
     </>
   )

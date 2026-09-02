@@ -65,7 +65,7 @@ describe("site performance chrome load", () => {
     expect(layout).toContain('as="font"')
     expect(layout).toContain('type="font/woff2"')
     expect(layout).toContain('fetchpriority="high"')
-    expect(layout).toContain('globals.css?inline')
+    expect(layout).toContain("globals.css?inline")
     expect(layout).not.toContain("site.asciiPosterSrc")
     expect(layout).not.toContain('as="image"')
     expect(layout).not.toContain('type="image/webp"')

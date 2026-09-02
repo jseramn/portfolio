@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  cellDestRect,
-  rgbaOffset,
-  shouldContinueStamp,
-  stampGlyphAlpha,
-} from "./heroAsciiStamp"
+import { cellDestRect, rgbaOffset, shouldContinueStamp, stampGlyphAlpha } from "./heroAsciiStamp"
 
 describe("hero ASCII stamp", () => {
   it("reads WebGL pixels from the bottom-left origin", () => {

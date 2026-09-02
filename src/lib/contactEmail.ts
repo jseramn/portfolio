@@ -20,7 +20,10 @@ function isValidEmail(email: string): boolean {
 }
 
 function sanitizeSingleLine(value: string, max: number): string {
-  return value.replace(/[\r\n]+/g, " ").trim().slice(0, max)
+  return value
+    .replace(/[\r\n]+/g, " ")
+    .trim()
+    .slice(0, max)
 }
 
 export function buildEncryptedEmailContent(params: {

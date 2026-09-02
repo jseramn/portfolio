@@ -29,12 +29,12 @@ describe("boot loader dismiss", () => {
   })
 
   it("dismisses on ready, timeout, or bfcache restore — not otherwise", () => {
-    expect(shouldDismissBootLoader({ ready: true, timedOut: false, pageshowPersisted: false })).toBe(
-      true,
-    )
-    expect(shouldDismissBootLoader({ ready: false, timedOut: true, pageshowPersisted: false })).toBe(
-      true,
-    )
+    expect(
+      shouldDismissBootLoader({ ready: true, timedOut: false, pageshowPersisted: false }),
+    ).toBe(true)
+    expect(
+      shouldDismissBootLoader({ ready: false, timedOut: true, pageshowPersisted: false }),
+    ).toBe(true)
     expect(
       shouldDismissBootLoader({ ready: false, timedOut: false, pageshowPersisted: true }),
     ).toBe(true)
