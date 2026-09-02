@@ -1,6 +1,6 @@
 import { useMotionValue, animate, motion } from "motion/react"
 import { useState, useEffect } from "react"
-import useMeasure from "react-use-measure"
+import { useElementWidth } from "../lib/useElementWidth"
 
 type InfiniteSliderProps = {
   children: React.ReactNode
@@ -22,7 +22,7 @@ export function InfiniteSlider({
   className,
 }: InfiniteSliderProps) {
   const [currentSpeed, setCurrentSpeed] = useState(speed)
-  const [ref, { width, height }] = useMeasure()
+  const { ref, width, height } = useElementWidth()
   const translation = useMotionValue(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [key, setKey] = useState(0)
