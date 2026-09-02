@@ -11,6 +11,10 @@ function read(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
 }
 
+function countGlassSurfaces(source: string): number {
+  return source.match(/<GlassSurface\b/g)?.length ?? 0
+}
+
 function presetBlock(glass: string, name: string): string {
   const match = glass.match(new RegExp(`\\b${name}: \\{[\\s\\S]*?\\n  \\},`))
   expect(match, `missing preset ${name}`).toBeTruthy()
@@ -42,8 +46,8 @@ describe("hero liquid-glass chrome wiring", () => {
     const modal = read("components/ContactModal.tsx")
     const glass = read("components/GlassSurface.tsx")
 
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
-    expect(modal.match(/<GlassSurface /g)?.length).toBe(1)
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(modal)).toBe(1)
     for (const preset of ["bar", "pill", "dock", "button", "card"] as const) {
       expect(hero).toContain(`preset="${preset}"`)
     }
@@ -282,8 +286,8 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(glass).toContain("setUseLiveGlass")
     expect(glass).toContain("isPointerCoarse()")
     expect(glass).toContain("function behindRect")
-    expect(hero.match(/<GlassSurface /g)?.length).toBe(5)
-    expect(read("components/ContactModal.tsx").match(/<GlassSurface /g)?.length).toBe(1)
+    expect(countGlassSurfaces(hero)).toBe(5)
+    expect(countGlassSurfaces(read("components/ContactModal.tsx"))).toBe(1)
   })
 
   it("pauses the shared pump when the document is hidden or contact is open", () => {
