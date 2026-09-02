@@ -3,7 +3,9 @@ import { ACCEPT_VARY } from "./accept"
 import {
   API_NO_STORE,
   CDN_SWR_CACHE,
+  DESCRIBEDBY_LINK,
   applyApiNoStoreHeaders,
+  applyDescribedbyLinkHeader,
   applyGitHubStatsCacheHeaders,
   applyNegotiatedResponseHeaders,
 } from "./apiCacheHeaders"
@@ -38,5 +40,27 @@ describe("response cache headers", () => {
     const skipped = new Headers()
     applyNegotiatedResponseHeaders(skipped, false)
     expect(skipped.get("Vary")).toBeNull()
+  })
+
+  it("sets describedby Link on negotiated 200 HTML and markdown only", () => {
+    const html = new Headers()
+    applyDescribedbyLinkHeader(html, 200, true)
+    expect(html.get("Link")).toBe(DESCRIBEDBY_LINK)
+
+    const markdown = new Headers()
+    applyDescribedbyLinkHeader(markdown, 200, true)
+    expect(markdown.get("Link")).toBe('</llms.txt>; rel="describedby"')
+
+    const notAcceptable = new Headers()
+    applyDescribedbyLinkHeader(notAcceptable, 406, true)
+    expect(notAcceptable.get("Link")).toBeNull()
+
+    const missing = new Headers()
+    applyDescribedbyLinkHeader(missing, 404, true)
+    expect(missing.get("Link")).toBeNull()
+
+    const skipped = new Headers()
+    applyDescribedbyLinkHeader(skipped, 200, false)
+    expect(skipped.get("Link")).toBeNull()
   })
 })

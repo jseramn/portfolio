@@ -97,6 +97,10 @@ describe("built HTML overlay", () => {
     expect(html).toContain('property="og:image:type"')
     expect(html).toContain('property="og:type"')
     expect(html).toContain('rel="canonical"')
+    expect(html).toContain('rel="describedby"')
+    expect(html).toContain('href="/llms.txt"')
+    expect(html).toContain('type="text/markdown"')
+    expect((html.match(/rel="describedby"/g) ?? []).length).toBe(1)
     expect(html).toContain('rel="apple-touch-icon"')
     expect(html).toContain('rel="manifest"')
     expect(html).toContain('name="theme-color"')
@@ -154,6 +158,15 @@ describe("built HTML overlay", () => {
     if (existsSync(dist)) {
       expect(walk(dist).filter((file) => file.endsWith(".md"))).toEqual([])
     }
+  })
+
+  it("Layout advertises llms.txt describedby and markdown alternate at the canonical URL", () => {
+    const layout = readFileSync(join(root, "src/layouts/Layout.astro"), "utf8")
+    expect(layout).toContain('rel="describedby"')
+    expect(layout).toContain('href="/llms.txt"')
+    expect(layout).toContain('type="text/markdown"')
+    expect(layout).toContain("href={canonical}")
+    expect((layout.match(/rel="describedby"/g) ?? []).length).toBe(1)
   })
 
   it("llms.txt names jobs and how to call; privacy redirects to policy", () => {
