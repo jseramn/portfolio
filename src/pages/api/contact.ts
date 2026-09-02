@@ -17,6 +17,13 @@ export const prerender = false
 
 const genericError = () => Response.json({ error: "request_rejected" }, { status: 400 })
 
+const methodNotAllowed = () =>
+  Response.json({ error: "method_not_allowed" }, { status: 405, headers: { Allow: "POST" } })
+
+export const GET: APIRoute = () => methodNotAllowed()
+
+export const OPTIONS: APIRoute = () => methodNotAllowed()
+
 async function recordOutcome(outcome: ContactSubmittedOutcome): Promise<void> {
   try {
     await captureNode(outcome)

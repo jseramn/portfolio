@@ -116,7 +116,7 @@ Domain `jseramn.tech` must stay verified in Resend for the `from` address in `si
 
 ### HTTP headers (static on Vercel)
 
-Astro middleware only runs on server-rendered paths. Static HTML and `/_astro/*` are served from the Vercel CDN **without** middleware, so production security headers are applied via `vercel.json`. The policy lives in `src/lib/security/siteSecurityHeaders.mjs` and is synced into `vercel.json` on every `pnpm build`.
+Astro middleware only runs on server-rendered paths. Static HTML and `/_astro/*` are served from the Vercel CDN **without** middleware, so production security headers are applied via `vercel.json`. The policy lives in `src/lib/security/siteSecurityHeaders.mjs` and is synced into `vercel.json` on every `pnpm build`. On those server-rendered paths the middleware runs inside the Node serverless function, not a separate Edge hop, so `POST` method and body reach `/api/*` handlers.
 
 ### DNS / email (operator — not in this repo)
 
