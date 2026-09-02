@@ -18,6 +18,7 @@ interface Props {
   bootPending?: boolean
   jsonLdPage?: JsonLdPageKind
   inlineCss?: boolean
+  tinity?: boolean
 }
 
 const {
@@ -27,6 +28,7 @@ const {
   bootPending = false,
   jsonLdPage: jsonLdPageProp,
   inlineCss = false,
+  tinity = false,
 } = Astro.props
 
 const lockClass = lockScroll ? "h-dvh overflow-hidden overscroll-none" : ""
