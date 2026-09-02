@@ -184,6 +184,13 @@ body {
 }
 
 /* Hero edge/zone scrims — darken UI bands over the black field without a heavy full-frame veil */
+.hero-scrim-top,
+.hero-scrim-bottom,
+.hero-scrim-social {
+  z-index: 2;
+  pointer-events: none;
+}
+
 .hero-scrim-top {
   height: 28vh;
   background: linear-gradient(
@@ -229,6 +236,7 @@ body {
 .glass-fallback {
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 
 .glass-fallback > canvas.glass-refraction {
@@ -240,12 +248,12 @@ body {
   display: block;
   pointer-events: none;
   border-radius: inherit;
-  filter: blur(var(--glass-frost, 4px)) brightness(2.6) contrast(1.45);
+  filter: blur(var(--glass-frost, 4px)) brightness(1.05) contrast(1.05);
 }
 
 .glass-fallback > :not(canvas) {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .glass-fallback-card {
@@ -256,6 +264,17 @@ body {
 .glass-fallback-button {
   backdrop-filter: blur(7px) saturate(1);
   -webkit-backdrop-filter: blur(7px) saturate(1);
+}
+
+.glass-fallback-card::after,
+.glass-fallback-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.72);
 }
 
 .glass-fallback:has(> canvas.glass-refraction) {
