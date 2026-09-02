@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -13,6 +13,15 @@ function read(rel: string): string {
 
 function readSrc(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
+}
+
+function readAsciiRuntime(): string {
+  const dir = join(src, "lib/hero/ascii")
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
+    .sort()
+    .map((name) => readFileSync(join(dir, name), "utf8"))
+    .join("\n")
 }
 
 describe("site performance chrome load", () => {
@@ -37,7 +46,7 @@ describe("site performance chrome load", () => {
     expect(pkg.dependencies).not.toHaveProperty("@react-three/fiber")
     expect(pkg.dependencies).not.toHaveProperty("@react-three/postprocessing")
     expect(pkg.dependencies).not.toHaveProperty("postprocessing")
-    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain('import("three")')
+    expect(readAsciiRuntime()).toContain('import("three")')
   })
 
   it("compresses HTML without flipping prerender", async () => {
@@ -95,7 +104,7 @@ describe("site performance chrome load", () => {
     expect(home).not.toContain("/videobg.webm")
     expect(home).not.toContain("/videobg.mp4")
     expect(VIDEO_PRELOAD).toBe("none")
-    expect(readSrc("lib/heroAsciiRuntime.ts")).toContain("video.preload = VIDEO_PRELOAD")
+    expect(readAsciiRuntime()).toContain("video.preload = VIDEO_PRELOAD")
     expect(layout).not.toContain('as="video"')
     expect(readSrc("pages/about.astro")).not.toContain("boot-loader")
     expect(readSrc("pages/contact.astro")).not.toContain("boot-loader")
@@ -123,7 +132,7 @@ describe("site performance chrome load", () => {
 
   it("does not leave ingest beacons or unused three fiber imports in src", () => {
     const glass = readSrc("components/GlassSurface.tsx")
-    const ascii = readSrc("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const hero = readSrc("components/Hero.tsx")
     const asciiBg = readSrc("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {

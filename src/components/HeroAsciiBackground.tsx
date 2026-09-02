@@ -31,7 +31,7 @@ export default function HeroAsciiBackground({ paintCanvasRef }: HeroAsciiBackgro
     let cancelled = false
     let unmount: (() => void) | undefined
 
-    void import("../lib/heroAsciiRuntime").then(async ({ mountHeroAscii }) => {
+    void import("../lib/hero/ascii/mount").then(async ({ mountHeroAscii }) => {
       if (cancelled || !host.isConnected) return
       const dispose = await mountHeroAscii(
         host,

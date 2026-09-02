@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -10,6 +10,15 @@ const src = join(root, "src")
 
 function read(rel: string): string {
   return readFileSync(join(src, rel), "utf8")
+}
+
+function readAsciiRuntime(): string {
+  const dir = join(src, "lib/hero/ascii")
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
+    .sort()
+    .map((name) => readFileSync(join(dir, name), "utf8"))
+    .join("\n")
 }
 
 function countGlassSurfaces(source: string): number {
@@ -177,7 +186,7 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("clones ascii on a shared 12fps pump without CPU blur or getImageData", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const css = read("styles/globals.css")
     expect(glass).toContain("const GLASS_MS = 1000 / ASCII_FPS")
     expect(glass).not.toContain("getImageData")
@@ -263,7 +272,7 @@ describe("hero liquid-glass chrome wiring", () => {
     expect(hero).toContain("box.top - 2000")
     expect(glass).toContain("pointermove")
     expect(glass).toContain("host.style.left")
-    expect(read("lib/heroAsciiRuntime.ts")).toContain("pointermove")
+    expect(readAsciiRuntime()).toContain("pointermove")
     expect(hero).toContain('preset="pill"')
     expect(hero).toContain(
       "font-mono text-xs md:text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0",
@@ -302,7 +311,7 @@ describe("hero liquid-glass chrome wiring", () => {
 
   it("strips glass debug ingest and debug attributes", () => {
     const glass = read("components/GlassSurface.tsx")
-    const ascii = read("lib/heroAsciiRuntime.ts")
+    const ascii = readAsciiRuntime()
     const hero = read("components/Hero.tsx")
     const asciiBg = read("components/HeroAsciiBackground.tsx")
     for (const source of [glass, ascii, hero, asciiBg]) {
