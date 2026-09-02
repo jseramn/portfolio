@@ -1,0 +1,43 @@
+---
+import LegalInlines from "./LegalInlines.astro"
+import type { LegalBlock } from "../lib/agent/legalCopy"
+
+interface Props {
+  blocks: readonly LegalBlock[]
+}
+
+const { blocks } = Astro.props
+---
+
+{
+  blocks.map((block) => {
+    if (block.type === "h2") return <h2>{block.text}</h2>
+    if (block.type === "p") {
+      return (
+        <p>
+          <LegalInlines nodes={block.children} />
+        </p>
+      )
+    }
+    if (block.type === "ol") {
+      return (
+        <ol class="list-decimal space-y-2 pl-5">
+          {block.items.map((item) => (
+            <li>
+              <LegalInlines nodes={item} />
+            </li>
+          ))}
+        </ol>
+      )
+    }
+    return (
+      <ul>
+        {block.items.map((item) => (
+          <li>
+            <LegalInlines nodes={item} />
+          </li>
+        ))}
+      </ul>
+    )
+  })
+}
