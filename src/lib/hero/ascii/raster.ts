@@ -66,12 +66,6 @@ export function stampRow(session: HeroAsciiSession, y: number) {
 }
 
 export function finishStamp(session: HeroAsciiSession) {
-  if (session.stampMaxGX >= session.stampMinGX && session.stampMaxGY >= session.stampMinGY) {
-    session.displayCanvas.dataset.glassBox = `${session.stampMinGX * session.cellW},${session.stampMinGY * session.cellH},${(session.stampMaxGX - session.stampMinGX + 1) * session.cellW},${(session.stampMaxGY - session.stampMinGY + 1) * session.cellH}`
-  }
-  session.displayCanvas.dataset.glassGen = String(
-    (Number(session.displayCanvas.dataset.glassGen) || 0) + 1,
-  )
   if (takeFirstAsciiPaint(session.displayCanvas.dataset)) signalHeroBootReady()
   session.stampCursor = -1
   session.rastersCompleted += 1

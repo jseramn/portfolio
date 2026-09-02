@@ -1,12 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-  type RefObject,
-} from "react"
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { X } from "./icons"
 import { site } from "../config/site"
@@ -17,7 +9,6 @@ import {
   encryptContactPayload,
 } from "../lib/contactEncrypt"
 import { turnstileEnabled } from "./TurnstileField"
-import { GlassSurface } from "./GlassSurface"
 import {
   contactFailedOutcomeFromClientError,
   onContactDismissed,
@@ -35,10 +26,9 @@ type ContactModalProps = {
   open: boolean
   onClose: () => void
   contextRole: string
-  mouseContainer: RefObject<HTMLDivElement | null>
 }
 
-export function ContactModal({ open, onClose, contextRole, mouseContainer }: ContactModalProps) {
+export function ContactModal({ open, onClose, contextRole }: ContactModalProps) {
   const channelId = useId()
   const noteId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -195,12 +185,7 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
             aria-label="Close contact form"
             onClick={handleDismiss}
           />
-          <GlassSurface
-            preset="modal"
-            mouseContainer={mouseContainer}
-            className="relative z-10 w-full max-w-md"
-          >
-            <motion.div
+          <motion.div
               ref={dialogRef}
               role="dialog"
               aria-modal="true"
@@ -252,7 +237,6 @@ export function ContactModal({ open, onClose, contextRole, mouseContainer }: Con
                 <X size={20} />
               </button>
             </motion.div>
-          </GlassSurface>
         </motion.div>
       )}
     </AnimatePresence>
