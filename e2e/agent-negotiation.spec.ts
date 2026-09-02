@@ -4,6 +4,7 @@ test("GET / with Accept: text/markdown returns markdown identity", async ({ requ
   const res = await request.get("/", { headers: { Accept: "text/markdown" } })
   expect(res.status()).toBe(200)
   expect(res.headers()["content-type"] ?? "").toMatch(/^text\/markdown/)
+  expect(res.headers().vary ?? "").toMatch(/Accept/)
   expect(await res.text()).toContain("# José Ramón García Del Risco")
 })
 

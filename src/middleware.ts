@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware"
-import { ACCEPT_VARY, negotiate } from "./lib/agent/accept"
-import { applyApiNoStoreHeaders } from "./lib/agent/apiCacheHeaders"
+import { negotiate } from "./lib/agent/accept"
+import { applyApiNoStoreHeaders, applyNegotiatedResponseHeaders } from "./lib/agent/apiCacheHeaders"
 import { notFoundMarkdown, pageFromPath, toMarkdown } from "./lib/agent/markdown"
 import { skipNegotiate } from "./lib/agent/skip"
 import { applySecurityHeaders } from "./lib/security/headers"
@@ -19,9 +19,7 @@ function applyLegalOverrides(pathname: string, response: Response): void {
 function finish(pathname: string, response: Response, vary: boolean): Response {
   applySecurityHeaders(response)
   applyApiNoStoreHeaders(pathname, response.headers)
-  if (vary) {
-    response.headers.set("Vary", ACCEPT_VARY)
-  }
+  applyNegotiatedResponseHeaders(response.headers, { vary, status: response.status })
   applyLegalOverrides(pathname, response)
   return response
 }

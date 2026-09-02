@@ -103,3 +103,25 @@ export function buildSecurityHeaderEntries(isDev) {
 
   return entries
 }
+
+export const ASTRO_ASSET_SOURCE = "/_astro/(.*)"
+export const IMMUTABLE_ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable"
+export const CDN_SWR_CACHE_CONTROL = "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
+export const GITHUB_STATS_API_SOURCE = "/api/github-stats"
+
+export function hashedAstroAssetHeaderGroup() {
+  return {
+    source: ASTRO_ASSET_SOURCE,
+    headers: [{ key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL }],
+  }
+}
+
+export function githubStatsApiHeaderGroup() {
+  return {
+    source: GITHUB_STATS_API_SOURCE,
+    headers: [
+      { key: "Cache-Control", value: CDN_SWR_CACHE_CONTROL },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+    ],
+  }
+}

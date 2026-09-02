@@ -2,8 +2,11 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
-import { ACCEPT_VARY } from "../src/lib/agent/accept"
 import {
+  ASTRO_ASSET_SOURCE,
+  CDN_SWR_CACHE_CONTROL,
+  GITHUB_STATS_API_SOURCE,
+  IMMUTABLE_ASSET_CACHE_CONTROL,
   buildContentSecurityPolicy,
   buildLegalContentSecurityPolicy,
 } from "../src/lib/security/siteSecurityHeaders.mjs"
@@ -26,13 +29,29 @@ function directive(csp: string, name: string): string {
 }
 
 describe("sync-vercel-security-headers", () => {
-  it("emits Vary after security headers on /(.*)", () => {
+  it("does not attach Vary: Accept to the global or hashed-asset rules", () => {
     const rules = buildVercelHeaderRules()
     const global = rules.find((rule) => rule.source === "/(.*)")
-    expect(global).toBeDefined()
-    const keys = global?.headers.map((h) => h.key) ?? []
-    expect(keys.at(-1)).toBe("Vary")
-    expect(global?.headers.at(-1)?.value).toBe(ACCEPT_VARY)
+    const astro = rules.find((rule) => rule.source === ASTRO_ASSET_SOURCE)
+    expect(global?.headers.some((header) => header.key === "Vary")).toBe(false)
+    expect(astro?.headers).toEqual([{ key: "Cache-Control", value: IMMUTABLE_ASSET_CACHE_CONTROL }])
+  })
+
+  it("overrides /api catch-all no-store for public github-stats JSON", () => {
+    const rules = buildVercelHeaderRules()
+    const apiIdx = rules.findIndex((rule) => rule.source === "/api/(.*)")
+    const statsIdx = rules.findIndex((rule) => rule.source === GITHUB_STATS_API_SOURCE)
+    expect(apiIdx).toBeGreaterThanOrEqual(0)
+    expect(statsIdx).toBeGreaterThan(apiIdx)
+    expect(rules[apiIdx]?.headers).toEqual(
+      expect.arrayContaining([{ key: "Cache-Control", value: "no-store" }]),
+    )
+    expect(rules[statsIdx]?.headers).toEqual(
+      expect.arrayContaining([
+        { key: "Cache-Control", value: CDN_SWR_CACHE_CONTROL },
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      ]),
+    )
   })
 
   it("overrides CORP for social preview assets after the global rule", () => {
