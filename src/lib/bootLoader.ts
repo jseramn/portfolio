@@ -26,10 +26,6 @@ export function shouldDismissBootLoader(input: BootDismissInput): boolean {
   return input.ready || input.timedOut || input.pageshowPersisted
 }
 
-export function wipeAnimationEnabled(reducedMotion: boolean): boolean {
-  return !reducedMotion
-}
-
 export function applyBootLoaderHidden(
   overlay: { hidden: boolean; setAttribute: (name: string, value: string) => void },
   html: { removeAttribute: (name: string) => void },

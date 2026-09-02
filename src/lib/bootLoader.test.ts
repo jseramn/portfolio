@@ -14,7 +14,6 @@ import {
   shouldDismissBootLoader,
   signalHeroBootReady,
   takeFirstAsciiPaint,
-  wipeAnimationEnabled,
 } from "./bootLoader"
 
 function fakeRoot(hits: string[]) {
@@ -45,11 +44,6 @@ describe("boot loader dismiss", () => {
     expect(
       shouldDismissBootLoader({ ready: false, timedOut: false, pageshowPersisted: false }),
     ).toBe(false)
-  })
-
-  it("keeps the wipe animation only when motion is allowed", () => {
-    expect(wipeAnimationEnabled(false)).toBe(true)
-    expect(wipeAnimationEnabled(true)).toBe(false)
   })
 
   it("hides the overlay and clears busy state once", () => {
