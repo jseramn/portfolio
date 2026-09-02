@@ -499,6 +499,7 @@ export default function Hero() {
                   </a>
                 ) : (
                   <button
+                    type="button"
                     onClick={toggleMusic}
                     className={`hero-on-video whitespace-nowrap cursor-pointer ${GLOW}`}
                     style={{ animation: "glow-pulse 2s ease-in-out infinite" }}
@@ -514,6 +515,7 @@ export default function Hero() {
                 )}
                 <div className="flex items-center gap-2 md:gap-3">
                   <button
+                    type="button"
                     onClick={prevTrack}
                     className={`hero-ink ${GLOW} hover:scale-125`}
                     aria-label="Previous track"
@@ -521,6 +523,7 @@ export default function Hero() {
                     <SkipBack size={16} className="md:w-5 md:h-5" />
                   </button>
                   <button
+                    type="button"
                     onClick={toggleMusic}
                     className={`hero-ink ${GLOW} hover:scale-125`}
                     aria-label={musicPlaying ? "Mute music" : "Play music"}
@@ -532,6 +535,7 @@ export default function Hero() {
                     )}
                   </button>
                   <button
+                    type="button"
                     onClick={nextTrack}
                     className={`hero-ink ${GLOW} hover:scale-125`}
                     aria-label="Next track"
@@ -539,6 +543,7 @@ export default function Hero() {
                     <SkipForward size={16} className="md:w-5 md:h-5" />
                   </button>
                   <button
+                    type="button"
                     onClick={randomTrack}
                     className={`hero-ink ${GLOW} hover:scale-125`}
                     aria-label="Random track"

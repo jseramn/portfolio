@@ -14,7 +14,8 @@ function read(rel: string): string {
 function presetBlock(glass: string, name: string): string {
   const match = glass.match(new RegExp(`\\b${name}: \\{[\\s\\S]*?\\n  \\},`))
   expect(match, `missing preset ${name}`).toBeTruthy()
-  return match![0]
+  if (!match) throw new Error(`missing preset ${name}`)
+  return match[0]
 }
 
 function expectCardOptics(block: string) {
