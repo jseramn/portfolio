@@ -1,5 +1,6 @@
 ---
 import globalCss from "../styles/globals.css?inline"
+import globalCssHref from "../styles/globals.css?url"
 import PostHog from "../components/posthog.astro"
 import {
   buildGraphJsonLd,
@@ -16,6 +17,7 @@ interface Props {
   lockScroll?: boolean
   bootPending?: boolean
   jsonLdPage?: JsonLdPageKind
+  inlineCss?: boolean
 }
 
 const {
@@ -24,6 +26,7 @@ const {
   lockScroll = false,
   bootPending = false,
   jsonLdPage: jsonLdPageProp,
+  inlineCss = false,
 } = Astro.props
 
 const lockClass = lockScroll ? "h-dvh overflow-hidden overscroll-none" : ""
@@ -71,7 +74,11 @@ const homePrefetchRules =
       crossorigin
       fetchpriority="high"
     />
-    <style is:inline set:html={globalCss} />
+    {inlineCss ? (
+      <style is:inline set:html={globalCss} />
+    ) : (
+      <link rel="stylesheet" href={globalCssHref} />
+    )}
     <slot name="head" />
     <link
       rel="alternate"

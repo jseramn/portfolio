@@ -49,3 +49,30 @@ for (const pageCase of PAGES) {
     }
   })
 }
+
+test("secondary pages ship a stylesheet and paint black at 390 without FOUC", async ({
+  page,
+  request,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "one visual pass at 390")
+
+  const home = await (await request.get("/")).text()
+  const about = await (await request.get("/about")).text()
+  const policy = await (await request.get("/policy")).text()
+
+  expect(home).toMatch(/<style\b/i)
+  expect(home).not.toMatch(/<link\b[^>]*rel=["']stylesheet["']/i)
+  expect(about).toMatch(/<link\b[^>]*rel=["']stylesheet["']/i)
+  expect(policy).toMatch(/<link\b[^>]*rel=["']stylesheet["']/i)
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  for (const path of ["/about", "/policy"] as const) {
+    await page.goto(path, { waitUntil: "domcontentloaded" })
+    await page.waitForTimeout(1000)
+    const bg = await page.locator("body").evaluate((el) => getComputedStyle(el).backgroundColor)
+    expect(bg, `${path} body`).toBe("rgb(0, 0, 0)")
+    const color = await page.locator("body").evaluate((el) => getComputedStyle(el).color)
+    expect(color, `${path} ink`).not.toBe("rgb(0, 0, 0)")
+    await page.screenshot({ path: `/tmp/swarm/ui/U10-${path.slice(1)}-390.png` })
+  }
+})
