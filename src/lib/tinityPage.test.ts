@@ -83,7 +83,11 @@ describe("Tinity subpage", () => {
   })
 
   it("serves landing twins at dotted /tinity routes", () => {
-    for (const file of ["index.md.ts", "changelog.md.ts", "design.md.ts", "llms.txt.ts"]) {
+    const overview = readSrc("pages/tinity/index.md.ts")
+    expect(overview).toMatch(/export const prerender = false/)
+    expect(overview).not.toMatch(/export const prerender = true/)
+    expect(overview).toContain("tinityTwinResponse")
+    for (const file of ["changelog.md.ts", "design.md.ts", "llms.txt.ts"]) {
       const source = readSrc(`pages/tinity/${file}`)
       expect(source).toMatch(/export const prerender = true/)
       expect(source).toContain("tinityTwinResponse")
