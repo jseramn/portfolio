@@ -1,18 +1,41 @@
+import { useState } from "react";
 import { HARNESSES } from "../content/harnesses";
 import { markSrcFor } from "../experience/AgentMark";
 import { usePrefersReducedMotion } from "../experience/motion";
 import { HarnessMark } from "./HarnessMark";
 import { harnessTooltip } from "./harnessStatus";
-import { HUB_CX, HUB_CY, hubLayout, spokePath } from "./hubLayout";
-import { MarkSvg } from "./Lockup";
+import {
+  HUB_CX,
+  HUB_CY,
+  HUB_SIZE,
+  hubLayout,
+  markHubTransform,
+  sendPath,
+  spokePath,
+} from "./hubLayout";
+import { MARK_VIEWBOX, MarkSvg } from "./Lockup";
 import { Section } from "./Section";
 
-const SIZE = 800;
-const DOT_INDEXES = [0, 4, 8, 12];
+const NODE = 44;
+
+type Traffic = {
+  dir: "send" | "receive";
+  dur: number;
+  delay: number;
+};
+
+function randomTraffic(): Traffic {
+  return {
+    dir: Math.random() < 0.5 ? "send" : "receive",
+    dur: 1.8 + Math.random() * 1.6,
+    delay: Math.random() * 1.2,
+  };
+}
 
 export function Hub() {
   const reduced = usePrefersReducedMotion();
   const nodes = hubLayout(HARNESSES.map((h) => h.id));
+  const [traffic] = useState(() => nodes.map(() => randomTraffic()));
   return (
     <Section.Root className="hub" id="hub" aria-labelledby="hub-title">
       <Section.Inner>
@@ -22,7 +45,8 @@ export function Hub() {
             <Section.Title>Tinity is the node between the harnesses.</Section.Title>
           </Section.Copy>
           <Section.Dek>
-            Seventeen spokes in. Policy out, later. Today every rim node is idle.
+            Seventeen harnesses on four racks. Policy out, later. Today every
+            node is idle.
           </Section.Dek>
         </Section.Header>
         <figure
@@ -33,7 +57,7 @@ export function Hub() {
         >
           <svg
             className="hub-ring"
-            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            viewBox={`0 0 ${HUB_SIZE} ${HUB_SIZE}`}
             aria-hidden="true"
           >
             <g fill="none" stroke="var(--hairline)" strokeWidth="1">
@@ -41,14 +65,18 @@ export function Hub() {
                 <path
                   key={node.id}
                   className="hub-spoke"
-                  d={spokePath(node, HUB_CX, HUB_CY, SIZE)}
+                  d={spokePath(node, HUB_CX, HUB_CY, HUB_SIZE)}
                 />
               ))}
             </g>
             {!reduced
-              ? DOT_INDEXES.map((index) => {
-                  const node = nodes[index];
-                  if (!node) return null;
+              ? nodes.map((node, index) => {
+                  const hop = traffic[index];
+                  if (!hop) return null;
+                  const path =
+                    hop.dir === "send"
+                      ? sendPath(node, HUB_CX, HUB_CY, HUB_SIZE)
+                      : spokePath(node, HUB_CX, HUB_CY, HUB_SIZE);
                   return (
                     <circle
                       key={`dot-${node.id}`}
@@ -57,19 +85,17 @@ export function Hub() {
                       fill="#1fdb12"
                     >
                       <animateMotion
-                        dur="2.4s"
-                        begin={`${index * 0.35}s`}
+                        dur={`${hop.dur.toFixed(3)}s`}
+                        begin={`${hop.delay.toFixed(3)}s`}
                         repeatCount="indefinite"
-                        path={spokePath(node, HUB_CX, HUB_CY, SIZE)}
+                        path={path}
                       />
                     </circle>
                   );
                 })
               : null}
-            <g
-              transform={`translate(${HUB_CX * SIZE} ${HUB_CY * SIZE}) scale(28)`}
-            >
-              <MarkSvg size={3.47} />
+            <g transform={markHubTransform()}>
+              <MarkSvg size={MARK_VIEWBOX.width} />
             </g>
             {nodes.map((node) => {
               const harness = HARNESSES[node.index]!;
@@ -79,10 +105,18 @@ export function Hub() {
                   key={`node-${node.id}`}
                   className="hub-node"
                   data-status={harness.status}
-                  transform={`translate(${node.x * SIZE} ${node.y * SIZE})`}
+                  data-edge={node.edge}
+                  transform={`translate(${node.x * HUB_SIZE} ${node.y * HUB_SIZE})`}
                 >
                   <title>{tip}</title>
-                  <circle r="22" fill="#111111" stroke="#262626" />
+                  <rect
+                    x={-NODE / 2}
+                    y={-NODE / 2}
+                    width={NODE}
+                    height={NODE}
+                    fill="#111111"
+                    stroke="#262626"
+                  />
                   <image
                     href={markSrcFor(harness.id)}
                     x="-12"
@@ -107,8 +141,8 @@ export function Hub() {
             ))}
           </ul>
           <figcaption id="hub-desc" className="sr-only">
-            Tinity sits at the center. {HARNESSES.length} harnesses sit on the
-            ring. All nodes are idle.
+            Tinity sits at the center. {HARNESSES.length} harnesses sit on four
+            racks. All nodes are idle.
           </figcaption>
         </figure>
       </Section.Inner>

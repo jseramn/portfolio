@@ -17,11 +17,7 @@ export function Slices() {
         </Section.Header>
         <PanelGrid>
           {SLICES.map((slice) => (
-            <Panel
-              key={slice.id}
-              className={slice.status === "shipped" ? "panel--shipped" : undefined}
-              data-status={slice.status}
-            >
+            <Panel key={slice.id} data-status={slice.status}>
               <p className="eyebrow">{slice.eyebrow}</p>
               <h3 className="panel-title">{slice.title}</h3>
               <p className="panel-dek">{slice.dek}</p>

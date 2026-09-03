@@ -14,13 +14,11 @@ export function StatusBar() {
             <a className="status-version" href={VERSION_TAG_HREF}>
               RUNS ON v{VERSION}
             </a>
-          </Section.Copy>
-          <Section.Meta>
             <p className="status-count">
               <span className="status-count-led" aria-hidden="true" />
               {IDLE_COUNT} IDLE
             </p>
-          </Section.Meta>
+          </Section.Copy>
         </Section.Header>
         <ul className="status-pips">
           {HARNESSES.map((harness) => {

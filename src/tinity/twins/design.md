@@ -154,7 +154,7 @@ Body line-height 1.55 marketing, 1.4 app.
 Primary
 - fill `--accent` (`#1fdb12`)
 - text `--on-accent` (`#061008`)
-- radius `6px`
+- radius `0`
 - padding `8px 16px`
 - weight 500
 - hover `--accent-hover`
@@ -163,10 +163,10 @@ Primary
 
 Secondary
 - transparent
-- 1px `--border-strong`
+- radius `0`
+- 1px `--border` on surface, `1px solid rgba(245,245,245,0.35)` on void hero
 - text `--text`
-- hover surface `--surface-2`
-- SpaceX ghost when on photography / void hero: `1px solid rgba(245,245,245,0.35)`, text `--text`
+- hover: border → `--border-strong` (void hero → `--text`). No fill, no scale, no mint glow.
 
 Danger
 - fill `--danger`, text white, same radius
@@ -177,14 +177,14 @@ Never put `#1fdb12` outline + `#1fdb12` fill on the same row as two competing pr
 
 - bg `--surface`
 - 1px `--border` (Vercel shadow-as-border allowed: `box-shadow: 0 0 0 1px var(--border)`)
-- radius `8px` app, `12px` max marketing
+- radius `0` on `/tinity` chrome
 - no drop shadow
 - hover: border → `--border-strong` only
-- optional accent tick: 2px left edge `#1fdb12` for live / selected / running
+- no inset accent tick on shipped cards
 
 ### Inputs
 
-- 1px `--border-strong`, radius `6px`, padding `8px 12px`
+- 1px `--border-strong`, radius `0`, padding `8px 12px`
 - focus: 2px ring `--accent-ring` + 1px border `--accent`
 - placeholder `--text-dim`
 - mono for IDs, hashes, cron, paths
@@ -213,7 +213,7 @@ Never put `#1fdb12` outline + `#1fdb12` fill on the same row as two competing pr
 - Geist Mono 13
 - bg `--surface-2`
 - 1px `--border`
-- radius `8px`
+- radius `0`
 - syntax green for strings / success tokens may use `#1fdb12` sparingly
 
 ---
@@ -270,7 +270,7 @@ The green may glow once: focus ring or a 4–8px soft halo on a live node in a t
 - Recolor the accent per theme.
 - Use `#1fdb12` for paragraphs or nav wordmarks at small size.
 - Add gold, cyan, purple, or orange as brand.
-- Use radius > `12px` except true pills (`9999px`) for tags only.
+- Use radius on `/tinity` chrome. LEDs, lockup tittles, and traffic dots stay circular.
 - Use font-weight > 600.
 - Imitate SpaceX photography-as-UI unless the surface is a cinematic landing.
 - Write “firm”, “agency”, or SaaS hype in the product voice.
@@ -321,7 +321,7 @@ When generating UI for Tinity:
 2. Dark theme first. Light maps 1:1 with the same accent hex.
 3. Geist Sans + Geist Mono only.
 4. Primary fill is `#1fdb12`, label `#061008`.
-5. Hairline structure. Max radius 8–12. No card shadows.
+5. Hairline structure. Square chrome (`radius: 0`). No card shadows.
 6. One green event per view unless it is a fleet of status pips.
 7. Uppercase mono eyebrows for section labels.
 8. Display tracking tight. Weight ≤ 600.
@@ -345,7 +345,7 @@ Bias: rack, LED, runtime, quiet luxury of infrastructure.
   --text: #f5f5f5;
   --text-muted: #a3a3a3;
   --border: #262626;
-  --radius: 8px;
+  --radius: 0;
   --font-sans: "Geist Sans", "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
@@ -391,7 +391,7 @@ html, body {
     "sans": "Geist Sans",
     "mono": "Geist Mono"
   },
-  "radius": { "control": "6px", "panel": "8px", "max": "12px" },
+  "radius": { "control": "0", "panel": "0", "max": "0" },
   "space": [4, 8, 12, 16, 24, 32, 48, 64, 96]
 }
 ```
@@ -406,9 +406,9 @@ One page. No subpages. Hash sections. Windows via `?w=`. Agent surface via `?sur
 |------|------|
 | Nav | 52px hairline. Lockup (24px mark + wordmark). HUMAN / AGENT. Ghost GitHub. Docs · soon. Under 768px: lockup + switch + menu dialog. |
 | Hero | `100svh` grid `auto 1fr auto`. Stage fills the middle. Caption: eyebrow `TINITY / HARNESS`, H1 "A friend to all harnesses.", one-line dek, ghost GitHub + Docs. `tinity me` is the only accent action. |
-| Status | `#status`. Split head: `RUNS ON v0.1.0` + `17 IDLE`. Then 17 pips. `idle` is grayscale. `live` may use the 4–8px green halo. |
-| Hub | `#hub`. Split head (title left, dek right). SVG ring, Tinity at center, spokes inbound. Dash-offset + a few traveling dots. `prefers-reduced-motion` is static. Mobile: stacked tiles. |
-| Slices | `#slices`. Six `.panel` cells. Shipped gets a 2px inset accent tick. Badges: SHIPPED fill, IN DESIGN outline, NEXT/LATER dim. |
+| Status | `#status`. One-column left-aligned head: `RUNS ON v0.1.0` + `17 IDLE`, then 17 pips. `idle` is grayscale. `live` may use the 4–8px green halo. |
+| Hub | `#hub`. Split head (title left, dek left-aligned). Square sectional rack, Tinity LED at the shared origin, orthogonal traces. 17 bidirectional traffic dots. `prefers-reduced-motion` is static. Mobile: stacked tiles. |
+| Slices | `#slices`. Six square `.panel` cells. No shipped tick. Badges: SHIPPED fill, IN DESIGN outline, NEXT/LATER dim. Square, not pills. |
 | Changelog | `#changelog`. Three dated `.panel` cards. Full changelog opens a window. |
 | Community | `#community`. GitHub, X, Slack coming. One Contribute ghost. |
 | FAQ | `#faq`. Five `details[name=faq]`. No JS accordion. |
@@ -418,7 +418,7 @@ Marketing sections compose as `Section.Root / Inner / Header / Copy / Title / De
 
 Do not add an 8-item mega-nav. Do not wrap the hero in a card. Do not put a second primary next to `tinity me`. Card hover is `--border-strong` only.
 
-Windows: one native `<dialog>`, max 720px, radius 12, 1px border plus the single allowed popover shadow, 180ms opacity + `translateY(4px)`. Backdrop `rgba(5,5,5,0.6)`.
+Windows: one native `<dialog>`, max 720px, radius 0, 1px border plus the single allowed popover shadow, 180ms opacity + `translateY(4px)`. Backdrop `rgba(5,5,5,0.6)`.
 
 ---
 
