@@ -1,10 +1,17 @@
+export const MARK_VIEWBOX = {
+  minX: -1.519038105676658,
+  minY: -1.3605444566227676,
+  width: 3.471088913245535,
+  height: 3.471088913245535,
+} as const;
+
 export function MarkSvg({ size = 24 }: { size?: number }) {
   return (
     <svg
       className="lockup-mark"
       width={size}
       height={size}
-      viewBox="-1.519038105676658 -1.3605444566227676 3.471088913245535 3.471088913245535"
+      viewBox={`${MARK_VIEWBOX.minX} ${MARK_VIEWBOX.minY} ${MARK_VIEWBOX.width} ${MARK_VIEWBOX.height}`}
       role="img"
       aria-label="Tinity mark"
     >
