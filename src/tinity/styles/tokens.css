@@ -275,8 +275,8 @@ button {
 }
 
 .cube-mark {
-  width: calc(0.50 * var(--cell-css));
-  height: calc(0.50 * var(--cell-css));
+  width: calc(0.72 * var(--cell-css));
+  height: calc(0.72 * var(--cell-css));
   display: block;
   flex-shrink: 0;
   object-fit: contain;
@@ -286,6 +286,14 @@ button {
 
 .cube-mark[data-mark="pi"] {
   image-rendering: pixelated;
+}
+
+.cube-mark[data-mark="aider"],
+.cube-mark[data-mark="hermes"],
+.cube-mark[data-mark="grok-build"],
+.cube-mark[data-mark="openhands"] {
+  width: calc(0.88 * var(--cell-css));
+  height: calc(0.88 * var(--cell-css));
 }
 
 .cube--number.is-flipped .cube-face--back {
