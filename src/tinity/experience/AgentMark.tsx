@@ -17,7 +17,13 @@ import openhandsMark from "./marks/openhands.png";
 import piMark from "./marks/pi.png";
 import qwenCodeMark from "./marks/qwen-code.png";
 
-const MARK_SRC: Record<AgentId, string> = {
+type Raster = string | { readonly src: string };
+
+function markUrl(asset: Raster): string {
+  return typeof asset === "string" ? asset : asset.src;
+}
+
+const MARK_SRC: Record<AgentId, Raster> = {
   "grok-bot": grokBotMark,
   openclaw: openclawMark,
   openhands: openhandsMark,
@@ -54,7 +60,7 @@ export function AgentMark({ id }: Props) {
       <img
         className="cube-mark"
         data-mark={agent.id}
-        src={MARK_SRC[agent.id]}
+        src={markUrl(MARK_SRC[agent.id])}
         alt={agent.label}
         draggable={false}
       />

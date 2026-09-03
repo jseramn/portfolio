@@ -24,6 +24,8 @@ describe("Tinity agent marks", () => {
     expect(source).not.toMatch(/GROK_BOT_HEAD/)
     expect(source).not.toMatch(/<svg/)
     expect(source).not.toMatch(/<path /)
+    expect(source).toContain("function markUrl")
+    expect(source).toContain("asset.src")
     for (const agent of AGENTS) {
       expect(source).toContain(`./marks/${agent.id}.png`)
     }
