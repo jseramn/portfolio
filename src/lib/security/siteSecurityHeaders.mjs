@@ -105,6 +105,8 @@ export const IMMUTABLE_ASSET_CACHE_CONTROL = "public, max-age=31536000, immutabl
 export const CDN_SWR_CACHE_CONTROL = "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
 export const GITHUB_STATS_API_SOURCE = "/api/github-stats"
 export const AGENT_FILES_SOURCE = "/(llms.txt|llms-full.txt|robots.txt|design.md)"
+export const TINIT_AGENT_FILES_SOURCE = "/tinity/(llms.txt|index.md|changelog.md|design.md)"
+export const TINIT_PUBLIC_ASSET_SOURCE = "/tinity/(tinity-og.png|favicon.svg|tinity-mark.svg)"
 export const WELL_KNOWN_SOURCE = "/.well-known/(.*)"
 export const AGENT_FILE_CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400"
 

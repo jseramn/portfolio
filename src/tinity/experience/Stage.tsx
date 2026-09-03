@@ -256,8 +256,8 @@ export function Stage() {
       const view = viewSize();
       const rect = el.getBoundingClientRect();
       setSize({
-        w: rect.width > 1 ? Math.min(rect.width, view.w) : view.w,
-        h: rect.height > 1 ? Math.min(rect.height, view.h) : view.h,
+        w: rect.width > 1 ? rect.width : view.w,
+        h: rect.height > 1 ? rect.height : view.h,
       });
     };
     apply();
@@ -371,6 +371,7 @@ export function Stage() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      if (document.querySelector("dialog[open]")) return;
       if (phaseRef.current !== "revealed") return;
       pendingShuffleRef.current = false;
       clearTimers();
@@ -432,11 +433,7 @@ export function Stage() {
   const drag = board.drag.active;
 
   return (
-    <main
-      className="stage"
-      ref={stageRef}
-      style={{ width: size.w, height: size.h }}
-    >
+    <main className="stage" ref={stageRef}>
       <div
         className="stage-slot"
         style={{

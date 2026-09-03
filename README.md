@@ -34,6 +34,8 @@ pnpm dev
 pnpm check
 pnpm test:e2e
 pnpm format
+pnpm tinity:pull          # refresh src/tinity from jseramn/tinity main
+# TINITY_SRC=/path/to/tinity TINITY_REF=branch pnpm tinity:pull
 ```
 
 Production build:
@@ -57,7 +59,7 @@ src/
     contact/              # Form, success, fallback views
     TurnstileField.tsx    # Optional bot check
     TextLoop.tsx, InfiniteSlider.tsx
-  tinity/                 # Tinity experience (`/tinity`)
+  tinity/                 # Vendored Tinity landing (`pnpm tinity:pull`)
   lib/
     contactEncrypt.ts     # Client-side age passphrase encryption
     contactEmail.ts       # Payload validation + email body
@@ -73,6 +75,7 @@ public/
   thumbnail.png, favicons, site.webmanifest
 vercel.json               # Security headers on static assets + API cache / noindex
 scripts/sync-vercel-security-headers.mjs  # Regenerates vercel.json header block at build
+scripts/tinity-pull.mjs                   # Vendors jseramn/tinity landing into src/tinity
 scripts/generate-preview-assets.sh        # Regenerates OG/favicon set from a 1920×1080 snapshot
 ```
 

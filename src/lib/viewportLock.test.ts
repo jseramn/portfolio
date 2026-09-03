@@ -49,7 +49,7 @@ describe("homepage viewport lock", () => {
     expect(about).not.toContain("lockScroll")
 
     const tinity = readFileSync(join(root, "src/pages/tinity/index.astro"), "utf8")
-    expect(tinity).toContain("lockScroll")
+    expect(tinity).not.toContain("lockScroll")
 
     const legal = readFileSync(join(root, "src/components/LegalDocument.astro"), "utf8")
     expect(legal).not.toContain("lockScroll")

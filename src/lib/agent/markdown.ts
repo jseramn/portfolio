@@ -6,6 +6,7 @@ import {
   type LegalPageId,
 } from "./legalCopy"
 import { linkifyMarkdown } from "./linkify"
+import { tinityTwin } from "../tinityTwins"
 
 export type MarkdownPage = AgentPage | LegalPageId
 
@@ -29,6 +30,7 @@ export function pageFromPath(pathname: string): MarkdownPage | null {
 }
 
 export function toMarkdown(page: MarkdownPage): string {
+  if (page === "tinity") return tinityTwin("index.md")
   if (page === "policy" || page === "terms" || page === "dataDeletion") {
     return legalToMarkdown(legalDocument(page))
   }

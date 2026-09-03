@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "dashmotion": {
+      "source": "csthink/dashmotion",
+      "sourceType": "github",
+      "skillPath": "skills/dashmotion/SKILL.md",
+      "computedHash": "f96e0e61d801c307b42895e93118bade6392cc212cd79cecce5628679061ab1a"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "6d838b246d0e35d0b53f4f23f98ba7a1dd561937e64f7d0c7553b0928e376c3e"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "bb529f103869c4e9b19ebaa1486d551affe0500f0af7d5dea0ef172bfba8196d"
+    },
+    "svg-animations": {
+      "source": "EpicenterHQ/epicenter",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/svg-animations/SKILL.md",
+      "computedHash": "1c8145f5dbb787a5dcddbfa3bcaf0bd6063a55e2056a91000cf0c122e3b36b82"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    }
+  }
+}

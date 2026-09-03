@@ -38,17 +38,16 @@ describe("markdown negotiation bodies", () => {
     }
   })
 
-  it("maps /tinity and renders title, manifesto, experiment framing, and repo link", () => {
+  it("maps /tinity and renders the landing markdown twin", () => {
     expect(pageFromPath("/tinity")).toBe("tinity")
     expect(pageFromPath("/tinity/")).toBe("tinity")
     expect(pageFromPath("/tinity?ref=home")).toBe("tinity")
     const md = toMarkdown("tinity")
     expect(md).toMatch(/^# Tinity\n/)
-    expect(md).toContain(
-      "Tinity is a single public experiment at [/tinity](/tinity), not a product catalog.",
-    )
     expect(md).toContain(MANIFESTO)
-    expect(md).toContain(`[${site.tinity.repo}](${site.tinity.repo})`)
+    expect(md).toContain("0.1.0")
+    expect(md).toContain(site.tinity.repo)
+    expect(md).toMatch(/status `idle`/)
     expect(md).not.toMatch(/WebGL|ForceField/i)
   })
 

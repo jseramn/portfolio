@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url"
 import { basename, dirname, join } from "node:path"
 import {
   AGENT_FILES_SOURCE,
+  TINIT_AGENT_FILES_SOURCE,
+  TINIT_PUBLIC_ASSET_SOURCE,
   WELL_KNOWN_SOURCE,
   agentReadableFileHeaderGroup,
   buildLegalContentSecurityPolicy,
@@ -41,6 +43,17 @@ export function buildVercelHeaderRules() {
       ],
     },
     {
+      source: TINIT_PUBLIC_ASSET_SOURCE,
+      headers: [
+        { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        { key: "Access-Control-Allow-Origin", value: "*" },
+        {
+          key: "Cache-Control",
+          value: "public, max-age=86400, stale-while-revalidate=604800",
+        },
+      ],
+    },
+    {
       source: VIDEO_BG_ASSET_SOURCE,
       headers: [
         {
@@ -52,6 +65,7 @@ export function buildVercelHeaderRules() {
     hashedAstroAssetHeaderGroup(),
     agentReadableFileHeaderGroup(AGENT_FILES_SOURCE),
     agentReadableFileHeaderGroup(WELL_KNOWN_SOURCE),
+    agentReadableFileHeaderGroup(TINIT_AGENT_FILES_SOURCE),
     {
       source: "/(policy|terms|data-deletion)",
       headers: [

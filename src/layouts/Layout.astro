@@ -10,6 +10,7 @@ import {
 } from "../lib/agent/jsonld"
 import { site } from "../config/site"
 import geistSans from "../assets/fonts/Geist-Variable.woff2?url"
+import { VERSION } from "../tinity/content/version"
 
 interface Props {
   title?: string
@@ -44,6 +45,25 @@ const homePrefetchRules =
         prefetch: [{ source: "list", urls: ["/about", "/contact"], eagerness: "moderate" }],
       })
     : null
+const ogImage = tinity ? `${site.url}/tinity/tinity-og.png` : site.seo.ogImage
+const ogImageAlt = tinity
+  ? "Tinity lockup: T-tromino mark with LED at the shared vertex and the tinity wordmark"
+  : site.seo.ogImageAlt
+const faviconSvg = tinity ? "/tinity/favicon.svg" : "/favicon.svg"
+const skipHref = tinity ? "#root" : "#main"
+const tinityJsonLd = tinity
+  ? JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      name: site.tinity.name,
+      codeRepository: site.tinity.repo,
+      license: `${site.tinity.repo}/blob/main/LICENSE`,
+      programmingLanguage: "TypeScript",
+    })
+  : null
+const tinityState = tinity
+  ? JSON.stringify({ version: VERSION, harnesses: 17, status: "idle" })
+  : null
 
 ---
 
@@ -68,6 +88,14 @@ const homePrefetchRules =
     <link rel="canonical" href={canonical} />
     <link rel="describedby" href="/llms.txt" />
     <link rel="alternate" type="text/markdown" href={canonical} />
+    {tinity && (
+      <link
+        rel="alternate"
+        type="text/markdown"
+        href={`${site.url}/tinity/index.md`}
+        title="Markdown"
+      />
+    )}
     <link
       rel="preload"
       href={geistSans}
@@ -89,7 +117,7 @@ const homePrefetchRules =
     />
 
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={faviconSvg} type="image/svg+xml" />
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -103,8 +131,8 @@ const homePrefetchRules =
     <meta property="og:title" content={title} />
     <meta property="og:description" content={tinity ? description : site.tagline.en} />
     <meta property="og:site_name" content={site.brand} />
-    <meta property="og:image" content={site.seo.ogImage} />
-    <meta property="og:image:alt" content={site.seo.ogImageAlt} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -115,18 +143,24 @@ const homePrefetchRules =
     <meta name="twitter:description" content={tinity ? description : site.tagline.en} />
     <meta name="twitter:site" content={site.seo.twitter} />
     <meta name="twitter:creator" content={site.seo.twitter} />
-    <meta name="twitter:image" content={site.seo.ogImage} />
-    <meta name="twitter:image:alt" content={site.seo.ogImageAlt} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <PostHog />
 
     <script type="application/ld+json" set:html={jsonLd} />
+    {tinityJsonLd && (
+      <script is:inline type="application/ld+json" set:html={tinityJsonLd} />
+    )}
+    {tinityState && (
+      <script is:inline type="application/json" id="tinity-state" set:html={tinityState} />
+    )}
     {homePrefetchRules && (
       <script is:inline type="speculationrules" set:html={homePrefetchRules} />
     )}
   </head>
   <body class:list={["font-sans bg-black text-vesper-accent antialiased", lockClass]}>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href={skipHref}>Skip to content</a>
     <slot />
   </body>
 </html>

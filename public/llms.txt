@@ -11,7 +11,11 @@ Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over
 - [Home](https://jseramn.tech/): identity and contact routing
 - [About](https://jseramn.tech/about): who operates the domain
 - [Contact](https://jseramn.tech/contact): mailto:contacto@jseramn.tech; encrypted browser form for humans
-- [Tinity](https://jseramn.tech/tinity): public landing for the Tinity harness experiment
+- [Tinity](https://jseramn.tech/tinity): public landing for the Tinity harness-of-harnesses
+- [Tinity overview](https://jseramn.tech/tinity/index.md): manifesto, slices, harness statuses
+- [Tinity changelog](https://jseramn.tech/tinity/changelog.md): Keep a Changelog
+- [Tinity design](https://jseramn.tech/tinity/design.md): landing DESIGN.md tokens
+- [Tinity llms](https://jseramn.tech/tinity/llms.txt): Tinity agent index
 
 ## Legal
 
@@ -26,5 +30,5 @@ Fetch HTML pages with `Accept: text/markdown` at the same URL. Prefer email over
 - [Sitemap](https://jseramn.tech/sitemap-index.xml): crawlers
 - [Source](https://github.com/jseramn/portfolio): public repository
 - [security.txt](https://www.jseramn.tech/.well-known/security.txt): RFC 9116 vulnerability disclosure
-- [Full markdown corpus](https://jseramn.tech/llms-full.txt): concatenated markdown for `/`, `/about`, `/contact`, and legal `/policy` `/terms` `/data-deletion` (see `src/lib/agent/llmsFull.ts`). Tinity is a page with Accept markdown but is not in that corpus
+- [Full markdown corpus](https://jseramn.tech/llms-full.txt): concatenated markdown for `/`, `/about`, `/contact`, and legal `/policy` `/terms` `/data-deletion` (see `src/lib/agent/llmsFull.ts`). Tinity has Accept markdown plus `/tinity/*.md` twins and is not in that corpus
 - [Design system](https://jseramn.tech/design.md): binding visual and agentic contract; not an HTML page twin

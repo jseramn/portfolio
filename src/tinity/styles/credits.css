@@ -1,8 +1,5 @@
 .credits {
-  position: fixed;
-  left: 16px;
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  z-index: 3;
+  position: static;
   pointer-events: auto;
   display: flex;
   flex-wrap: wrap;
@@ -75,7 +72,6 @@
 
 @media (max-width: 640px) {
   .credits {
-    left: 8px;
     flex-wrap: nowrap;
     white-space: nowrap;
     background: rgba(5, 5, 5, 0.6);

@@ -20,6 +20,8 @@
       "!**/node_modules",
       "!**/public",
       "!**/src/tinity",
+      "!**/src/lib/tinityTwinContent.ts",
+      "!**/.agents",
       "!**/pnpm-lock.yaml",
       "!**/test-results",
       "!**/playwright-report",

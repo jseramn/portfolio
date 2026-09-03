@@ -21,20 +21,28 @@
   --danger: #ee0000;
   --radius: 8px;
   --radius-control: 6px;
-  --font-sans: "Geist", "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist Sans", "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-ui: 120ms;
+  --duration-panel: 180ms;
+}
+
+::selection {
+  background: var(--accent-wash-dark);
+  color: var(--text);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 html,
-html[data-tinity],
 body,
-html[data-tinity] body,
 #root {
   margin: 0;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100%;
   box-sizing: border-box;
   background: var(--bg);
   color: var(--text);
@@ -55,7 +63,6 @@ button {
   position: relative;
   width: 100%;
   height: 100%;
-  height: 100dvh;
   overflow: hidden;
   box-sizing: border-box;
   background: var(--bg);

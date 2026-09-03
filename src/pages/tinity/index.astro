@@ -2,26 +2,17 @@
 export const prerender = false
 import Layout from "../../layouts/Layout.astro"
 import TinityApp from "../../tinity/TinityApp"
-import { MANIFESTO } from "../../tinity/experience/copy"
 import { site } from "../../config/site"
 
 const title = `${site.tinity.name} | ${site.brand}`
 ---
 
 <Layout
-  lockScroll
   tinity
   title={title}
   description={site.tinity.description}
 >
   <main id="root" class="tinity-root">
-    <article class="sr-only">
-      <h1>{site.tinity.name}</h1>
-      <p>{MANIFESTO}</p>
-      <p>
-        Source: {site.tinity.repo}. Home: {site.url}.
-      </p>
-    </article>
     <TinityApp client:only="react" />
   </main>
 </Layout>

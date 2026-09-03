@@ -1,0 +1,33 @@
+[
+  {
+    "version": "Unreleased",
+    "date": null,
+    "highlights": [
+      "Policy-layer connector library (Slice 2.0 base, no live Slack)",
+      "Landing v2 agentic marketing spine on `/tinity`"
+    ]
+  },
+  {
+    "version": "0.1.0",
+    "date": "2026-09-02",
+    "highlights": [
+      "cursor-gateway Slice 1 archived and tagged: localhost OpenAI-compat wrap around `cursor-agent` on `127.0.0.1:4390`",
+      "Landing agent marks use official raster logos instead of traced SVGs (2026-09-01)",
+      "Landing reference flip: tumble, thickness, and rim on epicentric cubes (2026-08-30)"
+    ]
+  },
+  {
+    "version": "0.0.2",
+    "date": "2026-09-01",
+    "highlights": [
+      "Raster agent marks on the Stage cubes"
+    ]
+  },
+  {
+    "version": "0.0.1",
+    "date": "2026-08-30",
+    "highlights": [
+      "Landing reference flip on the occupancy-glass cubes"
+    ]
+  }
+]

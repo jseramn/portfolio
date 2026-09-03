@@ -1,0 +1,17 @@
+# Tinity
+
+> A harness-of-harnesses for AI testing and evaluation. Friend to all harnesses. Layer 8 will be agent-based.
+
+Tinity studies, evaluates, designs, and implements infrastructure for AI harnesses. It is not a firm and not a chatbot. Current release: v0.1.0.
+
+## Files
+
+- [Overview](https://www.jseramn.tech/tinity/index.md): manifesto, slices, harness statuses
+- [Changelog](https://www.jseramn.tech/tinity/changelog.md): Keep a Changelog
+- [Design system](https://www.jseramn.tech/tinity/design.md): DESIGN.md tokens
+- [Source](https://github.com/jseramn/tinity): MIT
+
+## Optional
+
+- [Human surface](https://www.jseramn.tech/tinity/): lattice + marketing spine
+- [Agent surface](https://www.jseramn.tech/tinity/?surface=agent): same URL, markdown twin

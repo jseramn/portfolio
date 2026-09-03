@@ -33,6 +33,7 @@ Thumbs.db
 .codegraph/
 .pnpm-store/
 .pnpm-workspace-state.json
+.openspec
 
 # accidental scratch files
 Untitled
@@ -41,8 +42,6 @@ Untitled.*
 # local media scratch
 public/videobg__*
 .vercel
-.openspec
-/openspec
 
 # Playwright
 test-results/

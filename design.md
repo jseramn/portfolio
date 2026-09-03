@@ -334,12 +334,12 @@ Is Agentic already **100/100** (D-report, 2026-09-02). Remaining work is off-sco
 | `Vary` | `Accept, Accept-Encoding` on negotiated responses | Keep. Do not attach `Vary: Accept` to hashed `/_astro` (B-05) |
 | `llms.txt` | Prose H2s, not v2 file lists (D-04) | v2 outline below |
 | `llms-full.txt` | 404 (D-07) | Build-time concatenation of page markdown, under 50 kB |
-| Discovery | oEmbed `rel=alternate` only (`Layout.astro:63–67`) | Add `rel=describedby` → `/llms.txt` and `rel=alternate` `type="text/markdown"` on the canonical URL (negotiation, not page `.md` twins; tests ban twins). Public `/design.md` is the binding contract itself, not a twin of an HTML page. |
+| Discovery | oEmbed `rel=alternate` only (`Layout.astro:63–67`) | Add `rel=describedby` → `/llms.txt` and `rel=alternate` `type="text/markdown"` on the canonical URL (negotiation). Home/about/contact/legal still have no page `.md` twins. `/tinity` also serves landing twins at `/tinity/index.md`, `/tinity/changelog.md`, `/tinity/design.md`. Public `/design.md` remains this portfolio contract, not a page twin. |
 | JSON-LD | Same ProfilePage graph on every Layout page (`jsonld.ts:8–62`) | ProfilePage **only** on `/`. WebPage elsewhere. Add `ContactAction` `mailto:contacto@jseramn.tech`, `givenName`/`familyName`, `knowsLanguage: ["en","es"]` (D-05) |
 | `application/ld+json` | 406 | Produce ld+json = in-page graph. Do **not** add generic JSON to `PRODUCES` |
 | `security.txt` | 404 (D-02) | `/.well-known/security.txt`: `Contact: mailto:contacto@jseramn.tech`, `Expires:` ≤1 year, `Preferred-Languages: en, es`, `Canonical: https://www.jseramn.tech/.well-known/security.txt`, `Policy: https://jseramn.tech/policy`. No invented PGP |
 | robots | `Allow: /`, `Disallow: /api/` (`public/robots.txt`) | **Policy A:** allow all cooperating crawlers. Never `Disallow: /` on `User-agent: *`. Never block Googlebot |
-| CORS agent files | ACAO apex origin + CORP same-site (D-06) | `*` + CORP `cross-origin` on `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/design.md`, `/.well-known/security.txt` |
+| CORS agent files | ACAO apex origin + CORP same-site (D-06) | `*` + CORP `cross-origin` on `/llms.txt`, `/llms-full.txt`, `/robots.txt`, `/design.md`, `/tinity/{llms.txt,index.md,changelog.md,design.md}`, `/.well-known/security.txt` |
 | oEmbed | `type: rich` iframe (`oembed.ts:56–63`) vs CSP `frame-ancestors 'none'` (D-09) | Type consistent with CSP (`photo`/`link` + thumbnail, or `rich` only where framing is allowed) |
 | Agent contact | mailto in llms.txt; form POST invalid payload is JSON 400 | **mailto for agents.** Do not list `/api/contact` in llms.txt until a real send is proven. Do not skip Turnstile |
 
@@ -477,7 +477,7 @@ Owner decisions already taken (sanitation plan). Change them only by updating th
 | Points cloud (`sampleLuminance`) | **Remove only if indistinguishable** from plane+readPixels (A-08) | Side-by-side visual; keep if the bust look depends on it |
 | Replace Three | **Shipped U11 WebGL2.** `three` is gone from `package.json` and product `src`. Do not start a Three unit. prod-r5 TBT 18.5 ms / JS ~138 KB. | Reintroduce Three only with an explicit owner decision after a TBT/JS budget FAIL |
 | Reduced-motion / no-WebGL | **Monochrome ASCII fallback** (text/SVG from first sampler frame). Not `portrait.jpg` | Only with a new invariant change |
-| Legal pages | **`prerender = false`** so Accept markdown is honest (D-03) | Static `.md` twins are forbidden by tests |
+| Legal pages | **`prerender = false`** so Accept markdown is honest (D-03) | Static `.md` twins stay forbidden on home/about/contact/legal. `/tinity` twins are an explicit exception |
 | Agent contact | **mailto** `contacto@jseramn.tech`. Humans use the form + Turnstile (D-report Q2) | Agent POST without Turnstile needs Web Bot Auth + rate limit — explicit owner ask |
 | robots | **Policy A** — allow all (D-10 Q1) | Switch to B (training opt-out) or C (comment-only Content-Signal) in this log first |
 | Destructive hygiene | **End of swarm**, with an explicit list: merged local branches, stale worktrees, leftover `openspec/changes` (A-16). No history rewrite in that list | Owner-approved commands only |

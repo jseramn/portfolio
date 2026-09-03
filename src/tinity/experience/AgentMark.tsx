@@ -43,6 +43,10 @@ const MARK_SRC: Record<AgentId, Raster> = {
   opencode: opencodeMark,
 };
 
+export function markSrcFor(id: AgentId): string {
+  return markUrl(MARK_SRC[id]);
+}
+
 type Props = {
   id: string;
 };

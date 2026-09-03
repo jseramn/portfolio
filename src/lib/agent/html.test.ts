@@ -190,7 +190,13 @@ describe("built HTML overlay", () => {
       const mdFiles = walk(dist)
         .filter((file) => file.endsWith(".md"))
         .map((file) => file.slice(dist.length + 1).replaceAll("\\", "/"))
-      expect(mdFiles.every((file) => file === "design.md")).toBe(true)
+      const allowed = new Set([
+        "design.md",
+        "tinity/index.md",
+        "tinity/changelog.md",
+        "tinity/design.md",
+      ])
+      expect(mdFiles.every((file) => allowed.has(file))).toBe(true)
     }
   })
 
@@ -248,6 +254,10 @@ describe("built HTML overlay", () => {
     expect(llms).toContain("/about")
     expect(llms).toContain("/contact")
     expect(llms).toContain("/tinity")
+    expect(llms).toContain("/tinity/index.md")
+    expect(llms).toContain("/tinity/changelog.md")
+    expect(llms).toContain("/tinity/design.md")
+    expect(llms).toContain("/tinity/llms.txt")
     expect(llms).toContain("mailto:contacto@jseramn.tech")
     expect(llms).not.toContain("presenciapyme.com")
     expect(llms).not.toContain("/api/contact")
@@ -296,16 +306,18 @@ describe("built HTML overlay", () => {
     }
   })
 
-  it("tinity HTML source and markdown share title, manifesto, and repo without live fetch", () => {
+  it("tinity HTML source and markdown share manifesto, version, and repo without live fetch", () => {
     const src = readFileSync(join(root, "src/pages/tinity/index.astro"), "utf8")
-    expect(src).toContain("<h1>{site.tinity.name}</h1>")
-    expect(src).toContain("{MANIFESTO}")
-    expect(src).toContain("site.tinity.repo")
+    expect(src).toContain('<TinityApp client:only="react" />')
+    expect(src).not.toContain("lockScroll")
+    expect(src).not.toContain("<h1>{site.tinity.name}</h1>")
+    expect(src).not.toContain("{MANIFESTO}")
     expect(pageFromPath("/tinity")).toBe("tinity")
     const md = toMarkdown("tinity")
     expect(md).toContain(`# ${site.tinity.name}`)
     expect(md).toContain(MANIFESTO)
     expect(md).toContain(site.tinity.repo)
+    expect(md).toContain("0.1.0")
   })
 
   it("legal HTML readable text matches the shared legal copy", async () => {
