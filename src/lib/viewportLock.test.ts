@@ -82,7 +82,7 @@ describe("homepage viewport lock", () => {
     expect(hero).toContain("env(safe-area-inset-top)")
     expect(hero).toContain("env(safe-area-inset-bottom)")
     expect(hero).not.toMatch(/overflow-hidden md:block"/)
-    for (const region of ["marquee", "now-playing", "socials", "roles", "tagline"]) {
+    for (const region of ["marquee", "now-playing", "socials", "roles", "tagline", "tinity"]) {
       expect(hero).toContain(`data-hud-region="${region}"`)
     }
   })

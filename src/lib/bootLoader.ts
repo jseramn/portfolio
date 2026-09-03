@@ -7,6 +7,7 @@ import {
 
 export const BOOT_LOADER_ID = "boot-loader"
 export const BOOT_READY_EVENT = "hero:boot-ready"
+export const BOOT_PLAY_ATTR = "data-boot-play"
 export const BOOT_TIMEOUT_MS = 8_000
 export const BOOT_MIN_VISIBLE_MS = 600
 export { ASCII_PAINT_SELECTOR, BOOT_FALLBACK_ATTR, BOOT_FALLBACK_SELECTOR }
@@ -35,6 +36,16 @@ export function applyBootLoaderHidden(
   overlay.setAttribute("aria-hidden", "true")
   html.removeAttribute("aria-busy")
   html.removeAttribute("data-boot-pending")
+}
+
+export function applyBootLoaderPlay(
+  overlay: {
+    setAttribute: (name: string, value: string) => void
+    removeAttribute: (name: string) => void
+  },
+): void {
+  overlay.setAttribute(BOOT_PLAY_ATTR, "1")
+  overlay.removeAttribute("aria-hidden")
 }
 
 export function signalHeroBootReady(target?: EventTarget | null): void {
@@ -77,6 +88,7 @@ export function bootReadyFromMutations(
 
 export function createBootLoaderSession(opts: {
   hide: () => void
+  play?: () => void
   now?: () => number
   minVisibleMs?: number
   schedule?: (fn: () => void, delay: number) => number
@@ -90,7 +102,7 @@ export function createBootLoaderSession(opts: {
 } {
   let done = false
   let holdId = 0
-  const startedAt = opts.now?.() ?? 0
+  let playing = false
   const minMs = opts.minVisibleMs ?? 0
 
   const clearHold = () => {
@@ -106,15 +118,14 @@ export function createBootLoaderSession(opts: {
   }
 
   const onReady = () => {
-    if (done) return
-    const elapsed = (opts.now?.() ?? 0) - startedAt
-    const wait = Math.max(0, minMs - elapsed)
-    if (wait === 0 || !opts.schedule) {
+    if (done || playing) return
+    playing = true
+    opts.play?.()
+    if (minMs === 0 || !opts.schedule) {
       dismiss()
       return
     }
-    if (holdId) return
-    holdId = opts.schedule(dismiss, wait)
+    holdId = opts.schedule(dismiss, minMs)
   }
 
   return {
@@ -138,6 +149,7 @@ export function installBootLoader(
   const html = doc.documentElement
   const session = createBootLoaderSession({
     hide: () => applyBootLoaderHidden(overlay, html),
+    play: () => applyBootLoaderPlay(overlay),
     now: () => win.performance.now(),
     minVisibleMs: BOOT_MIN_VISIBLE_MS,
     schedule: (fn, delay) => win.setTimeout(fn, delay),

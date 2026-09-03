@@ -4,7 +4,7 @@ import { scheduleHeroMotionChrome } from "../lib/heroMotionSchedule"
 import { HeroContactLayer, HeroHire } from "./hero/HeroHire"
 import { HeroMarquee } from "./hero/HeroMarquee"
 import { HeroMusic } from "./hero/HeroMusic"
-import { HeroSocials } from "./hero/HeroSocials"
+import { HeroSocials, HeroTinity } from "./hero/HeroSocials"
 import { HeroTagline } from "./hero/HeroTagline"
 
 const HeroAsciiBackground = lazy(() => import("./HeroAsciiBackground"))
@@ -54,6 +54,7 @@ export default function Hero() {
             aria-hidden
           />
           <HeroSocials />
+          <HeroTinity />
           <div className="relative z-10 flex flex-col gap-3 hud:absolute hud:inset-x-0 hud:bottom-0 hud:flex-row hud:items-end hud:justify-between hud:px-16 hud:pb-12 hud:gap-0 short:min-w-0 short:flex-1 short:gap-1">
             <HeroHire
               motionChrome={motionChrome}

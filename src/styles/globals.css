@@ -315,6 +315,11 @@ body {
   display: none;
 }
 
+#boot-loader:not([data-boot-play]) .loader {
+  visibility: hidden;
+  animation: none;
+}
+
 .loader {
   width: fit-content;
   font-weight: bold;

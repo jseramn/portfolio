@@ -110,6 +110,15 @@ describe("hero Geist chrome", () => {
       "font-mono text-sm flex flex-wrap items-center justify-center hud:justify-end gap-2 px-4 hud:px-0",
     )
     expect(hero).not.toContain("bottom-[max(11.25rem")
+    expect(hero).not.toContain("{site.brand}")
+    expect(hero).not.toContain("hire →")
+    expect(hero).not.toContain('href="/about"')
+    expect(hero).not.toContain('href="/contact"')
+    expect(hero).not.toContain("HOME_NAV")
+    expect(hero).not.toContain("aria-label=\"Site\"")
+    expect(hero).toContain("building@jseramn:~$")
+    expect(hero).toContain("data-hud-region=\"tinity\"")
+    expect(hero).toContain("flex flex-row items-center")
   })
 
   it("does not glaze legal pages or agent homepage copy", () => {

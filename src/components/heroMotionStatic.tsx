@@ -51,7 +51,7 @@ export function InfiniteSliderStatic({
       data-marquee-fade=""
       {...(frozen ? { "data-marquee-static": "" } : { "data-marquee-pending": "" })}
     >
-      <div className="flex w-max" style={{ gap: `${gap}px`, flexDirection: "row" }}>
+      <div className="flex w-max items-center" style={{ gap: `${gap}px`, flexDirection: "row" }}>
         {children}
         {children}
       </div>

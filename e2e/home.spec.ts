@@ -244,14 +244,16 @@ async function assertSocialDockInViewport(page: Page) {
   const contact = page
     .locator("[data-hero-root]")
     .getByRole("link", { name: "contact", exact: true })
-  await expect(about).toBeVisible()
-  await expect(contact).toBeVisible()
+  const wordmark = page.locator("[data-hero-root]").getByRole("link", { name: "jseramn", exact: true })
+  await expect(about).toHaveCount(0)
+  await expect(contact).toHaveCount(0)
+  await expect(wordmark).toHaveCount(0)
 }
 
 async function assertHudRegions(page: Page) {
   await expect
     .poll(async () => (await measureHudOverlap(page)).names.length, { timeout: 8_000 })
-    .toBeGreaterThanOrEqual(5)
+    .toBeGreaterThanOrEqual(6)
 
   const report = await measureHudOverlap(page)
   expect(report.names, JSON.stringify(report)).toEqual([
@@ -260,6 +262,7 @@ async function assertHudRegions(page: Page) {
     "roles",
     "socials",
     "tagline",
+    "tinity",
   ])
   expect(report.overlaps, JSON.stringify(report)).toEqual([])
   expect(report.overflowX, JSON.stringify(report)).toBe(false)
@@ -412,17 +415,19 @@ async function assertHomeIdentity(page: Page) {
   const about = root.getByRole("link", { name: "about", exact: true })
   const contact = root.getByRole("link", { name: "contact", exact: true })
   const hire = page.getByRole("button", { name: "Hire / Contact" })
+  const tinity = root.getByRole("link", { name: "Open Tinity" })
 
-  for (const loc of [wordmark, about, contact]) {
-    await expect(loc).toBeVisible()
-    const box = await loc.boundingBox()
-    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
-    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
-  }
-
+  await expect(wordmark).toHaveCount(0)
+  await expect(about).toHaveCount(0)
+  await expect(contact).toHaveCount(0)
   await expect(hire).toBeVisible()
-  await expect(hire).toContainText(/hire/i)
+  await expect(hire).not.toContainText("hire →")
   await expect(hire).not.toHaveAttribute("aria-live")
+  await expect(tinity).toBeVisible()
+  await expect(root.getByText("building@jseramn:~$", { exact: true })).toBeVisible()
+  const box = await tinity.boundingBox()
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
 }
 
 test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async ({ page }) => {
@@ -461,33 +466,19 @@ test("home chrome: marquee moves, roles rotate, and CLS stays near zero", async 
   expect(await marqueeRegion.evaluate((el) => el.getBoundingClientRect().height)).toBe(firstHeight)
 })
 
-test("home chrome: wordmark, about/contact nav, and hire label", async ({ page }, testInfo) => {
+test("home chrome: hire roles, tinity prompt, and no HUD wordmark or site nav", async ({
+  page,
+}) => {
   await openHome(page)
   await assertHomeIdentity(page)
 
-  const forceClick = testInfo.project.name === "landscape-phone"
-  const about = page.locator("[data-hero-root]").getByRole("link", { name: "about", exact: true })
-  const aboutDoc = page.waitForResponse(
+  const tinity = page.locator("[data-hero-root]").getByRole("link", { name: "Open Tinity" })
+  const tinityDoc = page.waitForResponse(
     (response) =>
-      new URL(response.url()).pathname === "/about" &&
+      new URL(response.url()).pathname === "/tinity" &&
       response.request().resourceType() === "document",
   )
-  await about.click({ force: forceClick })
-  expect((await aboutDoc).status()).toBe(200)
-  await expect(page).toHaveURL(/\/about\/?$/)
-
-  await openHome(page)
-  await assertHomeIdentity(page)
-
-  const contact = page
-    .locator("[data-hero-root]")
-    .getByRole("link", { name: "contact", exact: true })
-  const contactDoc = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === "/contact" &&
-      response.request().resourceType() === "document",
-  )
-  await contact.click({ force: forceClick })
-  expect((await contactDoc).status()).toBe(200)
-  await expect(page).toHaveURL(/\/contact\/?$/)
+  await tinity.click()
+  expect((await tinityDoc).status()).toBe(200)
+  await expect(page).toHaveURL(/\/tinity\/?$/)
 })

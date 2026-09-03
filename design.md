@@ -10,7 +10,7 @@ Extracted facts cite `file:line` or report IDs (`A-##`, `B-##`, `C-##`, `D-##`).
 | Principle | Rule |
 |-----------|------|
 | Vesper terminal | Full-viewport white ASCII portrait on black; Geist / Geist Mono HUD. The portrait is the hero. Chrome is type on scrims, not frost panes. |
-| Black until glyphs | First paint is `#000`. Boot overlay exists only on `/` until the first finished ASCII raster (`finishStamp`) plus min 600ms in `installBootLoader`, or a fallback signals ready (`src/pages/index.astro:12–27`, `src/lib/bootLoader.ts`, `src/lib/hero/ascii/raster.ts`). |
+| Black until glyphs | First paint is `#000`. Home-only black boot plate hides HUD with no “Loading...” chrome until the first finished ASCII raster (`finishStamp`) or a fallback ready signal; then loader chrome plays for min 600ms and dismisses (`src/pages/index.astro`, `src/lib/bootLoader.ts`, `src/lib/hero/ascii/raster.ts`). |
 | ASCII is the identity | Hidden 426×240 sampler (filenames still `videobg-480.{webm,mp4}`) drives glyphs. No visible video pixels. No colourful still (`portrait.jpg` / ascii-poster). |
 | Chrome is Geist | Hero chrome is bone-ink Geist type over zone scrims. No `GlassSurface`, no `liquid-glass-react`, no `backdrop-filter` frost on HUD. |
 | Agent-first | Every human HTML surface has a machine-readable twin (`Accept: text/markdown`, `/llms.txt`). |
@@ -93,7 +93,7 @@ Hover glow duration 300 ms (`Hero.tsx:36`). Letter-spacing: `tracking-tight` on 
 
 ### Chrome geometry
 
-HUD chrome is unwrapped Geist type. Hire/Tinity hug content (`min-w-[18ch]` on hire). Marquee stays full width. Modal panel keeps radius 15 and `bg-black/25` with the locked overlay `bg-black/75 backdrop-blur-[2px]`.
+HUD chrome is unwrapped Geist type. Hire hugs content (`min-w-[18ch]`). Tinity is a left-rail Geist Mono prompt (`building@jseramn:~$` / `> tinity`), not a second hire-sized sans lockup. Marquee stays full width. Modal panel keeps radius 15 and `bg-black/25` with the locked overlay `bg-black/75 backdrop-blur-[2px]`.
 
 Do not reintroduce `GlassSurface`, `liquid-glass-react`, `[data-glass-host]`, or HUD `backdrop-filter` frost.
 
@@ -129,10 +129,11 @@ Home is a locked HUD over a full-viewport ASCII field. Four-corner chrome uses t
 | Marquee | Top; full width | Geist Mono ticker |
 | Now-playing + transport | Below marquee on mobile; `hud:right-8 hud:top-24` | Geist Mono |
 | Socials | Above hire on mobile; `hud:left-8 hud:top-24` | Icon dock |
-| Roles + hire CTA | Bottom-left cluster | Geist Sans 2xl/3xl |
+| Roles + hire CTA | Bottom-left cluster; visible label is the looping role only | Geist Sans 2xl/3xl |
 | Tagline | Bottom; `hud:text-right hud:max-w-md` | Geist Sans body |
-| Identity wordmark | `jseramn` Geist Mono in the marquee row | Shipped |
-| Secondary nav | `about` · `contact` under socials | Shipped |
+| Tinity | Left rail under socials (`hud:left-8 hud:top-52`); prompt + `> tinity` | Geist Mono |
+| Identity | Marquee copy (`Hi, I am {name}`) and sr-only home article — no HUD wordmark | Shipped |
+| Secondary nav | Not on home HUD. `/about` and `/contact` pages remain | — |
 
 ### Breakpoints
 
@@ -190,8 +191,8 @@ Home is a locked HUD over a full-viewport ASCII field. Four-corner chrome uses t
 | Tap targets | `min-h-11 min-w-11` (44px) on chrome controls | Keep |
 | Marquee type | `text-sm` (14) / `md:text-base` (16); pause on hover, focus, and pointer | Keep |
 | Overflow | Hero root `overflow-hidden` for the dvh lock; chrome labels are unwrapped type | Do not wrap labels in `overflow: hidden` |
-| Identity mark | Visible `jseramn` wordmark, Geist Mono, `--hero-ink` | Keep |
-| Secondary nav | Visible links to `/about` and `/contact` on home; legal footer on secondary pages | Keep |
+| Identity mark | No visible HUD wordmark. Identity lives in the marquee line and sr-only copy | Keep |
+| Secondary nav | No about/contact links on home HUD. Legal footer on secondary pages | Keep |
 
 ## 4. Motion
 
@@ -219,7 +220,7 @@ Shared **12 fps** budget: ASCII `ASCII_FPS = 12` (`heroAsciiBudget.ts:1–2`). W
 | Focus-visible | `--hero-ink` outline on HUD chrome (`CHROME_FOCUS`) | Keep |
 | Skip link | `Skip to content` → `#main` (`Layout.astro`) | Keep |
 | `main` landmark | Real `main#main` box on home | Keep |
-| Boot live region | `role="status" aria-live="polite"` (`index.astro:21–24`) | Keep; dismiss sets `aria-hidden` (`bootLoader.ts:30–37`) |
+| Boot live region | `role="status" aria-live="polite"`; plate starts `aria-hidden` (`index.astro`) | Keep; ASCII-ready play removes `aria-hidden`, dismiss sets it (`bootLoader.ts`) |
 | Now-playing | Playing title is a YouTube `<a>`; idle is a `<button>` | Name the control; **Proposed:** `aria-live` when track changes |
 | Hire naming | Visible roles `aria-hidden`; button `aria-label="Hire / Contact"` (`hero/HeroHire.tsx`) | Keep an accessible name that says hire/contact, not only the looping title |
 | Modal keyboard | Escape dismisses. Focus trap on `[role="dialog"]`, Name autofocus after open, Close ≥44×44, return focus to hire | Shipped: trap, Name autofocus, return focus to hire, Close ≥44×44 |
@@ -263,13 +264,17 @@ Purpose: open encrypted contact with current role context. Anatomy: Geist Sans h
 
 Purpose: LCP node (`B-report`: `p.hero-on-video`). Anatomy: Geist Sans tagline; scramble on hover only. Responsive: left on mobile, right + `max-w-md` on desktop.
 
-### Identity wordmark
+### Identity
 
-Purpose: visible `jseramn` in Geist Mono + `--hero-ink` in the marquee row. Not a restyle of ASCII.
+Purpose: home identity is the marquee greeting (`Hi, I am {name}`) plus the sr-only article. There is no visible `jseramn` wordmark in HUD chrome.
 
-### Secondary nav (**Proposed**)
+### Tinity prompt
 
-Purpose: human path to `/about` and `/contact`. Compact text links, ≥44×44, bone ink. Secondary pages: footer row with `/policy`, `/terms`, `/data-deletion` plus `← jseramn` back control (`LegalDocument.astro:18–23` already has the back link; 404 does not).
+Purpose: left-rail path to `/tinity`. Anatomy: muted Geist Mono `building@jseramn:~$` over a ≥44×44 `> tinity` link (`aria-label="Open Tinity"`). Desktop: `hud:left-8 hud:top-52` under socials. Do not place it beside hire. The `/tinity` page CTA name stays `tinity me`.
+
+### Secondary nav
+
+Purpose: `/about` and `/contact` remain as pages and agent routes. Home HUD does not show those links. Secondary pages: footer row with `/policy`, `/terms`, `/data-deletion` plus `← jseramn` back control (`LegalDocument.astro:18–23` already has the back link; 404 does not).
 
 ### ContactModal
 
@@ -309,9 +314,9 @@ Home `/` lab targets from `B-report` budget (production HEAD `8f9a743`; mobile m
 
 | When | What | Source |
 |------|------|--------|
-| Before first paint | Black field, inlined CSS, Geist preload (`swap`), SSR tagline, boot overlay on `/` | `Layout.astro:53–61`, `index.astro:12–27` |
+| Before first paint | Black field, inlined CSS, Geist preload (`swap`), SSR tagline, black boot plate on `/` (loader chrome hidden) | `Layout.astro:53–61`, `index.astro:12–20` |
 | `client:load` chrome only | Hero island (hire + tagline + marquee). Must **not** start YouTube, ASCII WebGL2/video, or ContactModal/`age-encryption` | openspec site-performance |
-| After first paint / idle | ASCII WebGL2: `HeroAsciiBackground` waits double-rAF then `requestIdleCallback` (1.5 s timeout, or `setTimeout(0)` if rIC is missing) before `mountHeroAscii`. `VIDEO_PRELOAD = "none"`. Boot overlay dismisses after the first finished raster plus min 600ms. | |
+| After first paint / idle | ASCII WebGL2: `HeroAsciiBackground` waits double-rAF then `requestIdleCallback` (1.5 s timeout, or `setTimeout(0)` if rIC is missing) before `mountHeroAscii`. `VIDEO_PRELOAD = "none"`. Loader chrome appears after the first finished raster (`finishStamp`) or fallback, holds min 600ms, then dismisses. | |
 | Gesture | YouTube `iframe_api` | `Hero.tsx:170–173` |
 | Hire click | ContactModal + `age-encryption` | `Hero.tsx:570–578` |
 | 6 s | PostHog `setTimeout(arm, 6000)` — **never** `requestIdleCallback` | `posthog.astro:27`, invariant 6 |
@@ -379,7 +384,7 @@ A2A `agent-card.json`, `/.well-known/mcp.json`, `ai-plugin.json`, WebMCP tools, 
 1. Visual identity stays: full-viewport white ASCII portrait on black (Vesper terminal aesthetic), Geist / Geist Mono HUD. Layout, responsive behaviour, stacking and interaction details may change; Hero typography, scrim colours and `--hero-ink*` colours may NOT.
 2. Home chrome is Geist type over scrims. Do not ship `GlassSurface`, `liquid-glass-react`, `[data-glass-host]`, or HUD frost `backdrop-filter`. Tinity at `/tinity` uses the Tinity DESIGN.md pair (Geist Sans / Geist Mono, `#1fdb12`) and the same no-glass rule.
 3. ASCII runs on mobile too. Reduced-motion or no-WebGL users get a static monochrome fallback — never a colourful still (no portrait.jpg / ascii-poster).
-4. First paint is black until glyphs paint; the boot loader overlay exists only on `/`.
+4. First paint is black until glyphs paint; the boot plate exists only on `/`. Loader chrome appears only after ASCII is fully stamped (`finishStamp`) or the fallback is ready, then dismisses after min 600ms.
 5. `prerender = false` stays on `/`, `/about`, `/contact`, `/404` and the API routes. Middleware runs at the Edge. `Accept: text/markdown` negotiation, 406 for unacceptable types, and `Vary: Accept, Accept-Encoding` on negotiated responses must keep working (tests in `src/lib/agent/*.test.ts`).
 6. `<video preload="none">` on the ASCII sampler element; PostHog init stays `setTimeout(6000)` (never `requestIdleCallback`).
 7. No debug ingest (`dbg()` / localhost collectors). Astro stays on major 5. No new analytics vendors.

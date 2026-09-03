@@ -3,7 +3,6 @@ import { site } from "../../config/site"
 import { onHireCtaClicked } from "../../lib/analytics/productCapture"
 import { HeroMotionRoles } from "../heroMotionStatic"
 import { CHROME_FOCUS, GLOW } from "./chrome"
-import { HeroTinity } from "./HeroSocials"
 
 const ContactModal = lazy(() =>
   import("../ContactModal").then((mod) => ({ default: mod.ContactModal })),
@@ -41,17 +40,16 @@ export function HeroHire({
 }) {
   return (
     <div data-hud-region="roles">
-      <div className="flex flex-col gap-3 self-start hud:flex-row hud:items-end hud:gap-4">
+      <div className="self-start">
         <button
           type="button"
           onClick={() => {
             onHireCtaClicked()
             onOpenContact()
           }}
-          className={`hero-on-video group inline-flex min-h-11 min-w-[18ch] w-max max-w-full md:shrink-0 items-center gap-3 whitespace-nowrap text-left cursor-pointer short:flex-col short:items-start short:gap-0 ${GLOW} ${CHROME_FOCUS}`}
+          className={`hero-on-video group inline-flex min-h-11 min-w-[18ch] w-max max-w-full md:shrink-0 items-center whitespace-nowrap text-left cursor-pointer ${GLOW} ${CHROME_FOCUS}`}
           aria-label="Hire / Contact"
         >
-          <span className="font-mono text-sm font-normal tracking-normal">hire →</span>
           <span
             aria-hidden="true"
             className="font-sans text-2xl md:text-3xl font-semibold tracking-tight"
@@ -72,7 +70,6 @@ export function HeroHire({
             </HeroMotionRoles>
           </span>
         </button>
-        <HeroTinity />
       </div>
     </div>
   )

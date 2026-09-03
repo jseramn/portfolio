@@ -121,7 +121,7 @@ export function InfiniteSlider({
   return (
     <div className={`${MARQUEE_TRACK} ${className ?? ""}`} data-marquee-fade="">
       <motion.div
-        className="flex w-max"
+        className="flex w-max items-center"
         style={{
           ...(direction === "horizontal" ? { x: translation } : { y: translation }),
           gap: `${gap}px`,

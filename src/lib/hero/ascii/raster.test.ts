@@ -67,7 +67,7 @@ describe("ascii boot signal", () => {
     expect(signalHeroBootReady).not.toHaveBeenCalled()
   })
 
-  it("signals boot from finishStamp on the first completed raster", async () => {
+  it("signals ASCII complete from finishStamp on the first completed raster", async () => {
     const { finishStamp } = await import("./raster")
     const session = makeSession(4)
     finishStamp(session)
