@@ -279,8 +279,13 @@ button {
   height: calc(0.50 * var(--cell-css));
   display: block;
   flex-shrink: 0;
-  fill: currentColor;
+  object-fit: contain;
   overflow: hidden;
+  pointer-events: none;
+}
+
+.cube-mark[data-mark="pi"] {
+  image-rendering: pixelated;
 }
 
 .cube--number.is-flipped .cube-face--back {
