@@ -99,7 +99,12 @@ export function buildVercelRedirects() {
   return [
     {
       source: "/tinity",
-      destination: "https://tinity.jseramn.tech",
+      destination: "https://tinity.jseramn.tech/",
+      permanent: true,
+    },
+    {
+      source: "/tinity/",
+      destination: "https://tinity.jseramn.tech/",
       permanent: true,
     },
     {

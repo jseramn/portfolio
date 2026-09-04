@@ -24,19 +24,17 @@ function readHeroIsland(): string {
 }
 
 describe("Tinity subpage", () => {
-  it("mounts the experience at /tinity as a React island", () => {
+  it("sends /tinity to the dedicated Tinity domain", () => {
     const page = readSrc("pages/tinity/index.astro")
     expect(page).toMatch(/export const prerender = false/)
     expect(page).not.toMatch(/export const prerender = true/)
+    expect(page).toContain('Astro.redirect("https://tinity.jseramn.tech/", 301)')
     expect(page).not.toContain("lockScroll")
-    expect(page).toContain("tinity")
-    expect(page).toContain('<TinityApp client:only="react" />')
+    expect(page).not.toContain('<TinityApp client:only="react" />')
     expect(page).not.toContain("boot-loader")
     expect(page).not.toContain("<Hero")
     expect(page).not.toContain("<h1>{site.tinity.name}</h1>")
     expect(page).not.toContain("{MANIFESTO}")
-    expect(existsSync(join(src, "tinity/TinityApp.tsx"))).toBe(true)
-    expect(existsSync(join(src, "tinity/components/canvasui/ForceField.tsx"))).toBe(true)
   })
 
   it("declares the Layout tinity prop the page passes", () => {
@@ -61,6 +59,7 @@ describe("Tinity subpage", () => {
   it("exposes a homepage Tinity control without restyling hire", () => {
     const hero = readHeroIsland()
     expect(hero).toContain("href={site.tinity.path}")
+    expect(readSrc("config/site.ts")).toContain('path: "https://tinity.jseramn.tech"')
     expect(hero).toContain('aria-label="Open Tinity"')
     expect(hero).toContain("building@jseramn:~$")
     expect(hero).toContain('data-hud-region="tinity"')

@@ -1,18 +1,5 @@
 ---
 export const prerender = false
-import Layout from "../../layouts/Layout.astro"
-import TinityApp from "../../tinity/TinityApp"
-import { site } from "../../config/site"
 
-const title = `${site.tinity.name} | ${site.brand}`
+return Astro.redirect("https://tinity.jseramn.tech/", 301)
 ---
-
-<Layout
-  tinity
-  title={title}
-  description={site.tinity.description}
->
-  <main id="root" class="tinity-root">
-    <TinityApp client:only="react" />
-  </main>
-</Layout>

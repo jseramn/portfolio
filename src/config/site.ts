@@ -34,7 +34,7 @@ export const site = {
   ] as const,
   tinity: {
     name: "Tinity",
-    path: "/tinity",
+    path: "https://tinity.jseramn.tech",
     repo: "https://github.com/jseramn/tinity",
     description:
       "Tinity is an agentic systems engineering framework for a harness-of-harnesses infrastructure for AI testing and evaluation. Friend to all harnesses. Layer 8 will be agent-based.",

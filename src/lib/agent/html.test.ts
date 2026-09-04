@@ -308,7 +308,7 @@ describe("built HTML overlay", () => {
 
   it("tinity HTML source and markdown share manifesto, version, and repo without live fetch", () => {
     const src = readFileSync(join(root, "src/pages/tinity/index.astro"), "utf8")
-    expect(src).toContain('<TinityApp client:only="react" />')
+    expect(src).toContain('Astro.redirect("https://tinity.jseramn.tech/", 301)')
     expect(src).not.toContain("lockScroll")
     expect(src).not.toContain("<h1>{site.tinity.name}</h1>")
     expect(src).not.toContain("{MANIFESTO}")

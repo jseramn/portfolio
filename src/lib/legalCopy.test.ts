@@ -93,6 +93,11 @@ describe("SSR routes stay dynamic", () => {
     }
   })
 
+  it("redirects /tinity off the portfolio origin", () => {
+    expect(tinity).toMatch(/export const prerender = false/)
+    expect(tinity).toContain('Astro.redirect("https://tinity.jseramn.tech/", 301)')
+  })
+
   it("keeps SecondaryPage legal json-ld and shared copy on legal routes", () => {
     for (const source of [policyPage, deletionPage, termsPage]) {
       expect(source).toContain('jsonLdPage="legal"')

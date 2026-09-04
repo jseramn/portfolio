@@ -131,7 +131,12 @@ describe("sync-vercel-security-headers", () => {
     const redirects = [
       {
         source: "/tinity",
-        destination: "https://tinity.jseramn.tech",
+        destination: "https://tinity.jseramn.tech/",
+        permanent: true,
+      },
+      {
+        source: "/tinity/",
+        destination: "https://tinity.jseramn.tech/",
         permanent: true,
       },
       {
