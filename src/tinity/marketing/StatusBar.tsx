@@ -32,7 +32,7 @@ export function StatusBar() {
                 title={tip}
                 aria-label={tip}
               >
-                <HarnessMark harness={harness} />
+                <HarnessMark harness={harness} size={28} />
                 <span className="status-pip-label">{harness.label}</span>
               </li>
             );

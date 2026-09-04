@@ -134,14 +134,14 @@ Roles:
 
 | Role            | Size | Weight | Line | Face        |
 |-----------------|------|--------|------|-------------|
-| display         | 64–80| 400–500| 1.00 | Geist Sans  |
-| h1              | 40–48| 500    | 1.10 | Geist Sans  |
-| h2              | 24–32| 500    | 1.20 | Geist Sans  |
-| body            | 16   | 400    | 1.55 | Geist Sans  |
-| ui              | 14   | 400–500| 1.40 | Geist Sans  |
+| display         | 56–80| 400–500| 1.05 | Geist Sans  |
+| h1              | 48–56| 500    | 1.10 | Geist Sans  |
+| h2              | 40–48| 500    | 1.12 | Geist Sans  |
+| body            | 16–18| 400    | 1.45–1.55 | Geist Sans  |
+| ui              | 14–15| 400–500| 1.40 | Geist Sans  |
 | caption         | 12–13| 400    | 1.40 | Geist Sans  |
-| eyebrow         | 11–12| 500    | 1.00 | Geist Mono  |
-| code / metric   | 13–14| 400    | 1.45 | Geist Mono  |
+| eyebrow         | 12   | 500    | 1.00 | Geist Mono  |
+| code / metric   | 13–18| 400    | 1.45 | Geist Mono  |
 
 Body line-height 1.55 marketing, 1.4 app.
 
@@ -166,7 +166,7 @@ Secondary
 - radius `0`
 - 1px `--border` on surface, `1px solid rgba(245,245,245,0.35)` on void hero
 - text `--text`
-- hover: border → `--border-strong` (void hero → `--text`). No fill, no scale, no mint glow.
+- hover: occupancy-cube lift — `perspective(560px)` + `translateZ(18px)` + `scale(1.04)`, shadow `0 12px 32px rgba(0,0,0,0.55)`, 220ms `--ease`. Border → `--border-strong` (void hero → `--text`). No fill, no mint glow.
 
 Danger
 - fill `--danger`, text white, same radius
@@ -178,8 +178,8 @@ Never put `#1fdb12` outline + `#1fdb12` fill on the same row as two competing pr
 - bg `--surface`
 - 1px `--border` (Vercel shadow-as-border allowed: `box-shadow: 0 0 0 1px var(--border)`)
 - radius `0` on `/tinity` chrome
-- no drop shadow
-- hover: border → `--border-strong` only
+- no rest drop shadow
+- hover: same cube lift as buttons (Z + scale + elevation shadow). Border → `--border-strong`
 - no inset accent tick on shipped cards
 
 ### Inputs
@@ -222,9 +222,9 @@ Never put `#1fdb12` outline + `#1fdb12` fill on the same row as two competing pr
 
 - Base unit: `4px`
 - Scale: `4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128`
-- Marketing max width `1120–1200px`
+- Marketing max width `1280px`
 - App shell `1440px`
-- Gutter `24px` desktop, `16px` mobile
+- Gutter `32px` desktop, `16px` mobile
 - Section rhythm marketing: `96px`
 - Dashboard density: tight, 12–16px stack
 
@@ -291,11 +291,12 @@ The green may glow once: focus ring or a 4–8px soft halo on a live node in a t
 
 Vercel restraint + harness liveness.
 
-- Duration: `120ms` ui, `180ms` panel, `280ms` route
+- Duration: `120ms` ui, `180ms` panel, `220ms` chrome/cube hover, `280ms` route
 - Easing: `cubic-bezier(0.16, 1, 0.3, 1)`
-- Prefer opacity + translateY(4px)
+- Prefer opacity + translateY(4px) for enter
+- Chrome hover matches occupancy cubes: `perspective(var(--hover-perspective)) translateZ(var(--hover-lift)) scale(var(--hover-scale))` plus `--hover-shadow`. Hub SVG nodes scale the inner `.hub-node-lift` group to `1.12` so the node's `translate()` is not overwritten.
 - Live nodes: opacity pulse 2s on the `#1fdb12` pip only
-- No bounce. No scale-on-hover > 1.02
+- No bounce. `prefers-reduced-motion` kills lift, scale, and traveling dots.
 
 ---
 
@@ -321,7 +322,7 @@ When generating UI for Tinity:
 2. Dark theme first. Light maps 1:1 with the same accent hex.
 3. Geist Sans + Geist Mono only.
 4. Primary fill is `#1fdb12`, label `#061008`.
-5. Hairline structure. Square chrome (`radius: 0`). No card shadows.
+5. Hairline structure. Square chrome (`radius: 0`). No card shadows at rest. Hover uses the occupancy-cube lift.
 6. One green event per view unless it is a fleet of status pips.
 7. Uppercase mono eyebrows for section labels.
 8. Display tracking tight. Weight ≤ 600.
@@ -404,10 +405,10 @@ One page. No subpages. Hash sections. Windows via `?w=`. Agent surface via `?sur
 
 | Band | Role |
 |------|------|
-| Nav | 52px hairline. Lockup (24px mark + wordmark). HUMAN / AGENT. Ghost GitHub. Docs · soon. Under 768px: lockup + switch + menu dialog. |
+| Nav | 56px hairline. Lockup (24px mark + wordmark). HUMAN / AGENT. Ghost GitHub. Docs · soon. Under 768px: lockup + switch + menu dialog. |
 | Hero | `100svh` grid `auto 1fr auto`. Stage fills the middle. Caption: eyebrow `TINITY / HARNESS`, H1 "A friend to all harnesses.", one-line dek, ghost GitHub + Docs. `tinity me` is the only accent action. |
-| Status | `#status`. One-column left-aligned head: `RUNS ON v0.1.0` + `17 IDLE`, then 17 pips. `idle` is grayscale. `live` may use the 4–8px green halo. |
-| Hub | `#hub`. Split head (title left, dek left-aligned). Square sectional rack, Tinity LED at the shared origin, orthogonal traces. 17 bidirectional traffic dots. `prefers-reduced-motion` is static. Mobile: stacked tiles. |
+| Status | `#status`. One-column right-aligned head: `RUNS ON v0.1.0` + `17 IDLE`, then 17 pips packed to the right. `idle` is grayscale. `live` may use the 4–8px green halo. |
+| Hub | `#hub`. Split head (title left, dek right-aligned caption). Square sectional rack fills the inner width. Tinity LED at the shared origin, orthogonal traces. 17 bidirectional traffic dots. `prefers-reduced-motion` is static. Mobile: stacked tiles. |
 | Slices | `#slices`. Six square `.panel` cells. No shipped tick. Badges: SHIPPED fill, IN DESIGN outline, NEXT/LATER dim. Square, not pills. |
 | Changelog | `#changelog`. Three dated `.panel` cards. Full changelog opens a window. |
 | Community | `#community`. GitHub, X, Slack coming. One Contribute ghost. |
@@ -416,7 +417,7 @@ One page. No subpages. Hash sections. Windows via `?w=`. Agent surface via `?sur
 
 Marketing sections compose as `Section.Root / Inner / Header / Copy / Title / Dek`. Cards compose as `Panel` inside `PanelGrid`. Windows compose as `Window.Frame` + `Window.Docs` | `Window.Changelog`. Surfaces are explicit: `HumanSurface` vs `AgentSurface`.
 
-Do not add an 8-item mega-nav. Do not wrap the hero in a card. Do not put a second primary next to `tinity me`. Card hover is `--border-strong` only.
+Do not add an 8-item mega-nav. Do not wrap the hero in a card. Do not put a second primary next to `tinity me`. Card hover is the occupancy-cube lift, not border-only.
 
 Windows: one native `<dialog>`, max 720px, radius 0, 1px border plus the single allowed popover shadow, 180ms opacity + `translateY(4px)`. Backdrop `rgba(5,5,5,0.6)`.
 

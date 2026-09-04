@@ -12,9 +12,9 @@ export type HubNode = {
 
 export const HUB_CX = 0.5;
 export const HUB_CY = 0.5;
-export const HUB_HALF = 0.38;
+export const HUB_HALF = 0.42;
 export const HUB_SIZE = 800;
-export const MARK_HUB_SCALE = 28;
+export const MARK_HUB_SCALE = 36;
 export const HUB_EDGE_COUNTS = {
   north: 5,
   east: 4,
