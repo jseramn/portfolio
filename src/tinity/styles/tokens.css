@@ -26,6 +26,10 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-ui: 120ms;
   --duration-panel: 180ms;
+  --hover-perspective: 560px;
+  --hover-lift: 18px;
+  --hover-scale: 1.04;
+  --hover-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
 ::selection {
