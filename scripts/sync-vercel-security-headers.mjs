@@ -97,6 +97,16 @@ export function buildVercelHeaderRules() {
 
 export function buildVercelRedirects() {
   return [
+    {
+      source: "/tinity",
+      destination: "https://tinity.jseramn.tech",
+      permanent: true,
+    },
+    {
+      source: "/tinity/:path*",
+      destination: "https://tinity.jseramn.tech/:path*",
+      permanent: true,
+    },
     { source: "/privacy", destination: "/policy", permanent: true },
     {
       source: "/security.txt",

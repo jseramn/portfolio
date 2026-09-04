@@ -129,6 +129,16 @@ describe("sync-vercel-security-headers", () => {
 
   it("permanently redirects /security.txt and keeps vercel.json in sync", () => {
     const redirects = [
+      {
+        source: "/tinity",
+        destination: "https://tinity.jseramn.tech",
+        permanent: true,
+      },
+      {
+        source: "/tinity/:path*",
+        destination: "https://tinity.jseramn.tech/:path*",
+        permanent: true,
+      },
       { source: "/privacy", destination: "/policy", permanent: true },
       {
         source: "/security.txt",
