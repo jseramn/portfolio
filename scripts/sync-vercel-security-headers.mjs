@@ -100,17 +100,17 @@ export function buildVercelRedirects() {
     {
       source: "/tinity",
       destination: "https://tinity.jseramn.tech/",
-      permanent: true,
+      statusCode: 301,
     },
     {
       source: "/tinity/",
       destination: "https://tinity.jseramn.tech/",
-      permanent: true,
+      statusCode: 301,
     },
     {
       source: "/tinity/:path*",
       destination: "https://tinity.jseramn.tech/:path*",
-      permanent: true,
+      statusCode: 301,
     },
     { source: "/privacy", destination: "/policy", permanent: true },
     {
