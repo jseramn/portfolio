@@ -6,7 +6,6 @@ import {
   ASCII_FPS,
   ASCII_IDLE_TIMEOUT_MS,
   ASCII_WARMUP_MS,
-  ASCII_WARMUP_SAMPLE_MS,
   COARSE_MAX_CELLS,
   MAX_CELLS,
   NARROW_VIEWPORT_PX,
@@ -97,14 +96,17 @@ describe("hero ASCII loop budget", () => {
     expect(shouldSkipSample(51)).toBe(true)
   })
 
-  it("runs the ASCII loop at 1fps during warmup then 12fps", () => {
+  it("samples at SAMPLE_MS after the first stamp, including during warmup", () => {
     expect(sampleMsForLoop(100, 100, 0)).toBe(SAMPLE_MS)
-    expect(sampleMsForLoop(1000, 0, 1)).toBe(ASCII_WARMUP_SAMPLE_MS)
+    expect(sampleMsForLoop(1000, 0, 1)).toBe(SAMPLE_MS)
+    expect(sampleMsForLoop(ASCII_WARMUP_MS - 1, 0, 1)).toBe(SAMPLE_MS)
     expect(sampleMsForLoop(ASCII_WARMUP_MS + 1, 0, 8)).toBe(SAMPLE_MS)
   })
 
   it("skips occupancy refine during warmup and slices stamp rows on budget", () => {
     expect(shouldRefineOccupancy(100, 100)).toBe(false)
+    expect(shouldRefineOccupancy(1000, 0)).toBe(false)
+    expect(sampleMsForLoop(1000, 0, 1)).toBe(SAMPLE_MS)
     expect(shouldRefineOccupancy(ASCII_WARMUP_MS, 0)).toBe(true)
     expect(stampSliceEnd(0, 40, 0, 1)).toBe(40)
     expect(stampSliceEnd(4, 40, 0, 20)).toBe(5)

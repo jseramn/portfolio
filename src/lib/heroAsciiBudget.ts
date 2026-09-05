@@ -9,7 +9,6 @@ export const GL_RESOLUTION = 0.15
 export const RASTER_BUDGET_MS = 50
 export const VIDEO_PRELOAD = "none" as const
 export const ASCII_WARMUP_MS = 4_000
-export const ASCII_WARMUP_SAMPLE_MS = 1_000
 export const STAMP_SLICE_MS = 8
 
 export type AsciiFramePlan = "raster" | "camera" | "idle"
@@ -40,14 +39,11 @@ export function pickGrid(
 }
 
 export function sampleMsForLoop(
-  now: number,
-  mountedAt: number,
-  rastersCompleted: number,
+  _now: number,
+  _mountedAt: number,
+  _rastersCompleted: number,
   sampleMs = SAMPLE_MS,
 ): number {
-  if (rastersCompleted >= 1 && now - mountedAt < ASCII_WARMUP_MS) {
-    return ASCII_WARMUP_SAMPLE_MS
-  }
   return sampleMs
 }
 
